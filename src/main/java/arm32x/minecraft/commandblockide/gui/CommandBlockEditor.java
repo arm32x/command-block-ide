@@ -63,7 +63,7 @@ public final class CommandBlockEditor extends Container implements Drawable, Ele
 		});
 
 		//noinspection ConstantConditions
-		((CommandSuggestorExtension)suggestor).setY(commandField.y + commandField.getHeight() + 2);
+		((CommandSuggestorExtension)suggestor).ide$setY(commandField.y + commandField.getHeight() + 2);
 
 		typeButton = addChild(new CommandBlockTypeButton(screen, x, y));
 		typeButton.type = blockEntity.getCommandBlockType();
