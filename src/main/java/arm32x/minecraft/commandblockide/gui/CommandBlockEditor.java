@@ -2,6 +2,7 @@ package arm32x.minecraft.commandblockide.gui;
 
 import arm32x.minecraft.commandblockide.Dirtyable;
 import arm32x.minecraft.commandblockide.extensions.CommandSuggestorExtension;
+import arm32x.minecraft.commandblockide.update.InteractUpdateProvider;
 import java.util.stream.Stream;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -15,13 +16,9 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateCommandBlockC2SPacket;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.world.CommandBlockExecutor;
 
 @Environment(EnvType.CLIENT)
@@ -93,9 +90,7 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 	}
 
 	public void requestUpdate(ClientPlayNetworkHandler networkHandler) {
-		BlockHitResult blockHitResult = new BlockHitResult(blockEntity.getCommandExecutor().getPos(), Direction.UP, blockEntity.getPos(), false);
-		PlayerInteractBlockC2SPacket packet = new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, blockHitResult);
-		networkHandler.sendPacket(packet);
+		InteractUpdateProvider.getInstance().requestUpdate(networkHandler, blockEntity);
 	}
 
 	public void apply(ClientPlayNetworkHandler networkHandler) {

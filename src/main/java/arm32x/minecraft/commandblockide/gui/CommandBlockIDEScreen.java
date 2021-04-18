@@ -33,7 +33,6 @@ public final class CommandBlockIDEScreen extends Screen {
 	private int startingIndex = -1;
 
 	private ButtonWidget doneButton;
-	private ButtonWidget cancelButton;
 	private ButtonWidget applyAllButton;
 
 	public CommandBlockIDEScreen(CommandBlockBlockEntity blockEntity) {
@@ -49,7 +48,7 @@ public final class CommandBlockIDEScreen extends Screen {
 			onClose();
 		}));
 		doneButton.active = false;
-		cancelButton = addButton(new ButtonWidget(this.width - 216, this.height - 28, 100, 20, ScreenTexts.CANCEL, (widget) -> {
+		/* cancelButton = */ addButton(new ButtonWidget(this.width - 216, this.height - 28, 100, 20, ScreenTexts.CANCEL, (widget) -> {
 			onClose();
 		}));
 		applyAllButton = addButton(new ButtonWidget(this.width - 108, this.height - 28, 100, 20, new TranslatableText("commandBlockIDE.applyAll"), (widget) -> {
@@ -71,6 +70,10 @@ public final class CommandBlockIDEScreen extends Screen {
 		addCommandBlock(getBlockEntityAt(chainStart));
 		for (BlockPos position : tracer.traceForwards(chainStart)) {
 			addCommandBlock(getBlockEntityAt(position));
+		}
+
+		if (client.player != null) {
+			LOGGER.info("Server brand is '{}'.", client.player.getServerBrand());
 		}
 	}
 
