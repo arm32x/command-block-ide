@@ -8,14 +8,14 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
 
-public final class InteractUpdateProvider implements UpdateProvider {
-	private static @Nullable InteractUpdateProvider INSTANCE = null;
+public final class InteractUpdateRequester implements UpdateRequester {
+	private static @Nullable InteractUpdateRequester INSTANCE = null;
 
-	private InteractUpdateProvider() { }
+	private InteractUpdateRequester() { }
 
-	public static InteractUpdateProvider getInstance() {
+	public static InteractUpdateRequester getInstance() {
 		if (INSTANCE == null) {
-			return INSTANCE = new InteractUpdateProvider();
+			return INSTANCE = new InteractUpdateRequester();
 		} else {
 			return INSTANCE;
 		}
