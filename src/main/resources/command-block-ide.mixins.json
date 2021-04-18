@@ -1,0 +1,16 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "arm32x.minecraft.commandblockide.mixin",
+    "compatibilityLevel": "JAVA_8",
+    "mixins": [
+        "ClientPlayerEntityMixin",
+        "ClientPlayNetworkHandlerMixin",
+        "CommandSuggestorMixin"
+    ],
+    "client": [
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

@@ -1,0 +1,24 @@
+{
+    "schemaVersion": 1,
+    "id": "command-block-ide",
+    "version": "${version}",
+    "name": "Command Block IDE",
+    "description": "",
+    "authors": [],
+    "contact": {},
+    "license": "All-Rights-Reserved",
+    "environment": "client",
+    "entrypoints": {
+        "client": [
+            "arm32x.minecraft.commandblockide.CommandBlockIDE"
+        ]
+    },
+    "mixins": [
+        "command-block-ide.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.11.3",
+        "fabric": "*",
+        "minecraft": "1.16.5"
+    }
+}
