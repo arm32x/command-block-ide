@@ -1,5 +1,6 @@
 package arm32x.minecraft.commandblockide.gui;
 
+import arm32x.minecraft.commandblockide.Dirtyable;
 import java.util.Collections;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
@@ -7,10 +8,12 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 
-public final class CommandBlockTrackOutputButton extends DynamicTexturedButton {
+public final class CommandBlockTrackOutputButton extends DynamicTexturedButton implements Dirtyable {
 	public boolean trackingOutput = false;
 
 	private final Screen screen;
+
+	private boolean dirty = false;
 
 	public CommandBlockTrackOutputButton(Screen screen, int x, int y) {
 		super(x, y, 16, 16, 0, 0, 16, 16);
@@ -30,10 +33,17 @@ public final class CommandBlockTrackOutputButton extends DynamicTexturedButton {
 	@Override
 	public void onPress() {
 		trackingOutput = !trackingOutput;
+		markDirty();
 	}
 
 	@Override
 	public void renderToolTip(MatrixStack matrices, int mouseX, int mouseY) {
 		screen.renderOrderedTooltip(matrices, Collections.singletonList(getMessage().asOrderedText()), mouseX, mouseY);
 	}
+
+	@Override
+	public boolean isDirty() { return dirty; }
+
+	@Override
+	public void markDirty() { dirty = true; }
 }

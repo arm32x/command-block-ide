@@ -1,6 +1,8 @@
 package arm32x.minecraft.commandblockide.gui;
 
+import arm32x.minecraft.commandblockide.Dirtyable;
 import arm32x.minecraft.commandblockide.extensions.CommandSuggestorExtension;
+import java.util.stream.Stream;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
@@ -23,7 +25,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.CommandBlockExecutor;
 
 @Environment(EnvType.CLIENT)
-public final class CommandBlockEditor extends Container implements Drawable, Element {
+public final class CommandBlockEditor extends Container implements Dirtyable, Drawable, Element {
 	public int x, y, width, height;
 	private final CommandBlockBlockEntity blockEntity;
 	private final TextRenderer textRenderer;
@@ -33,11 +35,6 @@ public final class CommandBlockEditor extends Container implements Drawable, Ele
 	private final CommandBlockTypeButton typeButton;
 	private final CommandBlockAutoButton autoButton;
 	private final CommandBlockTrackOutputButton trackOutputButton;
-
-	private CommandBlockBlockEntity.Type originalType;
-	private boolean originallyConditional;
-	private boolean originallyAuto;
-	private boolean originallyTrackingOutput;
 
 	private boolean loaded = false;
 	private boolean dirty = false;
@@ -58,7 +55,7 @@ public final class CommandBlockEditor extends Container implements Drawable, Ele
 		suggestor.refresh();
 
 		commandField.setChangedListener((text) -> {
-			dirty = true;
+			markDirty();
 			suggestor.refresh();
 		});
 
@@ -81,10 +78,10 @@ public final class CommandBlockEditor extends Container implements Drawable, Ele
 	public void updateCommandBlock() {
 		CommandBlockExecutor executor = blockEntity.getCommandExecutor();
 		commandField.setText(executor.getCommand());
-		originalType = typeButton.type = blockEntity.getCommandBlockType();
-		originallyConditional = typeButton.conditional = blockEntity.isConditionalCommandBlock();
-		originallyAuto = autoButton.auto = blockEntity.isAuto();
-		originallyTrackingOutput = trackOutputButton.trackingOutput = executor.isTrackingOutput();
+		typeButton.type = blockEntity.getCommandBlockType();
+		typeButton.conditional = blockEntity.isConditionalCommandBlock();
+		autoButton.auto = blockEntity.isAuto();
+		trackOutputButton.trackingOutput = executor.isTrackingOutput();
 
 		this.commandField.setEditable(true);
 		typeButton.active = true;
@@ -102,7 +99,7 @@ public final class CommandBlockEditor extends Container implements Drawable, Ele
 	}
 
 	public void apply(ClientPlayNetworkHandler networkHandler) {
-		if (loaded && (dirty || !originalType.equals(typeButton.type) || originallyConditional != typeButton.conditional || originallyAuto != autoButton.auto || originallyTrackingOutput != trackOutputButton.trackingOutput)) {
+		if (loaded && Stream.<Dirtyable>of(this, typeButton, autoButton, trackOutputButton).anyMatch(Dirtyable::isDirty)) {
 			CommandBlockExecutor executor = blockEntity.getCommandExecutor();
 			networkHandler.sendPacket(new UpdateCommandBlockC2SPacket(
 				new BlockPos(executor.getPos()),
@@ -143,9 +140,13 @@ public final class CommandBlockEditor extends Container implements Drawable, Ele
 		suggestor.refresh();
 	}
 
-	public boolean isLoaded() {
-		return loaded;
-	}
+	public boolean isLoaded() { return loaded; }
+
+	@Override
+	public boolean isDirty() { return dirty; }
+
+	@Override
+	public void markDirty() { dirty = true; }
 
 	@Override
 	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {

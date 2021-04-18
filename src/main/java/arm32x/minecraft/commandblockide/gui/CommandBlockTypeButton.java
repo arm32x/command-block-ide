@@ -1,5 +1,6 @@
 package arm32x.minecraft.commandblockide.gui;
 
+import arm32x.minecraft.commandblockide.Dirtyable;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Collections;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
@@ -15,11 +16,13 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
 
-public final class CommandBlockTypeButton extends DynamicTexturedButton {
+public final class CommandBlockTypeButton extends DynamicTexturedButton implements Dirtyable {
 	public CommandBlockBlockEntity.Type type = CommandBlockBlockEntity.Type.REDSTONE;
 	public boolean conditional = false;
 
 	private final Screen screen;
+
+	private boolean dirty = false;
 
 	public CommandBlockTypeButton(Screen screen, int x, int y) {
 		super(x, y, 16, 16, 0, 0, 16, 64);
@@ -43,6 +46,7 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton {
 					break;
 			}
 		}
+		markDirty();
 	}
 
 	@Override
@@ -111,4 +115,10 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton {
 	public void renderToolTip(MatrixStack matrices, int mouseX, int mouseY) {
 		screen.renderOrderedTooltip(matrices, Collections.singletonList(getMessage().asOrderedText()), mouseX, mouseY);
 	}
+
+	@Override
+	public boolean isDirty() { return dirty; }
+
+	@Override
+	public void markDirty() { dirty = true; }
 }
