@@ -2,7 +2,7 @@ package arm32x.minecraft.commandblockide.gui;
 
 import arm32x.minecraft.commandblockide.Dirtyable;
 import arm32x.minecraft.commandblockide.extensions.CommandSuggestorExtension;
-import arm32x.minecraft.commandblockide.update.InteractUpdateProvider;
+import arm32x.minecraft.commandblockide.update.DataCommandUpdateRequester;
 import java.util.stream.Stream;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -90,7 +90,7 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 	}
 
 	public void requestUpdate(ClientPlayNetworkHandler networkHandler) {
-		InteractUpdateProvider.getInstance().requestUpdate(networkHandler, blockEntity);
+		DataCommandUpdateRequester.getInstance().requestUpdate(networkHandler, blockEntity);
 	}
 
 	public void apply(ClientPlayNetworkHandler networkHandler) {

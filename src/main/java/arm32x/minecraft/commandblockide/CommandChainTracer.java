@@ -121,7 +121,8 @@ public final class CommandChainTracer {
 		}
 	}
 
-	private static boolean isCommandBlock(BlockState blockState) {
+	// TODO: Move to a proper utility class.
+	public static boolean isCommandBlock(BlockState blockState) {
 		return blockState.isOf(Blocks.COMMAND_BLOCK) || blockState.isOf(Blocks.REPEATING_COMMAND_BLOCK) || blockState.isOf(Blocks.CHAIN_COMMAND_BLOCK);
 	}
 }

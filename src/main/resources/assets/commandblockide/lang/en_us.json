@@ -7,7 +7,7 @@
     "commandBlockIDE.type.autoConditional": "Repeating, Conditional",
     "commandBlockIDE.type.sequence": "Chain",
     "commandBlockIDE.type.sequenceConditional": "Chain, Conditional",
-    "commandBlockIDE.unloaded": "Too far away",
+    "commandBlockIDE.unloaded": "Not loaded",
     "commandBlockIDE.trackingOutput.on": "Tracking Output",
     "commandBlockIDE.trackingOutput.off": "Not Tracking Output"
 }
