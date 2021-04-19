@@ -71,10 +71,6 @@ public final class CommandBlockIDEScreen extends Screen {
 		for (BlockPos position : tracer.traceForwards(chainStart)) {
 			addCommandBlock(getBlockEntityAt(position));
 		}
-
-		if (client.player != null) {
-			LOGGER.info("Server brand is '{}'.", client.player.getServerBrand());
-		}
 	}
 
 	private void addCommandBlock(CommandBlockBlockEntity blockEntity) {
