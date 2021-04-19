@@ -23,7 +23,7 @@ import net.minecraft.world.CommandBlockExecutor;
 
 @Environment(EnvType.CLIENT)
 public final class CommandBlockEditor extends Container implements Dirtyable, Drawable, Element {
-	public int x, y, width, height;
+	public final int x, y, width, height;
 	private final CommandBlockBlockEntity blockEntity;
 	private final TextRenderer textRenderer;
 
