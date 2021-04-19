@@ -59,15 +59,15 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 		//noinspection ConstantConditions
 		((CommandSuggestorExtension)suggestor).ide$setY(commandField.y + commandField.getHeight() + 2);
 
-		typeButton = addChild(new CommandBlockTypeButton(screen, x, y));
+		typeButton = addButton(new CommandBlockTypeButton(screen, x, y));
 		typeButton.type = blockEntity.getCommandBlockType();
 		typeButton.active = false;
 
-		autoButton = addChild(new CommandBlockAutoButton(screen, x + 20, y));
+		autoButton = addButton(new CommandBlockAutoButton(screen, x + 20, y));
 		autoButton.auto = typeButton.type == CommandBlockBlockEntity.Type.SEQUENCE;
 		autoButton.active = false;
 
-		trackOutputButton = addChild(new CommandBlockTrackOutputButton(screen, x + width - 20, y));
+		trackOutputButton = addButton(new CommandBlockTrackOutputButton(screen, x + width - 20, y));
 		trackOutputButton.trackingOutput = true;
 		trackOutputButton.active = false;
 	}
@@ -150,9 +150,7 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 		} else {
 			textRenderer.draw(matrices, new TranslatableText("commandBlockIDE.unloaded"), commandField.x, y + 5, 0x7FFFFFFF);
 		}
-		typeButton.render(matrices, mouseX, mouseY, delta);
-		autoButton.render(matrices, mouseX, mouseY, delta);
-		trackOutputButton.render(matrices, mouseX, mouseY, delta);
+		super.render(matrices, mouseX, mouseY, delta);
 	}
 
 	public void renderSuggestions(MatrixStack matrices, int mouseX, int mouseY) {
