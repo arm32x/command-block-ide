@@ -20,6 +20,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
@@ -34,6 +35,9 @@ public final class CommandBlockIDEScreen extends Screen {
 
 	private ButtonWidget doneButton;
 	private ButtonWidget applyAllButton;
+
+	private int scrollOffset = 0, maxScrollOffset = 0;
+	private static final double SCROLL_SENSITIVITY = 50.0;
 
 	public CommandBlockIDEScreen(CommandBlockBlockEntity blockEntity) {
 		super(LiteralText.EMPTY);
@@ -71,6 +75,8 @@ public final class CommandBlockIDEScreen extends Screen {
 		for (BlockPos position : tracer.traceForwards(chainStart)) {
 			addCommandBlock(getBlockEntityAt(position));
 		}
+
+		maxScrollOffset = Math.max((editors.size() * 20 - 8) - (height - 50), 0);
 	}
 
 	private void addCommandBlock(CommandBlockBlockEntity blockEntity) {
@@ -168,6 +174,30 @@ public final class CommandBlockIDEScreen extends Screen {
 	}
 
 	@Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+		for (CommandBlockEditor editor : editors) {
+			if (editor.mouseScrolled(mouseX, mouseY, amount)) return true;
+		}
+		if (maxScrollOffset != 0 && amount != 0 && mouseY < height - 36) {
+			setScrollOffset(getScrollOffset() - (int)Math.round(amount * SCROLL_SENSITIVITY));
+			return true;
+		}
+		return super.mouseScrolled(mouseX, mouseY, amount);
+	}
+
+	public int getScrollOffset() {
+		return scrollOffset;
+	}
+
+	public void setScrollOffset(int offset) {
+		scrollOffset = MathHelper.clamp(offset, 0, maxScrollOffset);
+		for (int index = 0; index < editors.size(); index++) {
+			CommandBlockEditor editor = editors.get(index);
+			editor.setY(20 * index + 8 - scrollOffset);
+		}
+	}
+
+	@Override
 	public boolean changeFocus(boolean lookForwards) {
 		Element element = getFocused();
 		if (element != null) {
@@ -186,6 +216,7 @@ public final class CommandBlockIDEScreen extends Screen {
 					setFocused(editor);
 					((CommandBlockEditor)element).setFocused(false);
 					editor.setFocused(true);
+					setScrollOffset(MathHelper.clamp(getScrollOffset(), 20 * index - height + 62, 20 * index));
 					return true;
 				}
 			}
@@ -201,7 +232,7 @@ public final class CommandBlockIDEScreen extends Screen {
 		renderBackground(matrices);
 		for (int index = 0; index < editors.size(); index++) {
 			String lineNumber = String.valueOf(index + 1);
-			textRenderer.draw(matrices, lineNumber, 20 - textRenderer.getWidth(lineNumber), 20 * index + 13, index == startingIndex ? 0xFFFFAA00 : 0x7FFFFFFF);
+			textRenderer.draw(matrices, lineNumber, 20 - textRenderer.getWidth(lineNumber), 20 * index + 13 - getScrollOffset(), index == startingIndex ? 0xFFFFAA00 : 0x7FFFFFFF);
 
 			CommandBlockEditor editor = editors.get(index);
 			editor.render(matrices, mouseX, mouseY, delta);

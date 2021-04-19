@@ -23,7 +23,9 @@ import net.minecraft.world.CommandBlockExecutor;
 
 @Environment(EnvType.CLIENT)
 public final class CommandBlockEditor extends Container implements Dirtyable, Drawable, Element {
-	public final int x, y, width, height;
+	private int x, y;
+	public final int width, height;
+
 	private final CommandBlockBlockEntity blockEntity;
 	private final TextRenderer textRenderer;
 
@@ -52,7 +54,9 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 		suggestor.refresh();
 
 		commandField.setChangedListener((text) -> {
-			markDirty();
+			if (!text.equals(blockEntity.getCommandExecutor().getCommand())) {
+				markDirty();
+			}
 			suggestor.refresh();
 		});
 
@@ -155,8 +159,31 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 
 	public void renderSuggestions(MatrixStack matrices, int mouseX, int mouseY) {
 		if (commandField.isActive()) {
+			matrices.push();
+			matrices.translate(0.0, 0.0, 50.0);
 			suggestor.render(matrices, mouseX, mouseY);
+			matrices.pop();
 		}
+	}
+
+	public int getX() {
+		return x;
+	}
+
+	public int getY() {
+		return y;
+	}
+
+	public void setY(int y) {
+ 		this.y = y;
+
+ 		commandField.y = y + 1;
+		((CommandSuggestorExtension)suggestor).ide$setY(commandField.y + commandField.getHeight() + 2);
+		suggestor.refresh();
+
+		typeButton.y = y;
+		autoButton.y = y;
+		trackOutputButton.y = y;
 	}
 }
 
