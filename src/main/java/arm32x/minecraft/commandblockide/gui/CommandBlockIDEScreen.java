@@ -88,8 +88,7 @@ public final class CommandBlockIDEScreen extends Screen {
 		positionIndex.put(blockEntity.getPos(), editor);
 		if (blockEntity.equals(startingBlockEntity)) {
 			startingIndex = index;
-			setInitialFocus(editor);
-			editor.setFocused(true);
+			setFocusedEditor(editor);
 		} else {
 			assert client != null;
 			editor.requestUpdate(Objects.requireNonNull(client.getNetworkHandler()));
@@ -222,18 +221,21 @@ public final class CommandBlockIDEScreen extends Screen {
 						}
 						editor = editors.get(index);
 					} while (!editor.isLoaded());
-					setFocused(editor);
 					((CommandBlockEditor)element).setFocused(false);
-					editor.setFocused(true);
-					setScrollOffset(MathHelper.clamp(getScrollOffset(), 20 * index - height + 62, 20 * index));
+					setFocusedEditor(editor);
 					return true;
 				}
 			}
 		}
 		CommandBlockEditor editor = editors.get(0);
+		setFocusedEditor(editor);
+		return true;
+	}
+
+	public void setFocusedEditor(CommandBlockEditor editor) {
 		setFocused(editor);
 		editor.setFocused(true);
-		return true;
+		setScrollOffset(MathHelper.clamp(getScrollOffset(), 20 * editor.index - height + 62, 20 * editor.index));
 	}
 
 	@Override
@@ -241,7 +243,7 @@ public final class CommandBlockIDEScreen extends Screen {
 		renderBackground(matrices);
 		for (int index = 0; index < editors.size(); index++) {
 			String lineNumber = String.valueOf(index + 1);
-			textRenderer.draw(matrices, lineNumber, 20 - textRenderer.getWidth(lineNumber), 20 * index + 13 - getScrollOffset(), index == startingIndex ? 0xFFFFAA00 : 0x7FFFFFFF);
+			textRenderer.draw(matrices, lineNumber, 20 - textRenderer.getWidth(lineNumber), 20 * index + 13 - getScrollOffset(), index == startingIndex ? 0xFFFFFFFF : 0x7FFFFFFF);
 
 			CommandBlockEditor editor = editors.get(index);
 			editor.render(matrices, mouseX, mouseY, delta);

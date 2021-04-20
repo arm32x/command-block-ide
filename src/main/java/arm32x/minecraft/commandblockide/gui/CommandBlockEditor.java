@@ -27,6 +27,8 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 	private int x, y;
 	public final int width, height;
 
+	public final int index;
+
 	private final CommandBlockBlockEntity blockEntity;
 	private final TextRenderer textRenderer;
 
@@ -45,6 +47,7 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 		this.y = y;
 		this.width = width;
 		this.height = height;
+		this.index = index;
 		this.blockEntity = blockEntity;
 		this.textRenderer = textRenderer;
 
@@ -107,6 +110,8 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 		typeButton.active = true;
 		autoButton.active = true;
 		trackOutputButton.active = true;
+		suggestor.setWindowActive(commandField.isActive());
+		suggestor.refresh();
 
 		dirty = false;
 		loaded = true;
