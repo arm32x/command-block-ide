@@ -47,6 +47,9 @@ public final class CommandBlockIDEScreen extends Screen {
 	@SuppressWarnings("CodeBlock2Expr")
 	@Override
 	protected void init() {
+		assert client != null;
+		client.keyboard.setRepeatEvents(true);
+
 		doneButton = addButton(new ButtonWidget(this.width - 324, this.height - 28, 100, 20, ScreenTexts.DONE, (widget) -> {
 			applyAll();
 			onClose();
@@ -60,7 +63,6 @@ public final class CommandBlockIDEScreen extends Screen {
 		}));
 		applyAllButton.active = false;
 
-		assert client != null;
 		ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
 		assert networkHandler != null;
 		CommandChainTracer tracer = new CommandChainTracer(client.world);
@@ -125,6 +127,13 @@ public final class CommandBlockIDEScreen extends Screen {
 
 	@Override
 	public boolean shouldCloseOnEsc() { return false; }
+
+	@Override
+	public void onClose() {
+		assert client != null;
+		client.keyboard.setRepeatEvents(false);
+		super.onClose();
+	}
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
