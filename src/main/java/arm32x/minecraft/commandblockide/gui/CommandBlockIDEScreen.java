@@ -79,6 +79,7 @@ public final class CommandBlockIDEScreen extends Screen {
 		}
 
 		maxScrollOffset = Math.max((editors.size() * 20 - 8) - (height - 50), 0);
+		setFocusedEditor(editors.get(startingIndex));
 	}
 
 	private void addCommandBlock(CommandBlockBlockEntity blockEntity) {
