@@ -214,6 +214,7 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
  		this.y = y;
 
  		commandField.y = y + 1;
+ 		lastOutputField.y = commandField.y;
 		((CommandSuggestorExtension)suggestor).ide$setY(commandField.y + commandField.getHeight() + 2);
 		suggestor.refresh();
 
