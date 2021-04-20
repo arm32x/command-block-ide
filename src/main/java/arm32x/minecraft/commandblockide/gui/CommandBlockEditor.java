@@ -31,6 +31,7 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 	private final TextRenderer textRenderer;
 
 	private final TextFieldWidget commandField;
+	private final TextFieldWidget lastOutputField;
 	private final CommandSuggestor suggestor;
 	private final CommandBlockTypeButton typeButton;
 	private final CommandBlockAutoButton autoButton;
@@ -55,6 +56,12 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 		});
 		commandField.setEditable(false);
 		commandField.setMaxLength(32500);
+
+		lastOutputField = new TextFieldWidget(textRenderer, commandField.x, commandField.y, commandField.getWidth(), commandField.getHeight(), new TranslatableText("advMode.previousOutput").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1)));
+		lastOutputField.setEditable(false);
+		lastOutputField.setMaxLength(32500);
+		lastOutputField.setText(new TranslatableText("commandBlockIDE.unloaded").getString());
+		lastOutputField.visible = false;
 
 		suggestor = new CommandSuggestor(MinecraftClient.getInstance(), screen, commandField, textRenderer, true, true, 0, 16, false, Integer.MIN_VALUE);
 		suggestor.refresh();
@@ -90,6 +97,12 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 		autoButton.auto = blockEntity.isAuto();
 		trackOutputButton.trackingOutput = executor.isTrackingOutput();
 
+		String lastOutput = executor.getLastOutput().getString();
+		if (lastOutput.equals("")) {
+			lastOutput = new TranslatableText("commandBlockIDE.lastOutput.none").getString();
+		}
+		lastOutputField.setText(lastOutput);
+
 		this.commandField.setEditable(true);
 		typeButton.active = true;
 		autoButton.active = true;
@@ -114,6 +127,10 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 				typeButton.conditional,
 				autoButton.auto
 			));
+			executor.shouldTrackOutput(trackOutputButton.trackingOutput);
+			if (!trackOutputButton.trackingOutput) {
+				executor.setLastOutput(null);
+			}
 		}
 	}
 
@@ -156,7 +173,15 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 	@Override
 	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 		if (loaded) {
-			commandField.render(matrices, mouseX, mouseY, delta);
+			if (trackOutputButton.isMouseOver(mouseX, mouseY)) {
+				commandField.visible = false;
+				lastOutputField.visible = true;
+				lastOutputField.render(matrices, mouseX, mouseY, delta);
+			} else {
+				commandField.visible = true;
+				lastOutputField.visible = false;
+				commandField.render(matrices, mouseX, mouseY, delta);
+			}
 		} else {
 			textRenderer.draw(matrices, new TranslatableText("commandBlockIDE.unloaded"), commandField.x, y + 5, 0x7FFFFFFF);
 		}

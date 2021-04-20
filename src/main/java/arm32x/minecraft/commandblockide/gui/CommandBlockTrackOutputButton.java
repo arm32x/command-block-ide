@@ -27,7 +27,7 @@ public final class CommandBlockTrackOutputButton extends DynamicTexturedButton i
 
 	@Override
 	public Text getMessage() {
-		return trackingOutput ? new TranslatableText("commandBlockIDE.trackingOutput.on") : new TranslatableText("commandBlockIDE.trackingOutput.off");
+		return trackingOutput ? new TranslatableText("commandBlockIDE.lastOutput.on") : new TranslatableText("commandBlockIDE.lastOutput.off");
 	}
 
 	@Override

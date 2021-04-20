@@ -8,7 +8,8 @@
     "commandBlockIDE.type.sequence": "Chain",
     "commandBlockIDE.type.sequenceConditional": "Chain, Conditional",
     "commandBlockIDE.unloaded": "Not loaded",
-    "commandBlockIDE.trackingOutput.on": "Tracking Output",
-    "commandBlockIDE.trackingOutput.off": "Not Tracking Output",
+    "commandBlockIDE.lastOutput.on": "Tracking Output",
+    "commandBlockIDE.lastOutput.off": "Not Tracking Output",
+    "commandBlockIDE.lastOutput.none": "No output",
     "commandBlockIDE.narrator.editorIndex": "Number %d"
 }
