@@ -17,6 +17,7 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.packet.c2s.play.UpdateCommandBlockC2SPacket;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.CommandBlockExecutor;
@@ -38,7 +39,7 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 	private boolean loaded = false;
 	private boolean dirty = false;
 
-	public CommandBlockEditor(Screen screen, TextRenderer textRenderer, int x, int y, int width, int height, CommandBlockBlockEntity blockEntity) {
+	public CommandBlockEditor(Screen screen, TextRenderer textRenderer, int x, int y, int width, int height, CommandBlockBlockEntity blockEntity, int index) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -46,7 +47,12 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 		this.blockEntity = blockEntity;
 		this.textRenderer = textRenderer;
 
-		commandField = addChild(new TextFieldWidget(textRenderer, x + 41, y + 1, width - 66, height - 2, new TranslatableText("advMode.command")));
+		commandField = addChild(new TextFieldWidget(textRenderer, x + 41, y + 1, width - 66, height - 2, new TranslatableText("advMode.command").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1))) {
+			@Override
+			protected MutableText getNarrationMessage() {
+				return super.getNarrationMessage().append(suggestor.getNarration());
+			}
+		});
 		commandField.setEditable(false);
 		commandField.setMaxLength(32500);
 

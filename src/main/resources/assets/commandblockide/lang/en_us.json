@@ -9,5 +9,6 @@
     "commandBlockIDE.type.sequenceConditional": "Chain, Conditional",
     "commandBlockIDE.unloaded": "Not loaded",
     "commandBlockIDE.trackingOutput.on": "Tracking Output",
-    "commandBlockIDE.trackingOutput.off": "Not Tracking Output"
+    "commandBlockIDE.trackingOutput.off": "Not Tracking Output",
+    "commandBlockIDE.narrator.editorIndex": "Number %d"
 }
