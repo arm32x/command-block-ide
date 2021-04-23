@@ -18,6 +18,8 @@ public final class ClientPlayerEntityMixin {
 
 	/**
 	 * @author ARM32
+	 * @reason This could have been done with a cancellable inject, but I would
+	 *         have to rewrite the entire method anyway.
 	 */
 	@Overwrite
 	public void openCommandBlockScreen(CommandBlockBlockEntity commandBlock) {
