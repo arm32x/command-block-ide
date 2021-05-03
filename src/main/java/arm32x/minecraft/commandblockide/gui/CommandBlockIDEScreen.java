@@ -12,6 +12,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.ParentElement;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -160,8 +161,15 @@ public final class CommandBlockIDEScreen extends Screen {
 				}
 			}
 			return true;
-		} else {
+		} else if (keyCode == GLFW.GLFW_KEY_TAB && !hasControlDown()) {
+			Element focused = getFocused();
+			if (focused != null && focused.keyPressed(keyCode, scanCode, modifiers)) {
+				return true;
+			} else {
 				return super.keyPressed(keyCode, scanCode, modifiers);
+			}
+		} else {
+			return super.keyPressed(keyCode, scanCode, modifiers);
 		}
 	}
 

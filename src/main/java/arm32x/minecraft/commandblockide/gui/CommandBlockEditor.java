@@ -139,6 +139,28 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 		}
 	}
 
+	public void swapWith(CommandBlockEditor other) {
+		String command = commandField.getText();
+		commandField.setText(other.commandField.getText());
+		other.commandField.setText(command);
+
+		CommandBlockBlockEntity.Type type = typeButton.type;
+		typeButton.type = other.typeButton.type;
+		other.typeButton.type = type;
+
+		boolean conditional = typeButton.conditional;
+		typeButton.conditional = other.typeButton.conditional;
+		other.typeButton.conditional = conditional;
+
+		boolean auto = autoButton.auto;
+		autoButton.auto = other.autoButton.auto;
+		other.autoButton.auto = auto;
+
+		boolean trackingOutput = trackOutputButton.trackingOutput;
+		trackOutputButton.trackingOutput = other.trackOutputButton.trackingOutput;
+		other.trackOutputButton.trackingOutput = trackingOutput;
+	}
+
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
 		return suggestor.keyPressed(keyCode, scanCode, modifiers)
