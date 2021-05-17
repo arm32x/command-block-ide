@@ -7,6 +7,11 @@ plugins {
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
+androidGitVersion {
+    format = "%tag%%+count%%.commit%%.dirty%"
+    untrackedIsDirty = true
+}
+
 archivesBaseName = "command-block-ide"
 version = androidGitVersion.name()
 group = "arm32x.minecraft"
