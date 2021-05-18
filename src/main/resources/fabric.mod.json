@@ -4,6 +4,7 @@
     "version": "${version}",
     "name": "Command Block IDE",
     "description": "Replaces the command block GUI to allow editing multiple command blocks at once.",
+    "icon": "assets/commandblockide/icon.png",
     "authors": ["ARM32"],
     "contact": {
         "email": "arm32x@gmail.com",
