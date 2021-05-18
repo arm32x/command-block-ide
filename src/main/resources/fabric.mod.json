@@ -25,5 +25,10 @@
         "fabricloader": ">=0.11.3",
         "fabric": "*",
         "minecraft": "1.16.5"
+    },
+    "custom": {
+        "vanguard": {
+            "curse-project-id": "483538"
+        }
     }
 }
