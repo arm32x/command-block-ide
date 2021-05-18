@@ -3,10 +3,14 @@
     "id": "command-block-ide",
     "version": "${version}",
     "name": "Command Block IDE",
-    "description": "",
-    "authors": [],
-    "contact": {},
-    "license": "All-Rights-Reserved",
+    "description": "Replaces the command block GUI to allow editing multiple command blocks at once.",
+    "authors": ["ARM32"],
+    "contact": {
+        "email": "arm32x@gmail.com",
+        "sources": "https://github.com/arm32x/command-block-ide",
+        "issues": "https://github.com/arm32x/command-block-ide/issues"
+    },
+    "license": "LGPL-2.1-only",
     "environment": "client",
     "entrypoints": {},
     "mixins": [
