@@ -15,6 +15,10 @@ Replaces the command block GUI to allow editing multiple command blocks at once.
   - Move command blocks up and down within the GUI.
   - Edit datapacks using the same interface as command blocks.
 
+## Screenshots
+
+![Screenshot](https://i.imgur.com/Ed06Xng.png)
+
 ## FAQ
 
 #### Can you port this to Forge?
