@@ -31,4 +31,4 @@ No.
 
 #### Can you update this to *\<newer Minecraft version>*?
 
-Maybe. Post a comment below.
+Maybe.
