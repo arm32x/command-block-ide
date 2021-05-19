@@ -24,8 +24,7 @@ import net.minecraft.world.CommandBlockExecutor;
 
 @Environment(EnvType.CLIENT)
 public final class CommandBlockEditor extends Container implements Dirtyable, Drawable, Element {
-	private int x, y;
-	public final int width, height;
+	private int x, y, width, height;
 
 	public final int index;
 
@@ -243,6 +242,24 @@ public final class CommandBlockEditor extends Container implements Dirtyable, Dr
 		typeButton.y = y;
 		autoButton.y = y;
 		trackOutputButton.y = y;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
+
+		commandField.setWidth(width - 66);
+		lastOutputField.setWidth(commandField.getWidth());
+		trackOutputButton.x = x + width - 20;
+
+		suggestor.refresh();
+	}
+
+	public int getHeight() {
+		return height;
 	}
 }
 

@@ -12,7 +12,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ParentElement;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -30,6 +29,7 @@ import org.lwjgl.glfw.GLFW;
 public final class CommandBlockIDEScreen extends Screen {
 	private final List<CommandBlockEditor> editors = new ArrayList<>();
 	private final Map<BlockPos, CommandBlockEditor> positionIndex = new HashMap<>();
+	private boolean initialized = false;
 
 	private final CommandBlockBlockEntity startingBlockEntity;
 	private int startingIndex = -1;
@@ -55,32 +55,46 @@ public final class CommandBlockIDEScreen extends Screen {
 			applyAll();
 			onClose();
 		}));
-		doneButton.active = false;
 		/* cancelButton = */ addButton(new ButtonWidget(this.width - 216, this.height - 28, 100, 20, ScreenTexts.CANCEL, (widget) -> {
 			onClose();
 		}));
 		applyAllButton = addButton(new ButtonWidget(this.width - 108, this.height - 28, 100, 20, new TranslatableText("commandBlockIDE.applyAll"), (widget) -> {
 			applyAll();
 		}));
-		applyAllButton.active = false;
 
-		ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
-		assert networkHandler != null;
-		CommandChainTracer tracer = new CommandChainTracer(client.world);
+		if (!initialized) {
+			doneButton.active = false;
+			applyAllButton.active = false;
 
-		Iterator<BlockPos> iterator = tracer.traceBackwards(startingBlockEntity.getPos()).iterator();
-		BlockPos chainStart = startingBlockEntity.getPos();
-		while (iterator.hasNext()) {
-			chainStart = iterator.next();
+			ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
+			assert networkHandler != null;
+			CommandChainTracer tracer = new CommandChainTracer(client.world);
+
+			Iterator<BlockPos> iterator = tracer.traceBackwards(startingBlockEntity.getPos()).iterator();
+			BlockPos chainStart = startingBlockEntity.getPos();
+			while (iterator.hasNext()) {
+				chainStart = iterator.next();
+			}
+
+			addCommandBlock(getBlockEntityAt(chainStart));
+			for (BlockPos position : tracer.traceForwards(chainStart)) {
+				addCommandBlock(getBlockEntityAt(position));
+			}
+
+			maxScrollOffset = Math.max((editors.size() * 20 - 8) - (height - 50), 0);
+			initialized = true;
+		} else {
+			for (CommandBlockEditor editor : editors) {
+				addChild(editor);
+				editor.setWidth(width - 32);
+			}
+
+			maxScrollOffset = Math.max((editors.size() * 20 - 8) - (height - 50), 0);
+			Element element = getFocused();
+			if (element instanceof CommandBlockEditor) {
+				setFocusedEditor((CommandBlockEditor)element);
+			}
 		}
-
-		addCommandBlock(getBlockEntityAt(chainStart));
-		for (BlockPos position : tracer.traceForwards(chainStart)) {
-			addCommandBlock(getBlockEntityAt(position));
-		}
-
-		maxScrollOffset = Math.max((editors.size() * 20 - 8) - (height - 50), 0);
-		setFocusedEditor(editors.get(startingIndex));
 	}
 
 	private void addCommandBlock(CommandBlockBlockEntity blockEntity) {
