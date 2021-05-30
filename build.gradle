@@ -16,6 +16,13 @@ archivesBaseName = "command-block-ide"
 version = androidGitVersion.name()
 group = "arm32x.minecraft"
 
+repositories {
+    maven {
+        name = "CottonMC"
+        url = "https://server.bbkr.space/artifactory/libs-release"
+    }
+}
+
 dependencies {
     //to change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -27,6 +34,8 @@ dependencies {
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
+
+    modImplementation "io.github.cottonmc:LibGui:${project.libgui_version}"
 }
 
 processResources {
