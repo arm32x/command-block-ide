@@ -69,6 +69,7 @@ public final class WBorderPanel extends WPanel {
 		if (oldWidget != null) {
 			children.remove(oldWidget);
 		}
+		widget.setParent(this);
 		children.add(widget);
 	}
 

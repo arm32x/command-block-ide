@@ -29,6 +29,7 @@ public final class WMarginPanel extends WPanel {
 			children.clear();
 		}
 		if (child != null) {
+			child.setParent(this);
 			children.add(child);
 		}
 	}
