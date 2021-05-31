@@ -1,4 +1,4 @@
-package arm32x.minecraft.commandblockide.gui;
+package arm32x.minecraft.commandblockide.gui.legacy;
 
 import arm32x.minecraft.commandblockide.Dirtyable;
 import java.util.Collections;
@@ -8,31 +8,31 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 
-public final class CommandBlockTrackOutputButton extends DynamicTexturedButton implements Dirtyable {
-	public boolean trackingOutput = false;
+public final class CommandBlockAutoButton extends DynamicTexturedButton implements Dirtyable {
+	public boolean auto = false;
 
 	private final Screen screen;
 
 	private boolean dirty = false;
 
-	public CommandBlockTrackOutputButton(Screen screen, int x, int y) {
+	public CommandBlockAutoButton(Screen screen, int x, int y) {
 		super(x, y, 16, 16, 0, 0, 16, 16);
 		this.screen = screen;
 	}
 
 	@Override
 	protected Identifier getTexture() {
-		return trackingOutput ? new Identifier("minecraft", "textures/item/writable_book.png") : new Identifier("minecraft", "textures/item/written_book.png");
+		return auto ? new Identifier("minecraft", "textures/item/gunpowder.png") : new Identifier("minecraft", "textures/item/redstone.png");
 	}
 
 	@Override
 	public Text getMessage() {
-		return trackingOutput ? new TranslatableText("commandBlockIDE.lastOutput.on") : new TranslatableText("commandBlockIDE.lastOutput.off");
+		return auto ? new TranslatableText("advMode.mode.autoexec.bat") : new TranslatableText("advMode.mode.redstoneTriggered");
 	}
 
 	@Override
 	public void onPress() {
-		trackingOutput = !trackingOutput;
+		auto = !auto;
 		markDirty();
 	}
 

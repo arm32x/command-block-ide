@@ -1,4 +1,4 @@
-package arm32x.minecraft.commandblockide.gui;
+package arm32x.minecraft.commandblockide.gui.legacy;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;

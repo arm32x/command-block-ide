@@ -1,7 +1,7 @@
 package arm32x.minecraft.commandblockide.update;
 
 import static arm32x.minecraft.commandblockide.CommandChainTracer.isCommandBlock;
-import arm32x.minecraft.commandblockide.gui.CommandBlockIDEScreen;
+import arm32x.minecraft.commandblockide.gui.legacy.CommandBlockIDEScreen;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.HashMap;
 import java.util.Map;
