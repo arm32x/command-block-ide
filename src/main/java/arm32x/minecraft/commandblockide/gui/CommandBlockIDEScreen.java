@@ -19,10 +19,14 @@ import org.apache.logging.log4j.Logger;
 public final class CommandBlockIDEScreen extends CottonClientScreen {
 	public CommandBlockIDEScreen(CommandBlockBlockEntity commandBlock) {
 		super(new Description());
+		((Description)description).screen = this;
 	}
 
 	public static final class Description extends LightweightGuiDescription {
-		public Description() {
+		private CommandBlockIDEScreen screen;
+
+		@SuppressWarnings("CodeBlock2Expr")
+		private Description() {
 			setFullscreen(true);
 
 			WMarginPanel root = new WMarginPanel();
@@ -45,17 +49,21 @@ public final class CommandBlockIDEScreen extends CottonClientScreen {
 			WButton doneButton = new WButton(ScreenTexts.DONE);
 			bottomPanel.add(doneButton);
 			doneButton.setSize(100, 20);
-			doneButton.setOnClick(() -> LOGGER.info("Done button clicked."));
+			doneButton.setOnClick(() -> {
+				screen.onClose();
+			});
 
 			WButton cancelButton = new WButton(ScreenTexts.CANCEL);
 			bottomPanel.add(cancelButton);
 			cancelButton.setSize(100, 20);
-			cancelButton.setOnClick(() -> LOGGER.info("Cancel button clicked."));
+			cancelButton.setOnClick(() -> {
+				screen.onClose();
+			});
 
 			WButton applyAllButton = new WButton(new TranslatableText("commandBlockIDE.applyAll"));
 			bottomPanel.add(applyAllButton);
 			applyAllButton.setSize(100, 20);
-			applyAllButton.setOnClick(() -> LOGGER.info("Apply all button clicked."));
+			applyAllButton.setOnClick(() -> { });
 
 			main.validate(this);
 		}
