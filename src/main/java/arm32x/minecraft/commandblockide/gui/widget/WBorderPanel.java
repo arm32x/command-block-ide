@@ -5,7 +5,7 @@ import io.github.cottonmc.cotton.gui.widget.WWidget;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class WBorderPanel extends WPanel {
+public class WBorderPanel extends WPanel {
 	public enum Position {
 		TOP,
 		BOTTOM,
