@@ -42,7 +42,7 @@ public final class CommandBlockIDEScreen extends CottonClientScreen {
 			main.add(center, WBorderPanel.Position.CENTER);
 
 			WBox bottomPanel = new WBox(Axis.HORIZONTAL);
-			main.add(bottomPanel, WBorderPanel.Position.PAGE_END);
+			main.add(bottomPanel, WBorderPanel.Position.BOTTOM);
 			bottomPanel.setHorizontalAlignment(HorizontalAlignment.RIGHT);
 			bottomPanel.setSpacing(8);
 

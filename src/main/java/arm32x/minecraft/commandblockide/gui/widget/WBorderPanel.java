@@ -7,10 +7,10 @@ import java.util.Map;
 
 public final class WBorderPanel extends WPanel {
 	public enum Position {
-		PAGE_START,
-		PAGE_END,
-		LINE_START,
-		LINE_END,
+		TOP,
+		BOTTOM,
+		LEFT,
+		RIGHT,
 		CENTER
 	}
 
@@ -33,22 +33,22 @@ public final class WBorderPanel extends WPanel {
 		}
 
 		switch (position) {
-			case PAGE_START:
+			case TOP:
 				child.setLocation(0, 0);
 				child.setSize(getWidth(), child.getHeight());
 				usedSpace[0] += child.getHeight() + spacing;
 				break;
-			case PAGE_END:
+			case BOTTOM:
 				child.setLocation(0, getHeight() - child.getHeight());
 				child.setSize(getWidth(), child.getHeight());
 				usedSpace[1] += child.getHeight() + spacing;
 				break;
-			case LINE_START:
+			case LEFT:
 				child.setLocation(0, usedSpace[0]);
 				child.setSize(child.getWidth(), getHeight() - usedSpace[0] - usedSpace[1]);
 				usedSpace[2] += child.getWidth() + spacing;
 				break;
-			case LINE_END:
+			case RIGHT:
 				child.setLocation(getWidth() - child.getWidth(), usedSpace[0]);
 				child.setSize(child.getWidth(), getHeight() - usedSpace[0] - usedSpace[1]);
 				usedSpace[3] += child.getWidth() + spacing;
