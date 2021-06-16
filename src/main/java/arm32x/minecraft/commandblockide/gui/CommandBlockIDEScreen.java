@@ -1,13 +1,13 @@
 package arm32x.minecraft.commandblockide.gui;
 
 import arm32x.minecraft.commandblockide.gui.widget.WBorderPanel;
+import arm32x.minecraft.commandblockide.gui.widget.WCommandEditor;
 import arm32x.minecraft.commandblockide.gui.widget.WMarginPanel;
 import io.github.cottonmc.cotton.gui.client.CottonClientScreen;
 import io.github.cottonmc.cotton.gui.client.LightweightGuiDescription;
 import io.github.cottonmc.cotton.gui.widget.WBox;
 import io.github.cottonmc.cotton.gui.widget.WButton;
 import io.github.cottonmc.cotton.gui.widget.WPanel;
-import io.github.cottonmc.cotton.gui.widget.WWidget;
 import io.github.cottonmc.cotton.gui.widget.data.Axis;
 import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
@@ -38,8 +38,12 @@ public final class CommandBlockIDEScreen extends CottonClientScreen {
 			main.setSpacing(8);
 			main.setSize(320, 200);
 
-			WWidget center = new WWidget();
-			main.add(center, WBorderPanel.Position.CENTER);
+			WBox editors = new WBox(Axis.VERTICAL);
+			main.add(editors, WBorderPanel.Position.CENTER);
+			editors.setSpacing(8);
+
+			WCommandEditor editor = new WCommandEditor(1) { };
+			editors.add(editor, 500, 20);
 
 			WBox bottomPanel = new WBox(Axis.HORIZONTAL);
 			main.add(bottomPanel, WBorderPanel.Position.BOTTOM);
