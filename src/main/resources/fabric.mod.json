@@ -12,7 +12,7 @@
         "issues": "https://github.com/arm32x/command-block-ide/issues"
     },
     "license": "LGPL-2.1-only",
-    "environment": "client",
+    "environment": "*",
     "entrypoints": {
         "main": [
             "arm32x.minecraft.commandblockide.CommandBlockIDE"
