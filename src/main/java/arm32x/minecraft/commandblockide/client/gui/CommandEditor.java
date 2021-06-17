@@ -18,6 +18,7 @@ import net.minecraft.text.TranslatableText;
 public abstract class CommandEditor extends Container implements Drawable, Element {
 	@SuppressWarnings("FieldMayBeFinal")
 	private int x, y, width, height;
+	private final int leftPadding, rightPadding;
 
 	public int index;
 	public boolean lineNumberHighlighted = false;
@@ -34,6 +35,8 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 		this.y = y;
 		this.width = width;
 		this.height = height;
+		this.leftPadding = leftPadding;
+		this.rightPadding = rightPadding;
 		this.index = index;
 		this.textRenderer = textRenderer;
 
@@ -153,7 +156,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 	public void setWidth(int width) {
 		this.width = width;
 
-		commandField.setWidth(width - 66);
+		commandField.setWidth(width - leftPadding - rightPadding - 20 - 2);
 
 		suggestor.refresh();
 	}
