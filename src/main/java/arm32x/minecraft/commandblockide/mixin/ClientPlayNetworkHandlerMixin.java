@@ -42,7 +42,7 @@ public final class ClientPlayNetworkHandlerMixin {
 	@Inject(method = "onBlockEntityUpdate(Lnet/minecraft/network/packet/s2c/play/BlockEntityUpdateS2CPacket;)V", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
 	public void onBlockEntityUpdate(BlockEntityUpdateS2CPacket packet, CallbackInfo ci, BlockPos blockPos, BlockEntity blockEntity, int i, boolean bl) {
 		if (bl && client.currentScreen instanceof CommandBlockIDEScreen) {
-			((CommandBlockIDEScreen)client.currentScreen).updateCommandBlock(blockPos);
+			((CommandBlockIDEScreen)client.currentScreen).update(blockPos);
 		}
 	}
 

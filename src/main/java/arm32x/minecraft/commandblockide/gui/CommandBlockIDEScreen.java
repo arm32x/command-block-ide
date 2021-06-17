@@ -1,12 +1,7 @@
 package arm32x.minecraft.commandblockide.gui;
 
 import arm32x.minecraft.commandblockide.CommandChainTracer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.BlockEntity;
@@ -27,8 +22,8 @@ import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public final class CommandBlockIDEScreen extends Screen {
-	private final List<CommandBlockEditor> editors = new ArrayList<>();
-	private final Map<BlockPos, CommandBlockEditor> positionIndex = new HashMap<>();
+	private final List<CommandEditor> editors = new ArrayList<>();
+	private final Map<BlockPos, CommandEditor> positionIndex = new HashMap<>();
 	private boolean initialized = false;
 
 	private final CommandBlockBlockEntity startingBlockEntity;
@@ -84,22 +79,22 @@ public final class CommandBlockIDEScreen extends Screen {
 			maxScrollOffset = Math.max((editors.size() * 20 - 8) - (height - 50), 0);
 			initialized = true;
 		} else {
-			for (CommandBlockEditor editor : editors) {
+			for (CommandEditor editor : editors) {
 				addChild(editor);
 				editor.setWidth(width - 32);
 			}
 
 			maxScrollOffset = Math.max((editors.size() * 20 - 8) - (height - 50), 0);
 			Element element = getFocused();
-			if (element instanceof CommandBlockEditor) {
-				setFocusedEditor((CommandBlockEditor)element);
+			if (element instanceof CommandEditor) {
+				setFocusedEditor((CommandEditor)element);
 			}
 		}
 	}
 
 	private void addCommandBlock(CommandBlockBlockEntity blockEntity) {
 		int index = editors.size();
-		CommandBlockEditor editor = new CommandBlockEditor(this, textRenderer, 24, 20 * index + 8, width - 32, 16, blockEntity, index);
+		CommandEditor editor = new CommandBlockEditor(this, textRenderer, 24, 20 * index + 8, width - 32, 16, blockEntity, index);
 		editors.add(editor);
 		positionIndex.put(blockEntity.getPos(), editor);
 		if (blockEntity.equals(startingBlockEntity)) {
@@ -122,10 +117,10 @@ public final class CommandBlockIDEScreen extends Screen {
 		}
 	}
 
-	public void updateCommandBlock(BlockPos position) {
-		CommandBlockEditor editor = positionIndex.get(position);
+	public void update(BlockPos position) {
+		CommandEditor editor = positionIndex.get(position);
 		if (editor != null) {
-			editor.updateCommandBlock();
+			editor.update();
 			doneButton.active = true;
 			applyAllButton.active = true;
 		}
@@ -135,7 +130,7 @@ public final class CommandBlockIDEScreen extends Screen {
 		assert client != null;
 		ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
 		assert networkHandler != null;
-		for (CommandBlockEditor editor : editors) {
+		for (CommandEditor editor : editors) {
 			editor.apply(networkHandler);
 		}
 	}
@@ -158,8 +153,8 @@ public final class CommandBlockIDEScreen extends Screen {
 				onClose();
 			} else {
 				setFocused(null);
-				if (element instanceof CommandBlockEditor) {
-					((CommandBlockEditor)element).setFocused(false);
+				if (element instanceof CommandEditor) {
+					((CommandEditor)element).setFocused(false);
 				}
 			}
 			return true;
@@ -170,8 +165,8 @@ public final class CommandBlockIDEScreen extends Screen {
 				onClose();
 			} else {
 				setFocused(null);
-				if (element instanceof CommandBlockEditor) {
-					((CommandBlockEditor)element).setFocused(false);
+				if (element instanceof CommandEditor) {
+					((CommandEditor)element).setFocused(false);
 				}
 			}
 			return true;
@@ -206,7 +201,7 @@ public final class CommandBlockIDEScreen extends Screen {
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-		for (CommandBlockEditor editor : editors) {
+		for (CommandEditor editor : editors) {
 			if (editor.mouseScrolled(mouseX, mouseY, amount)) return true;
 		}
 		if (maxScrollOffset != 0 && amount != 0 && mouseY < height - 36) {
@@ -223,7 +218,7 @@ public final class CommandBlockIDEScreen extends Screen {
 	public void setScrollOffset(int offset) {
 		scrollOffset = MathHelper.clamp(offset, 0, maxScrollOffset);
 		for (int index = 0; index < editors.size(); index++) {
-			CommandBlockEditor editor = editors.get(index);
+			CommandEditor editor = editors.get(index);
 			editor.setY(20 * index + 8 - scrollOffset);
 		}
 	}
@@ -233,8 +228,8 @@ public final class CommandBlockIDEScreen extends Screen {
 		Element element = getFocused();
 		if (element != null) {
 			for (int index = 0; index < editors.size(); index++) {
-				if (element instanceof CommandBlockEditor && element.equals(editors.get(index))) {
-					CommandBlockEditor editor;
+				if (element instanceof CommandEditor && element.equals(editors.get(index))) {
+					CommandEditor editor;
 					do {
 						index = index + (lookForwards ? 1 : -1);
 						if (index < 0) {
@@ -244,18 +239,18 @@ public final class CommandBlockIDEScreen extends Screen {
 						}
 						editor = editors.get(index);
 					} while (!editor.isLoaded());
-					((CommandBlockEditor)element).setFocused(false);
+					((CommandEditor)element).setFocused(false);
 					setFocusedEditor(editor);
 					return true;
 				}
 			}
 		}
-		CommandBlockEditor editor = editors.get(0);
+		CommandEditor editor = editors.get(0);
 		setFocusedEditor(editor);
 		return true;
 	}
 
-	public void setFocusedEditor(CommandBlockEditor editor) {
+	public void setFocusedEditor(CommandEditor editor) {
 		setFocused(editor);
 		editor.setFocused(true);
 		setScrollOffset(MathHelper.clamp(getScrollOffset(), 20 * editor.index - height + 62, 20 * editor.index));
@@ -268,10 +263,10 @@ public final class CommandBlockIDEScreen extends Screen {
 			String lineNumber = String.valueOf(index + 1);
 			textRenderer.draw(matrices, lineNumber, 20 - textRenderer.getWidth(lineNumber), 20 * index + 13 - getScrollOffset(), index == startingIndex ? 0xFFFFFFFF : 0x7FFFFFFF);
 
-			CommandBlockEditor editor = editors.get(index);
+			CommandEditor editor = editors.get(index);
 			editor.render(matrices, mouseX, mouseY, delta);
 		}
-		for (CommandBlockEditor editor : editors) {
+		for (CommandEditor editor : editors) {
 			// This is done in a separate loop to ensure it's rendered on top.
 			editor.renderSuggestions(matrices, mouseX, mouseY);
 		}

@@ -92,7 +92,7 @@ public final class DataCommandUpdateRequester implements UpdateRequester {
 		blockEntity.fromTag(blockState, tag);
 		blockEntity.setNeedsUpdatePacket(false);
 		if (client.currentScreen instanceof CommandBlockIDEScreen) {
-			((CommandBlockIDEScreen)client.currentScreen).updateCommandBlock(position);
+			((CommandBlockIDEScreen)client.currentScreen).update(position);
 		}
 		blocksToUpdate.remove(position);
 
