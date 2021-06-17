@@ -1,16 +1,19 @@
 package arm32x.minecraft.commandblockide.server.command;
 
 import arm32x.minecraft.commandblockide.Packets;
+import arm32x.minecraft.commandblockide.mixinextensions.server.CommandFunctionExtension;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import java.util.List;
 import java.util.Optional;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.FunctionArgumentType;
 import static net.minecraft.command.argument.FunctionArgumentType.function;
+import net.minecraft.network.PacketByteBuf;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import net.minecraft.server.command.FunctionCommand;
@@ -56,7 +59,20 @@ public final class EditFunctionCommand {
 			throw MOD_NOT_INSTALLED_EXCEPTION.create();
 		}
 
-		ServerPlayNetworking.send(player, Packets.EDIT_FUNCTION, PacketByteBufs.empty());
+		List<String> lines = ((CommandFunctionExtension)function).ide$getOriginalLines();
+
+		PacketByteBuf headerBuf = PacketByteBufs.create();
+		headerBuf.writeIdentifier(function.getId());
+		headerBuf.writeVarInt(lines.size());
+		ServerPlayNetworking.send(player, Packets.EDIT_FUNCTION, headerBuf);
+
+		for (int index = 0; index < lines.size(); index++) {
+			PacketByteBuf lineBuf = PacketByteBufs.create();
+			lineBuf.writeVarInt(index);
+			lineBuf.writeString(lines.get(index)); // TODO: Make sure this doesn’t exceed size limits.
+			ServerPlayNetworking.send(player, Packets.UPDATE_FUNCTION_COMMAND, lineBuf);
+		}
+
 		return 1;
 	}
 }

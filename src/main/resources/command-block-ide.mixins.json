@@ -4,6 +4,7 @@
     "package": "arm32x.minecraft.commandblockide.mixin",
     "compatibilityLevel": "JAVA_8",
     "mixins": [
+        "server.CommandFunctionMixin"
     ],
     "client": [
         "client.ClientPlayerEntityMixin",
