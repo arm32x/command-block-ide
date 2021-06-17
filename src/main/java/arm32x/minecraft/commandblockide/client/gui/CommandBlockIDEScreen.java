@@ -43,7 +43,7 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 
 	private void addEditor(CommandBlockBlockEntity blockEntity) {
 		int index = editors.size();
-		CommandBlockEditor editor = new CommandBlockEditor(this, textRenderer, 4, 20 * index + 8, width - 8, 16, blockEntity, index);
+		CommandBlockEditor editor = new CommandBlockEditor(this, textRenderer, 8, 20 * index + 8, width - 16, 16, blockEntity, index);
 		addEditor(editor);
 		positionIndex.put(blockEntity.getPos(), editor);
 		if (blockEntity.equals(startingBlockEntity)) {

@@ -65,7 +65,7 @@ public abstract class CommandIDEScreen extends Screen {
 	protected void initAfterFirst() {
 		for (CommandEditor editor : editors) {
 			addChild(editor);
-			editor.setWidth(width - 8);
+			editor.setWidth(width - 16);
 		}
 
 		maxScrollOffset = Math.max((editors.size() * 20 - 8) - (height - 50), 0);

@@ -14,7 +14,7 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen {
 	@Override
 	protected void firstInit() {
 		for (int index = 0; index < lineCount; index++) {
-			CommandFunctionEditor editor = new CommandFunctionEditor(this, textRenderer, 4, 20 * index + 8, width - 8, 16, index);
+			CommandFunctionEditor editor = new CommandFunctionEditor(this, textRenderer, 8, 20 * index + 8, width - 16, 16, index);
 			if (index == 0) {
 				setFocusedEditor(editor);
 			}

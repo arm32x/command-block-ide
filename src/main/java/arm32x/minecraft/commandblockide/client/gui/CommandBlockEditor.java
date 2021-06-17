@@ -26,7 +26,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 	private boolean dirty = false;
 
 	public CommandBlockEditor(Screen screen, TextRenderer textRenderer, int x, int y, int width, int height, CommandBlockBlockEntity blockEntity, int index) {
-		super(screen, textRenderer, x, y, width, height, 40, 24, index);
+		super(screen, textRenderer, x, y, width, height, 40, 20, index);
 		this.blockEntity = blockEntity;
 
 		lastOutputField = new TextFieldWidget(textRenderer, commandField.x, commandField.y, commandField.getWidth(), commandField.getHeight(), new TranslatableText("advMode.previousOutput").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1)));
@@ -43,7 +43,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 		autoButton.auto = typeButton.type == CommandBlockBlockEntity.Type.SEQUENCE;
 		autoButton.active = false;
 
-		trackOutputButton = addButton(new CommandBlockTrackOutputButton(screen, x + width - 20, y));
+		trackOutputButton = addButton(new CommandBlockTrackOutputButton(screen, x + width - 16, y));
 		trackOutputButton.trackingOutput = true;
 		trackOutputButton.active = false;
 	}
