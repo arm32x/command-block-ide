@@ -10,7 +10,6 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.CommandSuggestor;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
@@ -57,11 +56,6 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 
 	}
 
-	public abstract void update();
-	public abstract void requestUpdate(ClientPlayNetworkHandler networkHandler);
-
-	public abstract void apply(ClientPlayNetworkHandler networkHandler);
-
 	public void commandChanged(String newCommand) {
 		suggestor.refresh();
 	}
@@ -96,7 +90,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 	@Override
 	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 		renderLineNumber(matrices);
-		if (loaded) {
+		if (isLoaded()) {
 			renderCommandField(matrices, mouseX, mouseY, delta);
 		} else {
 			textRenderer.draw(matrices, new TranslatableText("commandBlockIDE.unloaded"), commandField.x, y + 5, 0x7FFFFFFF);
@@ -130,6 +124,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 	@SuppressWarnings("SameParameterValue")
 	protected void setLoaded(boolean loaded) {
 		this.loaded = loaded;
+		this.commandField.setEditable(loaded);
 	}
 
 	public int getX() {

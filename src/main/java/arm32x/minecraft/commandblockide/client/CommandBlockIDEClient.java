@@ -1,6 +1,7 @@
 package arm32x.minecraft.commandblockide.client;
 
 import arm32x.minecraft.commandblockide.Packets;
+import arm32x.minecraft.commandblockide.client.gui.CommandFunctionIDEScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -16,14 +17,18 @@ public final class CommandBlockIDEClient implements ClientModInitializer {
 		ClientPlayNetworking.registerGlobalReceiver(Packets.EDIT_FUNCTION, (client, handler, buf, responseSender) -> {
 			Identifier id = buf.readIdentifier();
 			int lineCount = buf.readVarInt();
-			LOGGER.info("{}: {} lines", id, lineCount);
-			LOGGER.error("Not yet implemented.");
+			client.execute(() -> {
+				client.openScreen(new CommandFunctionIDEScreen(id, lineCount));
+			});
 		});
 		ClientPlayNetworking.registerGlobalReceiver(Packets.UPDATE_FUNCTION_COMMAND, (client, handler, buf, responseSender) -> {
 			int index = buf.readVarInt();
 			String line = buf.readString();
-			LOGGER.info("{}: {}", index, line);
-			LOGGER.error("Not yet implemented.");
+			client.execute(() -> {
+				if (client.currentScreen instanceof CommandFunctionIDEScreen) {
+					((CommandFunctionIDEScreen)client.currentScreen).update(index, line);
+				}
+			});
 		});
 	}
 

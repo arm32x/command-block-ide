@@ -48,7 +48,6 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 		trackOutputButton.active = false;
 	}
 
-	@Override
 	public void apply(ClientPlayNetworkHandler networkHandler) {
 		if (isLoaded() && Stream.<Dirtyable>of(this, typeButton, autoButton, trackOutputButton).anyMatch(Dirtyable::isDirty)) {
 			CommandBlockExecutor executor = blockEntity.getCommandExecutor();
@@ -67,7 +66,6 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 		}
 	}
 
-	@Override
 	public void update() {
 		CommandBlockExecutor executor = blockEntity.getCommandExecutor();
 		commandField.setText(executor.getCommand());
@@ -82,10 +80,6 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 		}
 		lastOutputField.setText(lastOutput);
 
-		this.commandField.setEditable(true);
-		typeButton.active = true;
-		autoButton.active = true;
-		trackOutputButton.active = true;
 		suggestor.setWindowActive(commandField.isActive());
 		suggestor.refresh();
 
@@ -93,7 +87,6 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 		setLoaded(true);
 	}
 
-	@Override
 	public void requestUpdate(ClientPlayNetworkHandler networkHandler) {
 		DataCommandUpdateRequester.getInstance().requestUpdate(networkHandler, blockEntity);
 	}
@@ -117,6 +110,14 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 			lastOutputField.visible = false;
 			commandField.render(matrices, mouseX, mouseY, delta);
 		}
+	}
+
+	@Override
+	public void setLoaded(boolean loaded) {
+		super.setLoaded(loaded);
+		typeButton.active = loaded;
+		autoButton.active = loaded;
+		trackOutputButton.active = loaded;
 	}
 
 	@Override

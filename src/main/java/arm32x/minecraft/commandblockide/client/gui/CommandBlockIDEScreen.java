@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 
@@ -42,7 +43,7 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 
 	private void addEditor(CommandBlockBlockEntity blockEntity) {
 		int index = editors.size();
-		CommandEditor editor = new CommandBlockEditor(this, textRenderer, 4, 20 * index + 8, width - 8, 16, blockEntity, index);
+		CommandBlockEditor editor = new CommandBlockEditor(this, textRenderer, 4, 20 * index + 8, width - 8, 16, blockEntity, index);
 		addEditor(editor);
 		positionIndex.put(blockEntity.getPos(), editor);
 		if (blockEntity.equals(startingBlockEntity)) {
@@ -66,10 +67,21 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 
 	public void update(BlockPos position) {
 		CommandEditor editor = positionIndex.get(position);
-		if (editor != null) {
-			editor.update();
+		if (editor instanceof CommandBlockEditor) {
+			((CommandBlockEditor)editor).update();
 			setLoaded(true);
 		}
+	}
+
+	@Override
+	public void apply() {
+		assert client != null;
+		ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
+		assert networkHandler != null;
+		editors.stream()
+			.filter(editor -> editor instanceof CommandBlockEditor)
+			.map(editor -> (CommandBlockEditor)editor)
+			.forEach(editor -> editor.apply(networkHandler));
 	}
 
 	@Override

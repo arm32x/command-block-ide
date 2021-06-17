@@ -8,7 +8,6 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
@@ -39,14 +38,14 @@ public abstract class CommandIDEScreen extends Screen {
 		client.keyboard.setRepeatEvents(true);
 
 		doneButton = addButton(new ButtonWidget(this.width - 324, this.height - 28, 100, 20, ScreenTexts.DONE, (widget) -> {
-			applyAll();
+			apply();
 			onClose();
 		}));
 		/* cancelButton = */ addButton(new ButtonWidget(this.width - 216, this.height - 28, 100, 20, ScreenTexts.CANCEL, (widget) -> {
 			onClose();
 		}));
 		applyAllButton = addButton(new ButtonWidget(this.width - 108, this.height - 28, 100, 20, new TranslatableText("commandBlockIDE.applyAll"), (widget) -> {
-			applyAll();
+			apply();
 		}));
 
 		if (!initialized) {
@@ -81,14 +80,7 @@ public abstract class CommandIDEScreen extends Screen {
 		addChild(editor);
 	}
 
-	public void applyAll() {
-		assert client != null;
-		ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
-		assert networkHandler != null;
-		for (CommandEditor editor : editors) {
-			editor.apply(networkHandler);
-		}
-	}
+	public abstract void apply();
 
 	@Override
 	public boolean shouldCloseOnEsc() { return false; }
@@ -116,7 +108,7 @@ public abstract class CommandIDEScreen extends Screen {
 		} else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
 			Element element = getFocused();
 			if (element == null) {
-				applyAll();
+				apply();
 				onClose();
 			} else {
 				setFocused(null);
