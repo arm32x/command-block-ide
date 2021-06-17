@@ -23,8 +23,6 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 
 	@Override
 	protected void firstInit() {
-		super.firstInit();
-
 		assert client != null;
 		CommandChainTracer tracer = new CommandChainTracer(client.world);
 
@@ -38,6 +36,8 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 		for (BlockPos position : tracer.traceForwards(chainStart)) {
 			addEditor(getBlockEntityAt(position));
 		}
+
+		super.firstInit();
 	}
 
 	private void addEditor(CommandBlockBlockEntity blockEntity) {

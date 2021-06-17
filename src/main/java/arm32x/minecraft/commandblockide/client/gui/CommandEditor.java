@@ -83,8 +83,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-		return suggestor.mouseScrolled(amount)
-			|| super.mouseScrolled(mouseX, mouseY, amount);
+		return suggestor.mouseScrolled(amount);
 	}
 
 	public void setFocused(boolean focused) {
