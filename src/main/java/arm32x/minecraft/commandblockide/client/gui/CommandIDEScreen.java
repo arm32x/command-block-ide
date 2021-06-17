@@ -22,7 +22,7 @@ public abstract class CommandIDEScreen extends Screen {
 	private boolean initialized = false;
 
 	private ButtonWidget doneButton;
-	private ButtonWidget applyAllButton;
+	private ButtonWidget applyButton;
 
 	private int scrollOffset = 0, maxScrollOffset = 0;
 	public static final double SCROLL_SENSITIVITY = 50.0;
@@ -44,7 +44,7 @@ public abstract class CommandIDEScreen extends Screen {
 		/* cancelButton = */ addButton(new ButtonWidget(this.width - 216, this.height - 28, 100, 20, ScreenTexts.CANCEL, (widget) -> {
 			onClose();
 		}));
-		applyAllButton = addButton(new ButtonWidget(this.width - 108, this.height - 28, 100, 20, new TranslatableText("commandBlockIDE.applyAll"), (widget) -> {
+		applyButton = addButton(new ButtonWidget(this.width - 108, this.height - 28, 100, 20, new TranslatableText("commandBlockIDE.apply"), (widget) -> {
 			apply();
 		}));
 
@@ -217,12 +217,12 @@ public abstract class CommandIDEScreen extends Screen {
 	}
 
 	public boolean isLoaded() {
-		return doneButton.active && applyAllButton.active;
+		return doneButton.active && applyButton.active;
 	}
 
 	protected void setLoaded(boolean loaded) {
 		doneButton.active = loaded;
-		applyAllButton.active = loaded;
+		applyButton.active = loaded;
 	}
 
 	private static final Logger LOGGER = LogManager.getLogger();
