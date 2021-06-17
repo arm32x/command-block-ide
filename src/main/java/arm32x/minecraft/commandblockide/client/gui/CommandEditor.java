@@ -100,7 +100,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 
 	protected void renderLineNumber(MatrixStack matrices) {
 		String lineNumber = String.valueOf(index + 1);
-		textRenderer.draw(matrices, lineNumber, x + 16 - textRenderer.getWidth(lineNumber), y + 5, lineNumberHighlighted ? 0xFFFFFFFF : 0x7FFFFFFF);
+		textRenderer.draw(matrices, lineNumber, x + 16 - textRenderer.getWidth(lineNumber), y + 4, lineNumberHighlighted ? 0xFFFFFFFF : 0x7FFFFFFF);
 	}
 
 	protected void renderCommandField(MatrixStack matrices, int mouseX, int mouseY, float delta) {
