@@ -94,7 +94,7 @@ public final class CommandBlockIDEScreen extends Screen {
 
 	private void addCommandBlock(CommandBlockBlockEntity blockEntity) {
 		int index = editors.size();
-		CommandEditor editor = new CommandBlockEditor(this, textRenderer, 24, 20 * index + 8, width - 32, 16, blockEntity, index);
+		CommandEditor editor = new CommandBlockEditor(this, textRenderer, 4, 20 * index + 8, width - 8, 16, blockEntity, index);
 		editors.add(editor);
 		positionIndex.put(blockEntity.getPos(), editor);
 		if (blockEntity.equals(startingBlockEntity)) {
@@ -259,11 +259,8 @@ public final class CommandBlockIDEScreen extends Screen {
 	@Override
 	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 		renderBackground(matrices);
-		for (int index = 0; index < editors.size(); index++) {
-			String lineNumber = String.valueOf(index + 1);
-			textRenderer.draw(matrices, lineNumber, 20 - textRenderer.getWidth(lineNumber), 20 * index + 13 - getScrollOffset(), index == startingIndex ? 0xFFFFFFFF : 0x7FFFFFFF);
-
-			CommandEditor editor = editors.get(index);
+		for (CommandEditor editor : editors) {
+			editor.lineNumberHighlighted = editor.index == startingIndex;
 			editor.render(matrices, mouseX, mouseY, delta);
 		}
 		for (CommandEditor editor : editors) {

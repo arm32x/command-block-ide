@@ -35,11 +35,11 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 		lastOutputField.setText(new TranslatableText("commandBlockIDE.unloaded").getString());
 		lastOutputField.visible = false;
 
-		typeButton = addButton(new CommandBlockTypeButton(screen, x, y));
+		typeButton = addButton(new CommandBlockTypeButton(screen, x + 20, y));
 		typeButton.type = blockEntity.getCommandBlockType();
 		typeButton.active = false;
 
-		autoButton = addButton(new CommandBlockAutoButton(screen, x + 20, y));
+		autoButton = addButton(new CommandBlockAutoButton(screen, x + 40, y));
 		autoButton.auto = typeButton.type == CommandBlockBlockEntity.Type.SEQUENCE;
 		autoButton.active = false;
 

@@ -21,6 +21,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 	private int x, y, width, height;
 
 	public int index;
+	public boolean lineNumberHighlighted = false;
 
 	protected final TextRenderer textRenderer;
 
@@ -37,7 +38,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 		this.index = index;
 		this.textRenderer = textRenderer;
 
-		commandField = addChild(new TextFieldWidget(textRenderer, x + leftPadding + 1, y + 1, width - leftPadding - rightPadding - 2, height - 2, new TranslatableText("advMode.command").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1))) {
+		commandField = addChild(new TextFieldWidget(textRenderer, x + leftPadding + 20 + 1, y + 1, width - leftPadding - rightPadding - 20 - 2, height - 2, new TranslatableText("advMode.command").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1))) {
 			@Override
 			protected MutableText getNarrationMessage() {
 				return super.getNarrationMessage().append(suggestor.getNarration());
@@ -95,12 +96,18 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 
 	@Override
 	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+		renderLineNumber(matrices);
 		if (loaded) {
 			renderCommandField(matrices, mouseX, mouseY, delta);
 		} else {
 			textRenderer.draw(matrices, new TranslatableText("commandBlockIDE.unloaded"), commandField.x, y + 5, 0x7FFFFFFF);
 		}
 		super.render(matrices, mouseX, mouseY, delta);
+	}
+
+	protected void renderLineNumber(MatrixStack matrices) {
+		String lineNumber = String.valueOf(index + 1);
+		textRenderer.draw(matrices, lineNumber, x + 16 - textRenderer.getWidth(lineNumber), y + 5, lineNumberHighlighted ? 0xFFFFFFFF : 0x7FFFFFFF);
 	}
 
 	protected void renderCommandField(MatrixStack matrices, int mouseX, int mouseY, float delta) {
