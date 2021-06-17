@@ -1,6 +1,7 @@
 package arm32x.minecraft.commandblockide.mixin;
 
 import arm32x.minecraft.commandblockide.gui.CommandBlockIDEScreen;
+import arm32x.minecraft.commandblockide.gui.CommandIDEScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
@@ -23,7 +24,7 @@ public final class ClientPlayerEntityMixin {
 	 */
 	@Overwrite
 	public void openCommandBlockScreen(CommandBlockBlockEntity commandBlock) {
-		if (!(client.currentScreen instanceof CommandBlockIDEScreen)) {
+		if (!(client.currentScreen instanceof CommandIDEScreen)) {
 			client.openScreen(new CommandBlockIDEScreen(commandBlock));
 		}
 	}
