@@ -1,6 +1,6 @@
-package arm32x.minecraft.commandblockide.gui;
+package arm32x.minecraft.commandblockide.client.gui;
 
-import arm32x.minecraft.commandblockide.Dirtyable;
+import arm32x.minecraft.commandblockide.client.Dirtyable;
 import java.util.Collections;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;

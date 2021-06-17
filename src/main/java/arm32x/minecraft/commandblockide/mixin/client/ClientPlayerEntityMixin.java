@@ -1,7 +1,7 @@
-package arm32x.minecraft.commandblockide.mixin;
+package arm32x.minecraft.commandblockide.mixin.client;
 
-import arm32x.minecraft.commandblockide.gui.CommandBlockIDEScreen;
-import arm32x.minecraft.commandblockide.gui.CommandIDEScreen;
+import arm32x.minecraft.commandblockide.client.gui.CommandBlockIDEScreen;
+import arm32x.minecraft.commandblockide.client.gui.CommandIDEScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.CommandBlockBlockEntity;

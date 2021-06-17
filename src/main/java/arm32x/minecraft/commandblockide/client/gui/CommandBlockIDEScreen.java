@@ -1,6 +1,6 @@
-package arm32x.minecraft.commandblockide.gui;
+package arm32x.minecraft.commandblockide.client.gui;
 
-import arm32x.minecraft.commandblockide.CommandChainTracer;
+import arm32x.minecraft.commandblockide.client.CommandChainTracer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;

@@ -1,10 +1,6 @@
-package arm32x.minecraft.commandblockide;
+package arm32x.minecraft.commandblockide.client;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.block.BlockState;

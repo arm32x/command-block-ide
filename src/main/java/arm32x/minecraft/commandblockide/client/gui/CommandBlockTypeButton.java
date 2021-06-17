@@ -1,6 +1,6 @@
-package arm32x.minecraft.commandblockide.gui;
+package arm32x.minecraft.commandblockide.client.gui;
 
-import arm32x.minecraft.commandblockide.Dirtyable;
+import arm32x.minecraft.commandblockide.client.Dirtyable;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Collections;
 import net.minecraft.block.entity.CommandBlockBlockEntity;

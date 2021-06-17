@@ -1,7 +1,7 @@
-package arm32x.minecraft.commandblockide.gui;
+package arm32x.minecraft.commandblockide.client.gui;
 
-import arm32x.minecraft.commandblockide.Dirtyable;
-import arm32x.minecraft.commandblockide.update.DataCommandUpdateRequester;
+import arm32x.minecraft.commandblockide.client.Dirtyable;
+import arm32x.minecraft.commandblockide.client.update.DataCommandUpdateRequester;
 import java.util.stream.Stream;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.font.TextRenderer;

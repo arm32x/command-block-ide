@@ -1,4 +1,4 @@
-package arm32x.minecraft.commandblockide.update;
+package arm32x.minecraft.commandblockide.client.update;
 
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;

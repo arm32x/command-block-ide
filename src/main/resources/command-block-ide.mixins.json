@@ -4,11 +4,11 @@
     "package": "arm32x.minecraft.commandblockide.mixin",
     "compatibilityLevel": "JAVA_8",
     "mixins": [
-        "ClientPlayerEntityMixin",
-        "ClientPlayNetworkHandlerMixin",
-        "CommandSuggestorMixin"
     ],
     "client": [
+        "client.ClientPlayerEntityMixin",
+        "client.ClientPlayNetworkHandlerMixin",
+        "client.CommandSuggestorMixin"
     ],
     "injectors": {
         "defaultRequire": 1

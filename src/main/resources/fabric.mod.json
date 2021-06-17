@@ -15,7 +15,7 @@
     "environment": "client",
     "entrypoints": {
         "client": [
-            "arm32x.minecraft.commandblockide.CommandBlockIDE"
+            "arm32x.minecraft.commandblockide.client.CommandBlockIDEClient"
         ]
     },
     "mixins": [

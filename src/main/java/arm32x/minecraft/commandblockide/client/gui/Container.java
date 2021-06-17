@@ -1,4 +1,4 @@
-package arm32x.minecraft.commandblockide.gui;
+package arm32x.minecraft.commandblockide.client.gui;
 
 import java.util.ArrayList;
 import java.util.List;

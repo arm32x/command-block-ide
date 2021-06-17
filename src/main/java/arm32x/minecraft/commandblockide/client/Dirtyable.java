@@ -1,4 +1,4 @@
-package arm32x.minecraft.commandblockide;
+package arm32x.minecraft.commandblockide.client;
 
 public interface Dirtyable {
 	boolean isDirty();
