@@ -1,4 +1,6 @@
 {
+    "arguments.editfunction.tag.unsupported": "Cannot edit function tags",
+    "commands.editfunction.failed.modNotInstalled": "You must have the Command Block IDE mod installed",
     "commandBlockIDE.apply": "Apply",
     "commandBlockIDE.applyAll": "Apply All",
     "commandBlockIDE.type.redstone": "Impulse",
