@@ -87,10 +87,14 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton implemen
 		MinecraftClient client = MinecraftClient.getInstance();
 		client.getTextureManager().bindTexture(getTexture());
 
-		RenderSystem.color4f(1.0f, 1.0f, 1.0f, active ? 1.0f : 0.5f);
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.enableDepthTest();
+		if (active) {
+			RenderSystem.color4f(0.0f, 0.0f, 0.0f, 0.25f);
+			drawTexture(matrices, x + 1, y + 1, 0.0f, 0.0f, width, height, 16, 64);
+		}
+		RenderSystem.color4f(1.0f, 1.0f, 1.0f, active ? 1.0f : 0.5f);
 
 		// Drawing must be done manually in order to flip the texture upside-down.
 		Matrix4f matrix = matrices.peek().getModel();

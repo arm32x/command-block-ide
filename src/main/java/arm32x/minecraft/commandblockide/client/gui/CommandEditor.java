@@ -100,6 +100,8 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 
 	protected void renderLineNumber(MatrixStack matrices) {
 		String lineNumber = String.valueOf(index + 1);
+		// Manually draw shadow because the existing functions don’t let you set the color.
+		textRenderer.draw(matrices, lineNumber, x + 17 - textRenderer.getWidth(lineNumber), y + 5, 0x3F000000);
 		textRenderer.draw(matrices, lineNumber, x + 16 - textRenderer.getWidth(lineNumber), y + 4, lineNumberHighlighted ? 0xFFFFFFFF : 0x7FFFFFFF);
 	}
 

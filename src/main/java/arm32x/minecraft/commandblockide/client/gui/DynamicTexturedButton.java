@@ -25,10 +25,14 @@ public abstract class DynamicTexturedButton extends AbstractPressableButtonWidge
 		MinecraftClient client = MinecraftClient.getInstance();
 		client.getTextureManager().bindTexture(getTexture());
 
-		RenderSystem.color4f(1.0f, 1.0f, 1.0f, active ? 1.0f : 0.5f);
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.enableDepthTest();
+		if (active) {
+			RenderSystem.color4f(0.0f, 0.0f, 0.0f, 0.25f);
+			drawTexture(matrices, x + 1, y + 1, (float)u, (float)v, width, height, textureWidth, textureHeight);
+		}
+		RenderSystem.color4f(1.0f, 1.0f, 1.0f, active ? 1.0f : 0.5f);
 		drawTexture(matrices, x, y, (float)u, (float)v, width, height, textureWidth, textureHeight);
 		if (this.isHovered()) {
 			this.renderToolTip(matrices, mouseX, mouseY);
