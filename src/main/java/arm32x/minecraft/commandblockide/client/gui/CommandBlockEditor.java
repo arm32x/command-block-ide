@@ -29,6 +29,8 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 		super(screen, textRenderer, x, y, width, height, 40, 20, index);
 		this.blockEntity = blockEntity;
 
+		commandField.setMaxLength(32500);
+
 		lastOutputField = new TextFieldWidget(textRenderer, commandField.x, commandField.y, commandField.getWidth(), commandField.getHeight(), new TranslatableText("advMode.previousOutput").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1)));
 		lastOutputField.setEditable(false);
 		lastOutputField.setMaxLength(32500);

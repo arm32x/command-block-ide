@@ -47,7 +47,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 			}
 		});
 		commandField.setEditable(false);
-		commandField.setMaxLength(32500);
+		commandField.setMaxLength(Integer.MAX_VALUE);
 
 		suggestor = new CommandSuggestor(MinecraftClient.getInstance(), screen, commandField, textRenderer, true, true, 0, 16, false, Integer.MIN_VALUE);
 		suggestor.refresh();
