@@ -122,6 +122,10 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 		}
 	}
 
+	public String getCommand() {
+		return commandField.getText();
+	}
+
 	public boolean isLoaded() {
 		return loaded;
 	}
