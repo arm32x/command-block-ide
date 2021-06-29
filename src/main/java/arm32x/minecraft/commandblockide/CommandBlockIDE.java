@@ -17,7 +17,11 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.*;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -46,28 +50,28 @@ public final class CommandBlockIDE implements ModInitializer {
 					lines[index] = merged.readString(Integer.MAX_VALUE >> 2);
 				}
 
-				saveFunction(server, functionId, lines);
+				server.execute(() -> {
+					Text feedbackMessage = saveFunction(server, functionId, lines);
+					player.sendSystemMessage(feedbackMessage, Util.NIL_UUID);
+				});
 			}
 		});
 	}
 
-	private static void saveFunction(MinecraftServer server, Identifier functionId, String[] lines) {
+	private static Text saveFunction(MinecraftServer server, Identifier functionId, String[] lines) {
 		Identifier functionResourceId = new Identifier(functionId.getNamespace(), String.format("functions/%s.mcfunction", functionId.getPath()));
 
 		// Mixin accessor bullshit.
 		ServerResourceManager serverResourceManager = ((MinecraftServerAccessor)server).getServerResourceManager();
 		ResourceManager resourceManager = serverResourceManager.getResourceManager();
 		if (!(resourceManager instanceof ReloadableResourceManagerImpl)) {
-			// TODO: Handle errors using Exceptions or something.
-			LOGGER.error("Error saving function '{}': Resource manager was not the correct type.", functionId);
-			return;
+			return new TranslatableText("commandBlockIDE.saveFunction.failed.resourceManager", functionId).formatted(Formatting.RED);
 		}
 		ReloadableResourceManagerImpl resourceManagerImpl = (ReloadableResourceManagerImpl)resourceManager;
 		Map<String, NamespaceResourceManager> namespaceResourceManagers = ((ReloadableResourceManagerImplAccessor)resourceManagerImpl).getNamespaceManagers();
 		@Nullable NamespaceResourceManager namespaceResourceManager = namespaceResourceManagers.get(functionId.getNamespace());
 		if (namespaceResourceManager == null) {
-			LOGGER.error("Error saving function '{}': Resource manager has no namespace '{}'.", functionId, functionId.getNamespace());
-			return;
+			return new TranslatableText("commandBlockIDE.saveFunction.failed.missingNamespace", functionId, functionId.getNamespace()).formatted(Formatting.RED);
 		}
 		List<ResourcePack> packList = ((NamespaceResourceManagerAccessor)namespaceResourceManager).getPackList();
 
@@ -76,8 +80,7 @@ public final class CommandBlockIDE implements ModInitializer {
 			.findFirst();
 
 		if (!maybePack.isPresent()) {
-			LOGGER.error("Error saving function '{}': Not found in any resource pack.", functionId);
-			return;
+			return new TranslatableText("commandBlockIDE.saveFunction.failed.noResourcePack", functionId).formatted(Formatting.RED);
 		}
 
 		ResourcePack pack = maybePack.get();
@@ -88,12 +91,12 @@ public final class CommandBlockIDE implements ModInitializer {
 			try {
 				Files.write(file.toPath(), Arrays.asList(lines), StandardOpenOption.TRUNCATE_EXISTING);
 			} catch (IOException e) {
-				LOGGER.error("Error saving function '" + functionId.toString() + "':", e);
-				return;
+				LOGGER.error("IO exception occurred while saving function '" + functionId.toString() + "':", e);
+				return new TranslatableText("commandBlockIDE.saveFunction.failed.ioException", functionId).formatted(Formatting.RED);
 			}
-			LOGGER.info("Saved function '{}' to file '{}'.", functionId, file.getPath());
+			return new TranslatableText("commandBlockIDE.saveFunction.success.file", functionId);
 		} else {
-			LOGGER.error("Error saving function '{}': Resource pack type '{}' not supported.", functionId, pack.getClass().getSimpleName());
+			return new TranslatableText("commandBlockIDE.saveFunction.failed.packClassNotSupported", functionId, pack.getClass().getSimpleName()).formatted(Formatting.RED);
 		}
 	}
 
