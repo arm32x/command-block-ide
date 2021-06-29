@@ -1,6 +1,7 @@
 package arm32x.minecraft.commandblockide;
 
 import arm32x.minecraft.commandblockide.mixin.server.*;
+import arm32x.minecraft.commandblockide.mixinextensions.server.CommandFunctionExtension;
 import arm32x.minecraft.commandblockide.server.command.EditFunctionCommand;
 import arm32x.minecraft.commandblockide.util.PacketMerger;
 import java.io.File;
@@ -17,6 +18,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.*;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.function.CommandFunction;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
@@ -51,14 +53,14 @@ public final class CommandBlockIDE implements ModInitializer {
 				}
 
 				server.execute(() -> {
-					Text feedbackMessage = saveFunction(server, functionId, lines);
+					Text feedbackMessage = saveFunction(server, functionId, Arrays.asList(lines));
 					player.sendSystemMessage(feedbackMessage, Util.NIL_UUID);
 				});
 			}
 		});
 	}
 
-	private static Text saveFunction(MinecraftServer server, Identifier functionId, String[] lines) {
+	private static Text saveFunction(MinecraftServer server, Identifier functionId, List<String> lines) {
 		Identifier functionResourceId = new Identifier(functionId.getNamespace(), String.format("functions/%s.mcfunction", functionId.getPath()));
 
 		// Mixin accessor bullshit.
@@ -89,15 +91,21 @@ public final class CommandBlockIDE implements ModInitializer {
 			DirectoryResourcePack directoryPack = (DirectoryResourcePack)pack;
 			File file = ((DirectoryResourcePackInvoker)directoryPack).invokeGetFile(AbstractFileResourcePackInvoker.invokeGetFilename(ResourceType.SERVER_DATA, functionResourceId));
 			try {
-				Files.write(file.toPath(), Arrays.asList(lines), StandardOpenOption.TRUNCATE_EXISTING);
+				Files.write(file.toPath(), lines, StandardOpenOption.TRUNCATE_EXISTING);
 			} catch (IOException e) {
 				LOGGER.error("IO exception occurred while saving function '" + functionId.toString() + "':", e);
 				return new TranslatableText("commandBlockIDE.saveFunction.failed.ioException", functionId).formatted(Formatting.RED);
 			}
+			updateFunctionLines(serverResourceManager, functionId, lines);
 			return new TranslatableText("commandBlockIDE.saveFunction.success.file", functionId);
 		} else {
 			return new TranslatableText("commandBlockIDE.saveFunction.failed.packClassNotSupported", functionId, pack.getClass().getSimpleName()).formatted(Formatting.RED);
 		}
+	}
+
+	private static void updateFunctionLines(ServerResourceManager serverResourceManager, Identifier functionId, List<String> lines) {
+		Optional<CommandFunction> maybeFunction = serverResourceManager.getFunctionLoader().get(functionId);
+		maybeFunction.ifPresent(function -> ((CommandFunctionExtension)function).ide$setOriginalLines(lines));
 	}
 
 	private static final Logger LOGGER = LogManager.getLogger();
