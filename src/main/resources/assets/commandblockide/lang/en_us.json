@@ -18,6 +18,6 @@
     "commandBlockIDE.saveFunction.failed.missingNamespace": "Error saving function '%s': Resource manager has no namespace '%s'.",
     "commandBlockIDE.saveFunction.failed.noResourcePack": "Error saving function '%s': Not found in any datapack.",
     "commandBlockIDE.saveFunction.failed.ioException": "Error saving function '%s': An IO error occurred.",
-    "commandBlockIDE.saveFunction.failed.zipNotSupported": "Error saving fucntion '%s': Datapacks in '.zip' files are not supported yet.",
+    "commandBlockIDE.saveFunction.failed.zipNotSupported": "Error saving function '%s': Datapacks in '.zip' files are not supported yet.",
     "commandBlockIDE.saveFunction.failed.packClassNotSupported": "Error saving function '%s': Resource pack class '%s' not supported."
 }

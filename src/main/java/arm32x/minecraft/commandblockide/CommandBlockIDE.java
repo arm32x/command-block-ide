@@ -98,6 +98,8 @@ public final class CommandBlockIDE implements ModInitializer {
 			}
 			updateFunctionLines(serverResourceManager, functionId, lines);
 			return new TranslatableText("commandBlockIDE.saveFunction.success.file", functionId);
+		} else if (pack instanceof ZipResourcePack) {
+			return new TranslatableText("commandBlockIDE.saveFunction.failed.zipNotSupported", functionId).formatted(Formatting.RED);
 		} else {
 			return new TranslatableText("commandBlockIDE.saveFunction.failed.packClassNotSupported", functionId, pack.getClass().getSimpleName()).formatted(Formatting.RED);
 		}
