@@ -213,7 +213,10 @@ public abstract class CommandIDEScreen extends Screen {
 			// This is done in a separate loop to ensure it's rendered on top.
 			editor.renderSuggestions(matrices, mouseX, mouseY);
 		}
+		matrices.push();
+		matrices.translate(0.0, 0.0, 10.0);
 		super.render(matrices, mouseX, mouseY, delta);
+		matrices.pop();
 	}
 
 	public boolean isLoaded() {
