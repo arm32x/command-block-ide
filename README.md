@@ -5,15 +5,17 @@ Replaces the command block GUI to allow editing multiple command blocks at once.
 
 <img title="Requires Fabric API" src="https://i.imgur.com/HabVZJR.png" height="60" />
 
-## Features
+## Features <small>(in the latest version)</small>
 
   - Edit multiple command blocks at once.
   - Apply changes without closing the GUI.
+  - Edit functions in datapacks (beta).
 
 #### Planned
 
-  - Move command blocks up and down within the GUI.
-  - Edit datapacks using the same interface as command blocks.
+  - Split a single command across multiple lines.
+  - Move command blocks around within the GUI.
+  - Add additional commands to the chain from within the GUI.
 
 ## Screenshots
 
