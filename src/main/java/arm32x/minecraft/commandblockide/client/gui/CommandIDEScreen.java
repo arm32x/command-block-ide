@@ -27,6 +27,10 @@ public abstract class CommandIDEScreen extends Screen {
 	private int scrollOffset = 0, maxScrollOffset = Integer.MAX_VALUE;
 	public static final double SCROLL_SENSITIVITY = 50.0;
 
+	private boolean draggingScrollbar = false;
+	private double mouseYAtScrollbarDragStart = 0;
+	private int scrollOffsetAtScrollbarDragStart = 0;
+
 	public CommandIDEScreen() {
 		super(LiteralText.EMPTY);
 	}
@@ -135,6 +139,14 @@ public abstract class CommandIDEScreen extends Screen {
 	// short-circuits on success, which breaks text field focus.
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		if (mouseX > width - 4 && button == 0) {
+			setDragging(true);
+			draggingScrollbar = true;
+			mouseYAtScrollbarDragStart = mouseY;
+			scrollOffsetAtScrollbarDragStart = getScrollOffset();
+			return true;
+		}
+
 		Element focusedChild = null;
 		for (Element child : children()) {
 			if (child.mouseClicked(mouseX, mouseY, button) && focusedChild == null) {
@@ -146,6 +158,29 @@ public abstract class CommandIDEScreen extends Screen {
 			setDragging(true);
 		}
 		return true;
+	}
+
+	@Override
+	public boolean mouseReleased(double mouseX, double mouseY, int button) {
+		if (button == 0 && draggingScrollbar) {
+			draggingScrollbar = false;
+			return true;
+		} else {
+			return super.mouseReleased(mouseX, mouseY, button);
+		}
+	}
+
+	@Override
+	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+		if (button == 0 && draggingScrollbar) {
+			int virtualHeight = maxScrollOffset + height;
+			int scrollbarHeight = Math.round((float)height / virtualHeight * height);
+			int scrollOffsetDelta = (int)Math.round((mouseY - mouseYAtScrollbarDragStart) / scrollbarHeight * height);
+			setScrollOffset(scrollOffsetAtScrollbarDragStart + scrollOffsetDelta);
+			return true;
+		} else {
+			return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+		}
 	}
 
 	@Override
