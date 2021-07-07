@@ -208,6 +208,7 @@ public abstract class CommandIDEScreen extends Screen {
 	@Override
 	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 		renderBackground(matrices);
+
 		for (CommandEditor editor : editors) {
 			editor.render(matrices, mouseX, mouseY, delta);
 		}
@@ -215,6 +216,14 @@ public abstract class CommandIDEScreen extends Screen {
 			// This is done in a separate loop to ensure it's rendered on top.
 			editor.renderSuggestions(matrices, mouseX, mouseY);
 		}
+
+		if (maxScrollOffset > 0) {
+			int virtualHeight = maxScrollOffset + height;
+			int scrollbarHeight = Math.round((float)height / virtualHeight * height);
+			int scrollbarPosition = Math.round((float)getScrollOffset() / height * scrollbarHeight);
+			fill(matrices, width - 3, scrollbarPosition + 1, width - 1, scrollbarPosition + scrollbarHeight - 1, 0x3FFFFFFF);
+		}
+
 		matrices.push();
 		matrices.translate(0.0, 0.0, 10.0);
 		super.render(matrices, mouseX, mouseY, delta);
