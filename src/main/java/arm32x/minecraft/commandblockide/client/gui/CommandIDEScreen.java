@@ -140,10 +140,20 @@ public abstract class CommandIDEScreen extends Screen {
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
 		if (mouseX > width - 4 && button == 0) {
-			setDragging(true);
-			draggingScrollbar = true;
-			mouseYAtScrollbarDragStart = mouseY;
-			scrollOffsetAtScrollbarDragStart = getScrollOffset();
+			int virtualHeight = maxScrollOffset + height;
+			int scrollbarHeight = Math.round((float)height / virtualHeight * height);
+			int scrollbarPosition = Math.round((float)getScrollOffset() / height * scrollbarHeight);
+
+			if (mouseY >= scrollbarPosition && mouseY <= scrollbarPosition + scrollbarHeight) {
+				setDragging(true);
+				draggingScrollbar = true;
+				mouseYAtScrollbarDragStart = mouseY;
+				scrollOffsetAtScrollbarDragStart = getScrollOffset();
+			} else if (mouseY < scrollbarPosition) {
+				setScrollOffset((int)Math.round(getScrollOffset() - SCROLL_SENSITIVITY * 5));
+			} else if (mouseY > scrollbarPosition + scrollbarHeight) {
+				setScrollOffset((int)Math.round(getScrollOffset() + SCROLL_SENSITIVITY * 5));
+			}
 			return true;
 		}
 
