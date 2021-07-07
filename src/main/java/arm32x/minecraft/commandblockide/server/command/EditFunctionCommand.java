@@ -11,8 +11,8 @@ import java.util.Optional;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.FunctionArgumentType;
-import static net.minecraft.command.argument.FunctionArgumentType.function;
+import net.minecraft.command.argument.CommandFunctionArgumentType;
+import static net.minecraft.command.argument.CommandFunctionArgumentType.commandFunction;
 import net.minecraft.network.PacketByteBuf;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -30,7 +30,7 @@ public final class EditFunctionCommand {
 	 */
 	public static final SuggestionProvider<ServerCommandSource> SUGGESTION_PROVIDER = (ctx, builder) -> {
 		CommandFunctionManager functionManager = ctx.getSource().getMinecraftServer().getCommandFunctionManager();
-		return CommandSource.suggestIdentifiers(functionManager.method_29463(), builder);
+		return CommandSource.suggestIdentifiers(functionManager.getAllFunctions(), builder);
 	};
 
 	private static final SimpleCommandExceptionType EDIT_TAG_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("arguments.editfunction.tag.unsupported"));
@@ -39,10 +39,10 @@ public final class EditFunctionCommand {
 	public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literal("editfunction")
 			.requires(source -> source.hasPermissionLevel(2))
-			.then(argument("name", function())
+			.then(argument("name", commandFunction())
 				.suggests(SUGGESTION_PROVIDER)
 				.executes(ctx -> {
-					Optional<CommandFunction> function = FunctionArgumentType.getFunctionOrTag(ctx, "name").getSecond().left();
+					Optional<CommandFunction> function = CommandFunctionArgumentType.getFunctionOrTag(ctx, "name").getSecond().left();
 					if (function.isPresent()) {
 						return execute(ctx.getSource(), function.get());
 					} else {

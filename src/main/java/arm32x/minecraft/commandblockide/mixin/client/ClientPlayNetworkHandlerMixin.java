@@ -15,6 +15,7 @@ import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,12 +26,11 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Environment(EnvType.CLIENT)
 @Mixin(ClientPlayNetworkHandler.class)
 public final class ClientPlayNetworkHandlerMixin {
-	@Shadow private MinecraftClient client;
+	@Shadow private @Final MinecraftClient client;
 
 	@Inject(method = "onGameMessage(Lnet/minecraft/network/packet/s2c/play/GameMessageS2CPacket;)V", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/util/thread/ThreadExecutor;)V", shift = At.Shift.AFTER))
 	public void onGameMessage(GameMessageS2CPacket packet, CallbackInfo ci) {
-		if (packet.getSenderUuid().equals(Util.NIL_UUID) && packet.getLocation() == MessageType.SYSTEM && packet.getMessage() instanceof TranslatableText) {
-			TranslatableText message = (TranslatableText)packet.getMessage();
+		if (packet.getSender().equals(Util.NIL_UUID) && packet.getLocation() == MessageType.SYSTEM && packet.getMessage() instanceof TranslatableText message) {
 			if (message.getKey().equals("commands.data.block.query")) {
 				if (DataCommandUpdateRequester.getInstance().handleFeedback(client, message)) {
 					ci.cancel();

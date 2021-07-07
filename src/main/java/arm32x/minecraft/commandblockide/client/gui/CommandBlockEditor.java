@@ -37,15 +37,15 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 		lastOutputField.setText(new TranslatableText("commandBlockIDE.unloaded").getString());
 		lastOutputField.visible = false;
 
-		typeButton = addButton(new CommandBlockTypeButton(screen, x + 20, y));
+		typeButton = addDrawableChild(new CommandBlockTypeButton(screen, x + 20, y));
 		typeButton.type = blockEntity.getCommandBlockType();
 		typeButton.active = false;
 
-		autoButton = addButton(new CommandBlockAutoButton(screen, x + 40, y));
+		autoButton = addDrawableChild(new CommandBlockAutoButton(screen, x + 40, y));
 		autoButton.auto = typeButton.type == CommandBlockBlockEntity.Type.SEQUENCE;
 		autoButton.active = false;
 
-		trackOutputButton = addButton(new CommandBlockTrackOutputButton(screen, x + width - 16, y));
+		trackOutputButton = addDrawableChild(new CommandBlockTrackOutputButton(screen, x + width - 16, y));
 		trackOutputButton.trackingOutput = true;
 		trackOutputButton.active = false;
 	}
@@ -61,7 +61,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 				typeButton.conditional,
 				autoButton.auto
 			));
-			executor.shouldTrackOutput(trackOutputButton.trackingOutput);
+			executor.setTrackingOutput(trackOutputButton.trackingOutput);
 			if (!trackOutputButton.trackingOutput) {
 				executor.setLastOutput(null);
 			}

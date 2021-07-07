@@ -9,7 +9,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.text.Text;
@@ -75,7 +75,7 @@ public final class DataCommandUpdateRequester implements UpdateRequester {
 		}
 
 		String stringifiedTag = ((Text)args[3]).getString();
-		@Nullable CompoundTag tag;
+		@Nullable NbtCompound tag;
 		try {
 			tag = StringNbtReader.parse(stringifiedTag);
 		} catch (CommandSyntaxException ex) {
@@ -89,7 +89,7 @@ public final class DataCommandUpdateRequester implements UpdateRequester {
 			return false;
 		}
 
-		blockEntity.fromTag(blockState, tag);
+		blockEntity.readNbt(tag);
 		blockEntity.setNeedsUpdatePacket(false);
 		if (client.currentScreen instanceof CommandBlockIDEScreen) {
 			((CommandBlockIDEScreen)client.currentScreen).update(position);

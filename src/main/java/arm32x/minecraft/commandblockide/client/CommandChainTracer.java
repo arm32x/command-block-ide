@@ -10,6 +10,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
+@SuppressWarnings("ClassCanBeRecord")
 public final class CommandChainTracer {
 	private final ClientWorld world;
 

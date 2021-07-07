@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Splits a {@link PacketByteBuf} into several chunks to avoid size limitations.
  */
+@SuppressWarnings("ClassCanBeRecord")
 public final class PacketSplitter implements Iterable<PacketByteBuf> {
 	public static final int CHUNK_SIZE = 32500;
 	public static final int HEADER_MAGIC = 1397771337 /* SPLI */;

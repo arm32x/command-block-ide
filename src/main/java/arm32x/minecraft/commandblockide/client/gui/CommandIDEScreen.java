@@ -37,14 +37,14 @@ public abstract class CommandIDEScreen extends Screen {
 		assert client != null;
 		client.keyboard.setRepeatEvents(true);
 
-		doneButton = addButton(new ButtonWidget(this.width - 324, this.height - 28, 100, 20, ScreenTexts.DONE, (widget) -> {
+		doneButton = addDrawableChild(new ButtonWidget(this.width - 324, this.height - 28, 100, 20, ScreenTexts.DONE, (widget) -> {
 			apply();
 			onClose();
 		}));
-		/* cancelButton = */ addButton(new ButtonWidget(this.width - 216, this.height - 28, 100, 20, ScreenTexts.CANCEL, (widget) -> {
+		/* cancelButton = */ addDrawableChild(new ButtonWidget(this.width - 216, this.height - 28, 100, 20, ScreenTexts.CANCEL, (widget) -> {
 			onClose();
 		}));
-		applyButton = addButton(new ButtonWidget(this.width - 108, this.height - 28, 100, 20, new TranslatableText("commandBlockIDE.apply"), (widget) -> {
+		applyButton = addDrawableChild(new ButtonWidget(this.width - 108, this.height - 28, 100, 20, new TranslatableText("commandBlockIDE.apply"), (widget) -> {
 			apply();
 		}));
 
@@ -64,7 +64,7 @@ public abstract class CommandIDEScreen extends Screen {
 
 	protected void initAfterFirst() {
 		for (CommandEditor editor : editors) {
-			addChild(editor);
+			addSelectableChild(editor);
 			editor.setWidth(width - 16);
 		}
 
@@ -77,7 +77,7 @@ public abstract class CommandIDEScreen extends Screen {
 
 	protected void addEditor(CommandEditor editor) {
 		editors.add(editor);
-		addChild(editor);
+		addSelectableChild(editor);
 	}
 
 	public abstract void apply();

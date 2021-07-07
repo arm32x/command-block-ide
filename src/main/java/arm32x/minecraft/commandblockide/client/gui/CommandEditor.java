@@ -9,6 +9,8 @@ import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.CommandSuggestor;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
@@ -40,7 +42,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 		this.index = index;
 		this.textRenderer = textRenderer;
 
-		commandField = addChild(new TextFieldWidget(textRenderer, x + leftPadding + 20 + 1, y + 1, width - leftPadding - rightPadding - 20 - 2, height - 2, new TranslatableText("advMode.command").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1))) {
+		commandField = addSelectableChild(new TextFieldWidget(textRenderer, x + leftPadding + 20 + 1, y + 1, width - leftPadding - rightPadding - 20 - 2, height - 2, new TranslatableText("advMode.command").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1))) {
 			@Override
 			protected MutableText getNarrationMessage() {
 				return super.getNarrationMessage().append(suggestor.getNarration());
@@ -167,6 +169,11 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 
 	public int getHeight() {
 		return height;
+	}
+
+	@Override
+	public void appendNarrations(NarrationMessageBuilder builder) {
+		builder.put(NarrationPart.TITLE, new TranslatableText("narration.edit_box", commandField.getText()));
 	}
 }
 

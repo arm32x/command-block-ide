@@ -4,12 +4,8 @@ import arm32x.minecraft.commandblockide.client.Dirtyable;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Collections;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -35,15 +31,9 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton implemen
 			conditional = !conditional;
 		} else {
 			switch (type) {
-				case REDSTONE:
-					type = CommandBlockBlockEntity.Type.AUTO;
-					break;
-				case AUTO:
-					type = CommandBlockBlockEntity.Type.SEQUENCE;
-					break;
-				case SEQUENCE:
-					type = CommandBlockBlockEntity.Type.REDSTONE;
-					break;
+				case REDSTONE -> type = CommandBlockBlockEntity.Type.AUTO;
+				case AUTO -> type = CommandBlockBlockEntity.Type.SEQUENCE;
+				case SEQUENCE -> type = CommandBlockBlockEntity.Type.REDSTONE;
 			}
 		}
 		markDirty();
@@ -84,30 +74,28 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton implemen
 
 	@Override
 	public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		MinecraftClient client = MinecraftClient.getInstance();
-		client.getTextureManager().bindTexture(getTexture());
+		RenderSystem.setShaderTexture(0, getTexture());
 
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.enableDepthTest();
 		if (active) {
-			RenderSystem.color4f(0.0f, 0.0f, 0.0f, 0.25f);
+			RenderSystem.setShaderColor(0.0f, 0.0f, 0.0f, 0.25f);
 			drawTexture(matrices, x + 1, y + 1, 0.0f, 0.0f, width, height, 16, 64);
 		}
-		RenderSystem.color4f(1.0f, 1.0f, 1.0f, active ? 1.0f : 0.5f);
+		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, active ? 1.0f : 0.5f);
 
 		// Drawing must be done manually in order to flip the texture upside-down.
 		Matrix4f matrix = matrices.peek().getModel();
 		float x0 = (float)x, x1 = x0 + 16, y0 = (float)y, y1 = y0 + 16, z = getZOffset();
 		float u0 = 0.0f, u1 = 1.0f, v0 = 0.0f, v1 = 0.25f;
 		BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-		bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE);
+		bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
 		bufferBuilder.vertex(matrix, x0, y1, z).texture(u1, v0).next();
 		bufferBuilder.vertex(matrix, x1, y1, z).texture(u0, v0).next();
 		bufferBuilder.vertex(matrix, x1, y0, z).texture(u0, v1).next();
 		bufferBuilder.vertex(matrix, x0, y0, z).texture(u1, v1).next();
 		bufferBuilder.end();
-		RenderSystem.enableAlphaTest();
 		BufferRenderer.draw(bufferBuilder);
 
 		if (isHovered()) {

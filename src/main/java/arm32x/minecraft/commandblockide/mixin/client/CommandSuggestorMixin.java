@@ -23,7 +23,7 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 	@Unique public boolean ide$allowComments = false;
 	@Unique public boolean ide$slashForbidden = false;
 
-	@Shadow private @Final TextFieldWidget textField;
+	@Shadow @Final TextFieldWidget textField;
 
 	@ModifyConstant(method = { "showSuggestions(Z)V", "render(Lnet/minecraft/client/util/math/MatrixStack;II)V" }, constant = @Constant(intValue = 72))
 	public int getY(int seventyTwo) {
@@ -55,7 +55,7 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 	@Inject(method = "provideRenderText(Ljava/lang/String;I)Lnet/minecraft/text/OrderedText;", at = @At("HEAD"), cancellable = true)
 	public void onProvideRenderText(String original, int firstCharacterIndex, CallbackInfoReturnable<OrderedText> cir) {
 		if (ide$allowComments && textField.getText().startsWith("#")) {
-			cir.setReturnValue(OrderedText.styledString(original, Style.EMPTY.withColor(Formatting.DARK_GRAY)));
+			cir.setReturnValue(OrderedText.styledForwardsVisitedString(original, Style.EMPTY.withColor(Formatting.DARK_GRAY)));
 		}
 	}
 

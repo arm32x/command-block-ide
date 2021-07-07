@@ -66,10 +66,9 @@ public final class CommandBlockIDE implements ModInitializer {
 		// Mixin accessor bullshit.
 		ServerResourceManager serverResourceManager = ((MinecraftServerAccessor)server).getServerResourceManager();
 		ResourceManager resourceManager = serverResourceManager.getResourceManager();
-		if (!(resourceManager instanceof ReloadableResourceManagerImpl)) {
+		if (!(resourceManager instanceof ReloadableResourceManagerImpl resourceManagerImpl)) {
 			return new TranslatableText("commandBlockIDE.saveFunction.failed.resourceManager", functionId).formatted(Formatting.RED);
 		}
-		ReloadableResourceManagerImpl resourceManagerImpl = (ReloadableResourceManagerImpl)resourceManager;
 		Map<String, NamespaceResourceManager> namespaceResourceManagers = ((ReloadableResourceManagerImplAccessor)resourceManagerImpl).getNamespaceManagers();
 		@Nullable NamespaceResourceManager namespaceResourceManager = namespaceResourceManagers.get(functionId.getNamespace());
 		if (namespaceResourceManager == null) {
@@ -81,14 +80,13 @@ public final class CommandBlockIDE implements ModInitializer {
 			.filter(p -> p.contains(ResourceType.SERVER_DATA, functionResourceId))
 			.findFirst();
 
-		if (!maybePack.isPresent()) {
+		if (maybePack.isEmpty()) {
 			return new TranslatableText("commandBlockIDE.saveFunction.failed.noResourcePack", functionId).formatted(Formatting.RED);
 		}
 
 		ResourcePack pack = maybePack.get();
 
-		if (pack instanceof DirectoryResourcePack) {
-			DirectoryResourcePack directoryPack = (DirectoryResourcePack)pack;
+		if (pack instanceof DirectoryResourcePack directoryPack) {
 			File file = ((DirectoryResourcePackInvoker)directoryPack).invokeGetFile(AbstractFileResourcePackInvoker.invokeGetFilename(ResourceType.SERVER_DATA, functionResourceId));
 			try {
 				Files.write(file.toPath(), lines, StandardOpenOption.TRUNCATE_EXISTING);
