@@ -24,7 +24,7 @@ public abstract class CommandIDEScreen extends Screen {
 	private ButtonWidget doneButton;
 	private ButtonWidget applyButton;
 
-	private int scrollOffset = 0, maxScrollOffset = 0;
+	private int scrollOffset = 0, maxScrollOffset = Integer.MAX_VALUE;
 	public static final double SCROLL_SENSITIVITY = 50.0;
 
 	public CommandIDEScreen() {
@@ -60,6 +60,8 @@ public abstract class CommandIDEScreen extends Screen {
 		setLoaded(false);
 
 		maxScrollOffset = Math.max((editors.size() * 20 - 8) - (height - 50), 0);
+		// Make sure the scroll offset is in range.
+		setScrollOffset(getScrollOffset());
 	}
 
 	protected void initAfterFirst() {
