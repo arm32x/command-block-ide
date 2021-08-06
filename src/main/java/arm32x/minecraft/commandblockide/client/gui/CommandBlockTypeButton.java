@@ -99,12 +99,12 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton implemen
 		BufferRenderer.draw(bufferBuilder);
 
 		if (isHovered()) {
-			renderToolTip(matrices, mouseX, mouseY);
+			renderTooltip(matrices, mouseX, mouseY);
 		}
 	}
 
 	@Override
-	public void renderToolTip(MatrixStack matrices, int mouseX, int mouseY) {
+	public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY) {
 		screen.renderOrderedTooltip(matrices, Collections.singletonList(getMessage().asOrderedText()), mouseX, mouseY);
 	}
 

@@ -37,7 +37,7 @@ public final class CommandBlockAutoButton extends DynamicTexturedButton implemen
 	}
 
 	@Override
-	public void renderToolTip(MatrixStack matrices, int mouseX, int mouseY) {
+	public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY) {
 		screen.renderOrderedTooltip(matrices, Collections.singletonList(getMessage().asOrderedText()), mouseX, mouseY);
 	}
 
