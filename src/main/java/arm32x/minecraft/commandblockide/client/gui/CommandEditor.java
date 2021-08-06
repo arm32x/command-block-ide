@@ -42,7 +42,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 		this.index = index;
 		this.textRenderer = textRenderer;
 
-		commandField = addSelectableChild(new TextFieldWidget(textRenderer, x + leftPadding + 20 + 1, y + 1, width - leftPadding - rightPadding - 20 - 2, height - 2, new TranslatableText("advMode.command").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1))) {
+		commandField = addSelectableChild(new MultilineTextFieldWidget(textRenderer, x + leftPadding + 20 + 1, y + 1, width - leftPadding - rightPadding - 20 - 2, height - 2, new TranslatableText("advMode.command").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1))) {
 			@Override
 			protected MutableText getNarrationMessage() {
 				return super.getNarrationMessage().append(suggestor.getNarration());
