@@ -111,7 +111,7 @@ public abstract class CommandIDEScreen extends Screen {
 				}
 			}
 			return true;
-		} else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+		} else if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && !Screen.hasShiftDown()) {
 			Element element = getFocused();
 			if (element == null) {
 				apply();

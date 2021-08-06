@@ -15,7 +15,7 @@
         "client.ClientPlayerEntityMixin",
         "client.ClientPlayNetworkHandlerMixin",
         "client.CommandSuggestorMixin",
-        "client.TextFieldWidgetMixin"
+        "client.TextFieldWidgetAccessor"
     ],
     "injectors": {
         "defaultRequire": 1
