@@ -59,7 +59,7 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 		}
 	}
 
-	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0), print = true)
+	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	private boolean onCheckForSlash(boolean bl) {
 		return !ide$slashForbidden && bl;
 	}
