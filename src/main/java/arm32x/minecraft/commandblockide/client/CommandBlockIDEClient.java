@@ -18,7 +18,7 @@ public final class CommandBlockIDEClient implements ClientModInitializer {
 			Identifier id = buf.readIdentifier();
 			int lineCount = buf.readVarInt();
 			client.execute(() -> {
-				client.openScreen(new CommandFunctionIDEScreen(id, lineCount));
+				client.setScreen(new CommandFunctionIDEScreen(id, lineCount));
 			});
 		});
 		ClientPlayNetworking.registerGlobalReceiver(Packets.UPDATE_FUNCTION_COMMAND, (client, handler, buf, responseSender) -> {

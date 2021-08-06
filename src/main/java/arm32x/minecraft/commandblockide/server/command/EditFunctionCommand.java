@@ -29,7 +29,7 @@ public final class EditFunctionCommand {
 	 * functions and not tags.
 	 */
 	public static final SuggestionProvider<ServerCommandSource> SUGGESTION_PROVIDER = (ctx, builder) -> {
-		CommandFunctionManager functionManager = ctx.getSource().getMinecraftServer().getCommandFunctionManager();
+		CommandFunctionManager functionManager = ctx.getSource().getServer().getCommandFunctionManager();
 		return CommandSource.suggestIdentifiers(functionManager.getAllFunctions(), builder);
 	};
 

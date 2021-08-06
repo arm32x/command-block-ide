@@ -25,7 +25,7 @@ public final class ClientPlayerEntityMixin {
 	@Overwrite
 	public void openCommandBlockScreen(CommandBlockBlockEntity commandBlock) {
 		if (!(client.currentScreen instanceof CommandIDEScreen)) {
-			client.openScreen(new CommandBlockIDEScreen(commandBlock));
+			client.setScreen(new CommandBlockIDEScreen(commandBlock));
 		}
 	}
 }

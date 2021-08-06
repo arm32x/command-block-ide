@@ -34,12 +34,12 @@ public abstract class DynamicTexturedButton extends PressableWidget {
 		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, active ? 1.0f : 0.5f);
 		drawTexture(matrices, x, y, (float)u, (float)v, width, height, textureWidth, textureHeight);
 		if (this.isHovered()) {
-			this.renderToolTip(matrices, mouseX, mouseY);
+			this.renderTooltip(matrices, mouseX, mouseY);
 		}
 	}
 
 	@Override
 	public void appendNarrations(NarrationMessageBuilder builder) {
-		method_37021(builder);
+		appendDefaultNarrations(builder);
 	}
 }
