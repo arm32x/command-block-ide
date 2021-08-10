@@ -5,6 +5,7 @@ import arm32x.minecraft.commandblockide.util.OrderedTexts;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Arrays;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.regex.Pattern;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -36,6 +37,8 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 	private int lineHeight = 12;
 
+	private int cursorX = -1;
+
 	public MultilineTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text, boolean horizontalScrollEnabled, boolean verticalScrollEnabled) {
 		super(textRenderer, x, y, width, height, text);
 		this.horizontalScrollEnabled = horizontalScrollEnabled;
@@ -57,6 +60,14 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 					yield false;
 				}
 			}
+			case GLFW_KEY_DOWN -> {
+				moveCursorVertically(1);
+				yield true;
+			}
+			case GLFW_KEY_UP -> {
+				moveCursorVertically(-1);
+				yield true;
+			}
 			default -> super.keyPressed(keyCode, scanCode, modifiers);
 		};
 	}
@@ -65,14 +76,14 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	public void write(String text) {
 		int normalizedSelectionStart = Math.min(self.getSelectionStart(), self.getSelectionEnd());
 		int normalizedSelectionEnd = Math.max(self.getSelectionStart(), self.getSelectionEnd());
-		int remainingLength = self.invokeGetMaxLength() - self.getText().length() - (normalizedSelectionStart - normalizedSelectionEnd);
+		int remainingLength = self.invokeGetMaxLength() - getText().length() - (normalizedSelectionStart - normalizedSelectionEnd);
 		int length = text.length();
 		if (remainingLength < length) {
 			text = text.substring(0, remainingLength);
 			length = remainingLength;
 		}
 
-		String newText = new StringBuilder(self.getText())
+		String newText = new StringBuilder(getText())
 			.replace(normalizedSelectionStart, normalizedSelectionEnd, text)
 			.toString();
 		if (self.getTextPredicate().test(newText)) {
@@ -110,28 +121,23 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		int y = this.y + (self.getDrawsBackground() ? 3 : 0) - verticalScroll;
 
 		boolean showCursor = isFocused() && self.getFocusedTicks() / 6 % 2 == 0;
-		boolean lineCursor = self.getSelectionStart() < self.getText().length() || self.getText().length() >= self.invokeGetMaxLength();
+		boolean lineCursor = self.getSelectionStart() < getText().length() || getText().length() >= self.invokeGetMaxLength();
 
-		int cursorLine = (int)self.getText()
-			.substring(0, self.getSelectionStart())
-			.codePoints()
-			.filter(point -> point == '\n')
-			.count();
-
+		int cursorLine = getCursorLine();
 		int cursorX = x;
 		int cursorY = y + lineHeight * cursorLine;
 
-		OrderedText text = self.getRenderTextProvider().apply(self.getText(), 0);
+		OrderedText text = self.getRenderTextProvider().apply(getText(), 0);
 		List<OrderedText> lines = OrderedTexts.split('\n', text);
 		for (int index = 0; index < lines.size(); index++) {
 			OrderedText line = lines.get(index);
 			if (index == cursorLine) {
-				int indexOfLastNewlineBeforeCursor = self.getText().lastIndexOf('\n', Math.max(self.getSelectionStart() - 1, 0));
+				int indexOfLastNewlineBeforeCursor = getText().lastIndexOf('\n', Math.max(self.getSelectionStart() - 1, 0));
 				int codePointsBeforeCursor;
 				if (indexOfLastNewlineBeforeCursor != -1) {
-					codePointsBeforeCursor = self.getText().codePointCount(indexOfLastNewlineBeforeCursor, Math.max(self.getSelectionStart() - 1, 0));
+					codePointsBeforeCursor = getText().codePointCount(indexOfLastNewlineBeforeCursor, Math.max(self.getSelectionStart() - 1, 0));
 				} else {
-					codePointsBeforeCursor = self.getText().codePointCount(0, self.getSelectionStart());
+					codePointsBeforeCursor = getText().codePointCount(0, self.getSelectionStart());
 				}
 				int endX = self.getTextRenderer().drawWithShadow(matrices, OrderedTexts.limit(codePointsBeforeCursor, line), x, y + lineHeight * index, textColor) - 1;
 				self.getTextRenderer().drawWithShadow(matrices, OrderedTexts.skip(codePointsBeforeCursor, line), endX, y + lineHeight * index, textColor);
@@ -165,10 +171,18 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	public int getLineCount() {
-		return (int)self.getText()
+		return (int)getText()
 			.codePoints()
 			.filter(point -> point == '\n')
 			.count() + 1;
+	}
+
+	public int getCursorLine() {
+		return (int)getText()
+			.substring(0, self.getSelectionStart())
+			.codePoints()
+			.filter(point -> point == '\n')
+			.count();
 	}
 
 	protected int getHorizontalScroll() {
@@ -177,7 +191,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 	protected boolean setHorizontalScroll(int horizontalScroll) {
 		int previous = this.horizontalScroll;
-		int max = Math.max(0, Arrays.stream(self.getText().split("\n"))
+		int max = Math.max(0, Arrays.stream(getText().split("\n"))
 			.mapToInt(self.getTextRenderer()::getWidth)
 			.max()
 			.orElse(0) + 8 - width);
@@ -226,12 +240,12 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 		if (isFocused() && isMouseOver(mouseX, mouseY) && button == 0) {
 			int lineIndex = MathHelper.clamp(MathHelper.floor((mouseY - y - 2) / getLineHeight()), 0, getLineCount() - 1);
-			int lineStart = StringUtils.ordinalIndexOf(self.getText(), "\n", lineIndex) + 1;
-			int lineEnd = self.getText().indexOf('\n', lineStart);
+			int lineStart = StringUtils.ordinalIndexOf(getText(), "\n", lineIndex) + 1;
+			int lineEnd = getText().indexOf('\n', lineStart);
 			if (lineEnd == -1) {
-				lineEnd = self.getText().length();
+				lineEnd = getText().length();
 			}
-			String line = self.getText().substring(lineStart, lineEnd);
+			String line = getText().substring(lineStart, lineEnd);
 
 			setCursor(self.getTextRenderer().trimToWidth(line, MathHelper.floor(mouseX) - this.x - (self.getDrawsBackground() ? 4 : 0) + 2).length() + lineStart);
 			return true;
@@ -256,6 +270,30 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		} else {
 			return super.mouseScrolled(mouseX, mouseY, amount);
 		}
+	}
+
+	@Override
+	public void setCursor(int cursor) {
+		super.setCursor(cursor);
+		cursorX = -1;
+	}
+
+	public void moveCursorVertically(int lines) {
+		int currentLineStart = getText().lastIndexOf('\n', getCursor());
+		int targetLine = MathHelper.clamp(getCursorLine() + lines, 0, getLineCount());
+		int lineStart = StringUtils.ordinalIndexOf(getText(), "\n", targetLine) + 1;
+		int lineEnd = getText().indexOf('\n', lineStart);
+		if (lineEnd == -1) {
+			lineEnd = getText().length();
+		}
+
+		if (cursorX == -1) {
+			cursorX = self.getTextRenderer().getWidth(getText().substring(currentLineStart, getCursor()));
+		}
+		int indexInTargetLine = self.getTextRenderer().trimToWidth(getText().substring(lineStart, lineEnd), cursorX - 2).length() - 1;
+		int prevCursorX = cursorX;
+		setCursor(lineStart + indexInTargetLine);
+		cursorX = prevCursorX;
 	}
 
 	public int getLineHeight() {

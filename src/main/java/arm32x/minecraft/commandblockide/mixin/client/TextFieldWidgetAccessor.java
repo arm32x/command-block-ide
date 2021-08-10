@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface TextFieldWidgetAccessor {
 	@Accessor int getSelectionStart();
 	@Accessor int getSelectionEnd();
-	@Accessor String getText();
 	@Accessor Predicate<String> getTextPredicate();
 	@Accessor BiFunction<String, Integer, OrderedText> getRenderTextProvider();
 	@Accessor boolean getDrawsBackground();
