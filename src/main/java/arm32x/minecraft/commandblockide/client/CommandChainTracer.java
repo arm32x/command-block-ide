@@ -10,7 +10,6 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-@SuppressWarnings("ClassCanBeRecord")
 public final class CommandChainTracer {
 	private final ClientWorld world;
 
@@ -53,7 +52,11 @@ public final class CommandChainTracer {
 				Direction facing = blockState.get(CommandBlock.FACING);
 				BlockPos nextPosition = position.offset(facing);
 				BlockState nextBlockState = world.getBlockState(nextPosition);
-				return nextBlockState.isOf(Blocks.CHAIN_COMMAND_BLOCK) && !visited.contains(nextPosition);
+				return Stream.of(
+					Blocks.COMMAND_BLOCK,
+					Blocks.REPEATING_COMMAND_BLOCK,
+					Blocks.CHAIN_COMMAND_BLOCK
+				).anyMatch(nextBlockState::isOf) && !visited.contains(nextPosition);
 			}
 			return false;
 		}
@@ -65,7 +68,11 @@ public final class CommandChainTracer {
 				Direction facing = blockState.get(CommandBlock.FACING);
 				BlockPos nextPosition = position.offset(facing);
 				BlockState nextBlockState = world.getBlockState(nextPosition);
-				if (nextBlockState.isOf(Blocks.CHAIN_COMMAND_BLOCK) && !visited.contains(nextPosition)) {
+				if (Stream.of(
+						Blocks.COMMAND_BLOCK,
+						Blocks.REPEATING_COMMAND_BLOCK,
+						Blocks.CHAIN_COMMAND_BLOCK
+					).anyMatch(nextBlockState::isOf) && !visited.contains(nextPosition)) {
 					position = nextPosition;
 					visited.add(position);
 					return position;
@@ -87,7 +94,11 @@ public final class CommandChainTracer {
 		@Override
 		public boolean hasNext() {
 			BlockState blockState = world.getBlockState(position);
-			if (blockState.isOf(Blocks.CHAIN_COMMAND_BLOCK)) {
+			if (Stream.of(
+					Blocks.COMMAND_BLOCK,
+					Blocks.REPEATING_COMMAND_BLOCK,
+					Blocks.CHAIN_COMMAND_BLOCK
+				).anyMatch(blockState::isOf)) {
 				long resultCount = getStream(blockState).count();
 				return resultCount == 1;
 			}
@@ -97,7 +108,11 @@ public final class CommandChainTracer {
 		@Override
 		public BlockPos next() {
 			BlockState blockState = world.getBlockState(position);
-			if (blockState.isOf(Blocks.CHAIN_COMMAND_BLOCK)) {
+			if (Stream.of(
+					Blocks.COMMAND_BLOCK,
+					Blocks.REPEATING_COMMAND_BLOCK,
+					Blocks.CHAIN_COMMAND_BLOCK
+				).anyMatch(blockState::isOf)) {
 				List<BlockPos> results = getStream(blockState).collect(Collectors.toList());
 				if (results.size() != 1) {
 					throw new NoSuchElementException();

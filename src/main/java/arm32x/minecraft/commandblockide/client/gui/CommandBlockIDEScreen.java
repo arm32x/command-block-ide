@@ -70,7 +70,7 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 			editor.update();
 			setLoaded(true);
 			if (getFocused() == editor) {
-				editor.setFocused(true);
+				setFocusedEditor(editor);
 			}
 		}
 	}
