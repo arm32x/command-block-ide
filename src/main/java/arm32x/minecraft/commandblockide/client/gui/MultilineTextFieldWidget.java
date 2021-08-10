@@ -4,7 +4,6 @@ import arm32x.minecraft.commandblockide.mixin.client.TextFieldWidgetAccessor;
 import arm32x.minecraft.commandblockide.util.OrderedTexts;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -13,7 +12,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.CharacterVisitor;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import static org.lwjgl.glfw.GLFW.*;
@@ -30,7 +28,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	private int verticalScroll = 0;
 	public static final double SCROLL_SENSITIVITY = 15.0;
 
-	private int lineSpacing = 12;
+	private int lineHeight = 12;
 
 	public MultilineTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text) {
 		super(textRenderer, x, y, width, height, text);
@@ -109,7 +107,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			.count();
 
 		int cursorX = x;
-		int cursorY = y + lineSpacing * cursorLine;
+		int cursorY = y + lineHeight * cursorLine;
 
 		OrderedText text = self.getRenderTextProvider().apply(self.getText(), 0);
 		List<OrderedText> lines = OrderedTexts.split('\n', text);
@@ -123,11 +121,11 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 				} else {
 					codePointsBeforeCursor = self.getText().codePointCount(0, self.getSelectionStart());
 				}
-				int endX = self.getTextRenderer().drawWithShadow(matrices, OrderedTexts.limit(codePointsBeforeCursor, line), x, y + lineSpacing * index, textColor) - 1;
-				self.getTextRenderer().drawWithShadow(matrices, OrderedTexts.skip(codePointsBeforeCursor, line), endX, y + lineSpacing * index, textColor);
+				int endX = self.getTextRenderer().drawWithShadow(matrices, OrderedTexts.limit(codePointsBeforeCursor, line), x, y + lineHeight * index, textColor) - 1;
+				self.getTextRenderer().drawWithShadow(matrices, OrderedTexts.skip(codePointsBeforeCursor, line), endX, y + lineHeight * index, textColor);
 				cursorX = endX - 1;
 			} else {
-				self.getTextRenderer().drawWithShadow(matrices, line, x, y + lineSpacing * index, textColor);
+				self.getTextRenderer().drawWithShadow(matrices, line, x, y + lineHeight * index, textColor);
 			}
 		}
 
@@ -154,19 +152,26 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		}
 	}
 
-	public int getHorizontalScroll() {
+	public int getLineCount() {
+		return (int)self.getText()
+			.codePoints()
+			.filter(point -> point == '\n')
+			.count() + 1;
+	}
+
+	protected int getHorizontalScroll() {
 		return horizontalScroll;
 	}
 
-	public void setHorizontalScroll(int horizontalScroll) {
+	protected void setHorizontalScroll(int horizontalScroll) {
 		this.horizontalScroll = horizontalScroll;
 	}
 
-	public int getVerticalScroll() {
+	protected int getVerticalScroll() {
 		return verticalScroll;
 	}
 
-	public void setVerticalScroll(int verticalScroll) {
+	protected void setVerticalScroll(int verticalScroll) {
 		this.verticalScroll = verticalScroll;
 	}
 
@@ -184,11 +189,15 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		}
 	}
 
-	public int getLineSpacing() {
-		return lineSpacing;
+	public int getLineHeight() {
+		return lineHeight;
 	}
 
-	public void setLineSpacing(int lineSpacing) {
-		this.lineSpacing = lineSpacing;
+	public void setLineHeight(int lineHeight) {
+		this.lineHeight = lineHeight;
+	}
+
+	public void setHeight(int height) {
+		this.height = height;
 	}
 }

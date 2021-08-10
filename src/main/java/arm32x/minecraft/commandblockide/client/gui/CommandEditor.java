@@ -1,6 +1,7 @@
 package arm32x.minecraft.commandblockide.client.gui;
 
 import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
+import java.util.function.IntConsumer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -11,10 +12,10 @@ import net.minecraft.client.gui.screen.CommandSuggestor;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
-import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
+import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
 public abstract class CommandEditor extends Container implements Drawable, Element {
@@ -27,10 +28,12 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 
 	protected final TextRenderer textRenderer;
 
-	protected final TextFieldWidget commandField;
+	protected final MultilineTextFieldWidget commandField;
 	protected final CommandSuggestor suggestor;
 
 	private boolean loaded = false;
+
+	protected @Nullable IntConsumer heightChangedListener = null;
 
 	public CommandEditor(Screen screen, TextRenderer textRenderer, int x, int y, int width, int height, int leftPadding, int rightPadding, int index) {
 		this.x = x;
@@ -63,6 +66,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 
 	public void commandChanged(String newCommand) {
 		suggestor.refresh();
+		setHeight(commandField.getLineCount() * commandField.getLineHeight() + 4);
 	}
 
 	@Override
@@ -172,9 +176,33 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 		return height;
 	}
 
+	public void setHeight(int height) {
+		boolean changed = height != this.height;
+		this.height = height;
+
+		commandField.setHeight(height - 2);
+
+		suggestor.refresh();
+
+		if (changed) {
+			onHeightChange(height);
+		}
+	}
+
+	protected void onHeightChange(int height) {
+		if (heightChangedListener != null) {
+			heightChangedListener.accept(height);
+		}
+	}
+
+	public void setHeightChangedListener(@Nullable IntConsumer listener) {
+		heightChangedListener = listener;
+	}
+
 	@Override
 	public void appendNarrations(NarrationMessageBuilder builder) {
 		builder.put(NarrationPart.TITLE, new TranslatableText("narration.edit_box", commandField.getText()));
 	}
+
 }
 

@@ -19,6 +19,7 @@ import org.lwjgl.glfw.GLFW;
 @Environment(EnvType.CLIENT)
 public abstract class CommandIDEScreen extends Screen {
 	protected final List<CommandEditor> editors = new ArrayList<>();
+	protected int combinedEditorHeight = 0;
 	private boolean initialized = false;
 
 	private ButtonWidget doneButton;
@@ -63,7 +64,7 @@ public abstract class CommandIDEScreen extends Screen {
 	protected void firstInit() {
 		setLoaded(false);
 
-		maxScrollOffset = Math.max((editors.size() * 20 - 8) - (height - 50), 0);
+		maxScrollOffset = Math.max(combinedEditorHeight - (height - 50), 0);
 		// Make sure the scroll offset is in range.
 		setScrollOffset(getScrollOffset());
 	}
@@ -74,7 +75,7 @@ public abstract class CommandIDEScreen extends Screen {
 			editor.setWidth(width - 16);
 		}
 
-		maxScrollOffset = Math.max((editors.size() * 20 - 8) - (height - 50), 0);
+		maxScrollOffset = Math.max(combinedEditorHeight - (height - 50), 0);
 		Element element = getFocused();
 		if (element instanceof CommandEditor) {
 			setFocusedEditor((CommandEditor)element);
@@ -82,6 +83,7 @@ public abstract class CommandIDEScreen extends Screen {
 	}
 
 	protected void addEditor(CommandEditor editor) {
+		editor.setHeightChangedListener(height -> repositionEditors());
 		editors.add(editor);
 		addSelectableChild(editor);
 	}
@@ -211,10 +213,16 @@ public abstract class CommandIDEScreen extends Screen {
 
 	public void setScrollOffset(int offset) {
 		scrollOffset = MathHelper.clamp(offset, 0, maxScrollOffset);
-		for (int index = 0; index < editors.size(); index++) {
-			CommandEditor editor = editors.get(index);
-			editor.setY(20 * index + 8 - scrollOffset);
+		repositionEditors();
+	}
+
+	protected void repositionEditors() {
+		int heightAccumulator = 8;
+		for (CommandEditor editor : editors) {
+			editor.setY(heightAccumulator - scrollOffset);
+			heightAccumulator += editor.getHeight() + 4;
 		}
+		combinedEditorHeight = heightAccumulator - 12;
 	}
 
 	@Override
@@ -247,7 +255,7 @@ public abstract class CommandIDEScreen extends Screen {
 	public void setFocusedEditor(CommandEditor editor) {
 		setFocused(editor);
 		editor.setFocused(true);
-		setScrollOffset(MathHelper.clamp(getScrollOffset(), 20 * editor.index - height + 62, 20 * editor.index));
+//		setScrollOffset(MathHelper.clamp(getScrollOffset(), 20 * editor.index - height + 62, 20 * editor.index));
 	}
 
 	@Override
