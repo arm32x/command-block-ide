@@ -19,7 +19,7 @@ import org.lwjgl.glfw.GLFW;
 @Environment(EnvType.CLIENT)
 public abstract class CommandIDEScreen extends Screen {
 	protected final List<CommandEditor> editors = new ArrayList<>();
-	protected int combinedEditorHeight = 0;
+	protected int combinedEditorHeight = Integer.MAX_VALUE;
 	private boolean initialized = false;
 
 	private ButtonWidget doneButton;
@@ -64,6 +64,8 @@ public abstract class CommandIDEScreen extends Screen {
 	protected void firstInit() {
 		setLoaded(false);
 
+		// Make sure 'combinedEditorHeight' is set.
+		repositionEditors();
 		maxScrollOffset = Math.max(combinedEditorHeight - (height - 50), 0);
 		// Make sure the scroll offset is in range.
 		setScrollOffset(getScrollOffset());
@@ -200,7 +202,7 @@ public abstract class CommandIDEScreen extends Screen {
 		for (CommandEditor editor : editors) {
 			if (editor.mouseScrolled(mouseX, mouseY, amount)) return true;
 		}
-		if (maxScrollOffset != 0 && amount != 0 && mouseY < height - 36) {
+		if (maxScrollOffset != 0 && amount != 0 && mouseY < height - 36 && !Screen.hasShiftDown()) {
 			setScrollOffset(getScrollOffset() - (int)Math.round(amount * SCROLL_SENSITIVITY));
 			return true;
 		}

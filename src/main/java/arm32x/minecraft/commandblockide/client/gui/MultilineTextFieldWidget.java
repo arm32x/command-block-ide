@@ -3,7 +3,9 @@ package arm32x.minecraft.commandblockide.client.gui;
 import arm32x.minecraft.commandblockide.mixin.client.TextFieldWidgetAccessor;
 import arm32x.minecraft.commandblockide.util.OrderedTexts;
 import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -14,6 +16,8 @@ import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.MathHelper;
+import org.apache.commons.lang3.StringUtils;
 import static org.lwjgl.glfw.GLFW.*;
 
 @Environment(EnvType.CLIENT)
@@ -24,14 +28,22 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	private final TextFieldWidgetAccessor self = (TextFieldWidgetAccessor)this;
 
 	// TODO: Set and enforce maximum scroll offsets.
+	private boolean horizontalScrollEnabled;
 	private int horizontalScroll = 0;
+	private boolean verticalScrollEnabled;
 	private int verticalScroll = 0;
 	public static final double SCROLL_SENSITIVITY = 15.0;
 
 	private int lineHeight = 12;
 
-	public MultilineTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text) {
+	public MultilineTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text, boolean horizontalScrollEnabled, boolean verticalScrollEnabled) {
 		super(textRenderer, x, y, width, height, text);
+		this.horizontalScrollEnabled = horizontalScrollEnabled;
+		this.verticalScrollEnabled = verticalScrollEnabled;
+	}
+
+	public MultilineTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text) {
+		this(textRenderer, x, y, width, height, text, true, true);
 	}
 
 	@Override
@@ -163,27 +175,84 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		return horizontalScroll;
 	}
 
-	protected void setHorizontalScroll(int horizontalScroll) {
-		this.horizontalScroll = horizontalScroll;
+	protected boolean setHorizontalScroll(int horizontalScroll) {
+		int previous = this.horizontalScroll;
+		int max = Math.max(0, Arrays.stream(self.getText().split("\n"))
+			.mapToInt(self.getTextRenderer()::getWidth)
+			.max()
+			.orElse(0) + 8 - width);
+		this.horizontalScroll = MathHelper.clamp(horizontalScroll, 0, max);
+		return this.horizontalScroll != previous;
 	}
 
 	protected int getVerticalScroll() {
 		return verticalScroll;
 	}
 
-	protected void setVerticalScroll(int verticalScroll) {
-		this.verticalScroll = verticalScroll;
+	protected boolean setVerticalScroll(int verticalScroll) {
+		int previous = this.verticalScroll;
+		int max = Math.max(0, getLineCount() * getLineHeight() + 2 - height);
+		this.verticalScroll = MathHelper.clamp(verticalScroll, 0, max);
+		return this.verticalScroll != previous;
+	}
+
+	public boolean isHorizontalScrollEnabled() {
+		return horizontalScrollEnabled;
+	}
+
+	public void setHorizontalScrollEnabled(boolean enabled) {
+		horizontalScrollEnabled = enabled;
+		horizontalScroll = 0;
+	}
+
+	public boolean isVerticalScrollEnabled() {
+		return verticalScrollEnabled;
+	}
+
+	public void setVerticalScrollEnabled(boolean enabled) {
+		verticalScrollEnabled = enabled;
+		verticalScroll = 0;
+	}
+
+	@Override
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		if (!this.isVisible()) {
+			return false;
+		}
+
+		if (self.isFocusUnlocked()) {
+			setTextFieldFocused(isMouseOver(mouseX, mouseY));
+		}
+
+		if (isFocused() && isMouseOver(mouseX, mouseY) && button == 0) {
+			int lineIndex = MathHelper.clamp(MathHelper.floor((mouseY - y - 2) / getLineHeight()), 0, getLineCount() - 1);
+			int lineStart = StringUtils.ordinalIndexOf(self.getText(), "\n", lineIndex) + 1;
+			int lineEnd = self.getText().indexOf('\n', lineStart);
+			if (lineEnd == -1) {
+				lineEnd = self.getText().length();
+			}
+			String line = self.getText().substring(lineStart, lineEnd);
+
+			setCursor(self.getTextRenderer().trimToWidth(line, MathHelper.floor(mouseX) - this.x - (self.getDrawsBackground() ? 4 : 0) + 2).length() + lineStart);
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
 		if (this.isMouseOver(mouseX, mouseY)) {
 			if (Screen.hasShiftDown()) {
-				setHorizontalScroll(getHorizontalScroll() - (int)Math.round(amount * SCROLL_SENSITIVITY));
+				if (isHorizontalScrollEnabled()) {
+					return setHorizontalScroll(getHorizontalScroll() - (int)Math.round(amount * SCROLL_SENSITIVITY));
+				}
 			} else {
-				setVerticalScroll(getVerticalScroll() - (int)Math.round(amount * SCROLL_SENSITIVITY));
+				if (isVerticalScrollEnabled()) {
+					return setVerticalScroll(getVerticalScroll() - (int)Math.round(amount * SCROLL_SENSITIVITY));
+				}
 			}
-			return true;
+			return false;
 		} else {
 			return super.mouseScrolled(mouseX, mouseY, amount);
 		}

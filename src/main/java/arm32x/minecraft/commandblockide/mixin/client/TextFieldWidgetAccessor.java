@@ -17,11 +17,12 @@ public interface TextFieldWidgetAccessor {
 	@Accessor Predicate<String> getTextPredicate();
 	@Accessor BiFunction<String, Integer, OrderedText> getRenderTextProvider();
 	@Accessor boolean getDrawsBackground();
-	@Accessor("editable") boolean isEditable();
+	@Accessor boolean isEditable();
 	@Accessor int getEditableColor();
 	@Accessor int getUneditableColor();
 	@Accessor TextRenderer getTextRenderer();
 	@Accessor int getFocusedTicks();
+	@Accessor boolean isFocusUnlocked();
 
 	@Invoker void invokeOnChanged(String newText);
 	@Invoker int invokeGetMaxLength();
