@@ -1,5 +1,7 @@
 package arm32x.minecraft.commandblockide.client.gui;
 
+import arm32x.minecraft.commandblockide.client.processor.CommandProcessor;
+import arm32x.minecraft.commandblockide.client.processor.MultilineCommandProcessor;
 import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
 import java.util.function.IntConsumer;
 import net.fabricmc.api.EnvType;
@@ -30,6 +32,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 
 	protected final MultilineTextFieldWidget commandField;
 	protected final CommandSuggestor suggestor;
+	protected final CommandProcessor processor = MultilineCommandProcessor.getInstance();
 
 	private boolean loaded = false;
 
@@ -129,8 +132,8 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 		}
 	}
 
-	public String getCommand() {
-		return commandField.getText();
+	public String getSingleLineCommand() {
+		return processor.processCommand(commandField.getText()).getLeft();
 	}
 
 	public boolean isLoaded() {

@@ -41,7 +41,7 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen {
 		buf.writeIdentifier(functionId);
 		buf.writeVarInt(editors.size());
 		for (CommandEditor editor : editors) {
-			buf.writeString(editor.getCommand(), Integer.MAX_VALUE >> 2);
+			buf.writeString(editor.getSingleLineCommand(), Integer.MAX_VALUE >> 2);
 		}
 		PacketSplitter.updateChunkCount(buf);
 

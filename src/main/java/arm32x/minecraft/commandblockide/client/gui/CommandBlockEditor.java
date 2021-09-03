@@ -55,7 +55,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 			CommandBlockExecutor executor = blockEntity.getCommandExecutor();
 			networkHandler.sendPacket(new UpdateCommandBlockC2SPacket(
 				new BlockPos(executor.getPos()),
-				commandField.getText(),
+				getSingleLineCommand(),
 				typeButton.type,
 				trackOutputButton.trackingOutput,
 				typeButton.conditional,
