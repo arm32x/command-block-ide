@@ -27,6 +27,15 @@ dependencies {
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${project.junit_version}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit_version}"
+    testImplementation "net.jqwik:jqwik:${project.jqwik_version}"
+    testImplementation("org.assertj:assertj-core:${project.assertj_version}")
+}
+
+test {
+    useJUnitPlatform()
 }
 
 processResources {
