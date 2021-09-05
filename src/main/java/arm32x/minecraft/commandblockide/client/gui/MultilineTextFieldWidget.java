@@ -31,7 +31,6 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 	private static final String INDENT = "    ";
 
-	// TODO: Set and enforce maximum scroll offsets.
 	private boolean horizontalScrollEnabled;
 	private int horizontalScroll = 0;
 	private boolean verticalScrollEnabled;
@@ -151,7 +150,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		for (int index = 0; index < lines.size(); index++) {
 			OrderedText line = lines.get(index);
 			if (index == cursorLine) {
-				int indexOfLastNewlineBeforeCursor = getLineStart(self.getSelectionStart()) - 1;
+				int indexOfLastNewlineBeforeCursor = getLineStartBefore(self.getSelectionStart()) - 1;
 				int codePointsBeforeCursor;
 				if (indexOfLastNewlineBeforeCursor != -1) {
 					codePointsBeforeCursor = getText().codePointCount(indexOfLastNewlineBeforeCursor, Math.max(self.getSelectionStart() - 1, 0));
@@ -174,7 +173,6 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			}
 		}
 
-		// TODO: Draw selection.
 		if (isFocused() && self.getSelectionStart() != self.getSelectionEnd()) {
 			renderSelection(matrices, x, y);
 		}
@@ -186,9 +184,9 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		int normalizedSelectionStart = Math.min(self.getSelectionStart(), self.getSelectionEnd());
 		int normalizedSelectionEnd = Math.max(self.getSelectionStart(), self.getSelectionEnd());
 
-		int startX = x + self.getTextRenderer().getWidth(getText().substring(getLineStart(normalizedSelectionStart), normalizedSelectionStart)) - 1;
+		int startX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionStart), normalizedSelectionStart)) - 1;
 		int startY = y + lineHeight * getLineIndex(normalizedSelectionStart) - 1;
-		int endX = x + self.getTextRenderer().getWidth(getText().substring(getLineStart(normalizedSelectionEnd), normalizedSelectionEnd)) - 1;
+		int endX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionEnd), normalizedSelectionEnd)) - 1;
 		int endY = y + lineHeight * getLineIndex(normalizedSelectionEnd) - 1;
 
 		int leftEdge = this.x + (self.getDrawsBackground() ? 4 : 0);
@@ -266,12 +264,16 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			.count();
 	}
 
-	public int getLineStart(int charIndex) {
+	public int getLineStart(int lineIndex) {
+		return StringUtils.ordinalIndexOf(getText(), "\n", lineIndex) + 1;
+	}
+
+	public int getLineStartBefore(int charIndex) {
 		return getText().lastIndexOf('\n', Math.max(charIndex - 1, 0)) + 1;
 	}
 
 	public String getLine(int lineIndex) {
-		int lineStart = StringUtils.ordinalIndexOf(getText(), "\n", lineIndex) + 1;
+		int lineStart = getLineStart(lineIndex);
 		int lineEnd = getText().indexOf('\n', lineStart);
 		if (lineEnd == -1) {
 			lineEnd = getText().length();
@@ -280,7 +282,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	public void setLine(int index, String line) {
-		int lineStart = StringUtils.ordinalIndexOf(getText(), "\n", index) + 1;
+		int lineStart = getLineStart(index);
 		int lineEnd = getText().indexOf('\n', lineStart);
 		if (lineEnd == -1) {
 			lineEnd = getText().length();
@@ -386,20 +388,17 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	public void moveCursorVertically(int lines) {
-		int currentLineStart = getText().lastIndexOf('\n', getCursor());
-		int targetLine = MathHelper.clamp(getCursorLine() + lines, 0, getLineCount());
-		int lineStart = StringUtils.ordinalIndexOf(getText(), "\n", targetLine) + 1;
-		int lineEnd = getText().indexOf('\n', lineStart);
-		if (lineEnd == -1) {
-			lineEnd = getText().length();
-		}
+		int currentLineStart = getLineStart(getCursorLine());
+		int targetLineIndex = MathHelper.clamp(getCursorLine() + lines, 0, getLineCount());
+		String targetLine = getLine(targetLineIndex);
+		int targetLineStart = getLineStart(targetLineIndex);
 
 		if (cursorX == -1) {
 			cursorX = self.getTextRenderer().getWidth(getText().substring(currentLineStart, getCursor()));
 		}
-		int indexInTargetLine = self.getTextRenderer().trimToWidth(getText().substring(lineStart, lineEnd), cursorX - 2).length() - 1;
+		int indexInTargetLine = self.getTextRenderer().trimToWidth(targetLine, cursorX).length();
 		int prevCursorX = cursorX;
-		setCursor(lineStart + indexInTargetLine);
+		setCursor(targetLineStart + indexInTargetLine);
 		cursorX = prevCursorX;
 	}
 
