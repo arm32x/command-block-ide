@@ -2,6 +2,7 @@ package arm32x.minecraft.commandblockide.client.gui;
 
 import arm32x.minecraft.commandblockide.mixin.client.TextFieldWidgetAccessor;
 import arm32x.minecraft.commandblockide.util.OrderedTexts;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Arrays;
 import java.util.List;
@@ -11,11 +12,13 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.render.*;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Matrix4f;
 import org.apache.commons.lang3.StringUtils;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -148,7 +151,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		for (int index = 0; index < lines.size(); index++) {
 			OrderedText line = lines.get(index);
 			if (index == cursorLine) {
-				int indexOfLastNewlineBeforeCursor = getText().lastIndexOf('\n', Math.max(self.getSelectionStart() - 1, 0));
+				int indexOfLastNewlineBeforeCursor = getLineStart(self.getSelectionStart()) - 1;
 				int codePointsBeforeCursor;
 				if (indexOfLastNewlineBeforeCursor != -1) {
 					codePointsBeforeCursor = getText().codePointCount(indexOfLastNewlineBeforeCursor, Math.max(self.getSelectionStart() - 1, 0));
@@ -172,8 +175,66 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		}
 
 		// TODO: Draw selection.
+		if (isFocused() && self.getSelectionStart() != self.getSelectionEnd()) {
+			renderSelection(matrices, x, y);
+		}
 
 		RenderSystem.disableScissor();
+	}
+
+	private void renderSelection(MatrixStack matrices, int x, int y) {
+		int normalizedSelectionStart = Math.min(self.getSelectionStart(), self.getSelectionEnd());
+		int normalizedSelectionEnd = Math.max(self.getSelectionStart(), self.getSelectionEnd());
+
+		int startX = x + self.getTextRenderer().getWidth(getText().substring(getLineStart(normalizedSelectionStart), normalizedSelectionStart)) - 1;
+		int startY = y + lineHeight * getLineIndex(normalizedSelectionStart) - 1;
+		int endX = x + self.getTextRenderer().getWidth(getText().substring(getLineStart(normalizedSelectionEnd), normalizedSelectionEnd)) - 1;
+		int endY = y + lineHeight * getLineIndex(normalizedSelectionEnd) - 1;
+
+		int leftEdge = this.x + (self.getDrawsBackground() ? 4 : 0);
+		int rightEdge = leftEdge + this.getInnerWidth();
+
+		Matrix4f matrix = matrices.peek().getModel();
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder bufferBuilder = tessellator.getBuffer();
+		RenderSystem.setShader(GameRenderer::getPositionShader);
+		RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
+		RenderSystem.disableTexture();
+		RenderSystem.enableColorLogicOp();
+		RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
+		bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
+
+		if (startY == endY) {
+			// Selection spans one line
+			bufferBuilder.vertex(matrix, endX, startY, 0.0f).next();
+			bufferBuilder.vertex(matrix, startX, startY, 0.0f).next();
+			bufferBuilder.vertex(matrix, startX, endY + lineHeight - 1, 0.0f).next();
+			bufferBuilder.vertex(matrix, endX, endY + lineHeight - 1, 0.0f).next();
+		} else {
+			// Selection spans two or more lines
+			bufferBuilder.vertex(matrix, rightEdge, startY, 0.0f).next();
+			bufferBuilder.vertex(matrix, startX, startY, 0.0f).next();
+			bufferBuilder.vertex(matrix, startX, startY + lineHeight, 0.0f).next();
+			bufferBuilder.vertex(matrix, rightEdge, startY + lineHeight, 0.0f).next();
+
+			if (!(startY - lineHeight == endY || endY - lineHeight == startY)) {
+				// Selection spans three or more lines
+				bufferBuilder.vertex(matrix, rightEdge, startY + lineHeight, 0.0f).next();
+				bufferBuilder.vertex(matrix, leftEdge, startY + lineHeight, 0.0f).next();
+				bufferBuilder.vertex(matrix, leftEdge, endY, 0.0f).next();
+				bufferBuilder.vertex(matrix, rightEdge, endY, 0.0f).next();
+			}
+
+			bufferBuilder.vertex(matrix, endX, endY, 0.0f).next();
+			bufferBuilder.vertex(matrix, leftEdge, endY, 0.0f).next();
+			bufferBuilder.vertex(matrix, leftEdge, endY + lineHeight - 1, 0.0f).next();
+			bufferBuilder.vertex(matrix, endX, endY + lineHeight - 1, 0.0f).next();
+		}
+
+		tessellator.draw();
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.disableColorLogicOp();
+		RenderSystem.enableTexture();
 	}
 
 	@Override
@@ -194,15 +255,23 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	public int getCursorLine() {
+		return getLineIndex(self.getSelectionStart());
+	}
+
+	public int getLineIndex(int charIndex) {
 		return (int)getText()
-			.substring(0, self.getSelectionStart())
+			.substring(0, charIndex)
 			.codePoints()
 			.filter(point -> point == '\n')
 			.count();
 	}
 
-	public String getLine(int index) {
-		int lineStart = StringUtils.ordinalIndexOf(getText(), "\n", index) + 1;
+	public int getLineStart(int charIndex) {
+		return getText().lastIndexOf('\n', Math.max(charIndex - 1, 0)) + 1;
+	}
+
+	public String getLine(int lineIndex) {
+		int lineStart = StringUtils.ordinalIndexOf(getText(), "\n", lineIndex) + 1;
 		int lineEnd = getText().indexOf('\n', lineStart);
 		if (lineEnd == -1) {
 			lineEnd = getText().length();
@@ -285,6 +354,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			String line = getText().substring(lineStart, lineEnd);
 
 			setCursor(self.getTextRenderer().trimToWidth(line, MathHelper.floor(mouseX) - this.x - (self.getDrawsBackground() ? 4 : 0) + 2).length() + lineStart);
+			setSelectionEnd(self.getSelectionStart());
 			return true;
 		}
 
