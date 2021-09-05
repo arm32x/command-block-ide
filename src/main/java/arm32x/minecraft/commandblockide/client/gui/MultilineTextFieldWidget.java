@@ -5,8 +5,6 @@ import arm32x.minecraft.commandblockide.util.OrderedTexts;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Arrays;
 import java.util.List;
-import java.util.OptionalInt;
-import java.util.regex.Pattern;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -27,6 +25,8 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	 * Allows easy and convenient access to private fields in the superclass.
 	 */
 	private final TextFieldWidgetAccessor self = (TextFieldWidgetAccessor)this;
+
+	private static final String INDENT = "    ";
 
 	// TODO: Set and enforce maximum scroll offsets.
 	private boolean horizontalScrollEnabled;
@@ -66,6 +66,22 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			}
 			case GLFW_KEY_UP -> {
 				moveCursorVertically(-1);
+				yield true;
+			}
+			case GLFW_KEY_TAB -> {
+				if (Screen.hasShiftDown()) {
+					int index = getCursorLine();
+					String line = getLine(index);
+					if (line.startsWith(INDENT)) {
+						int selectionStart = self.getSelectionStart();
+						int selectionEnd = self.getSelectionEnd();
+						setLine(index, line.substring(INDENT.length()));
+						setSelectionStart(selectionStart - INDENT.length());
+						setSelectionEnd(selectionEnd - INDENT.length());
+					}
+				} else {
+					write(INDENT);
+				}
 				yield true;
 			}
 			default -> super.keyPressed(keyCode, scanCode, modifiers);
@@ -183,6 +199,27 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			.codePoints()
 			.filter(point -> point == '\n')
 			.count();
+	}
+
+	public String getLine(int index) {
+		int lineStart = StringUtils.ordinalIndexOf(getText(), "\n", index) + 1;
+		int lineEnd = getText().indexOf('\n', lineStart);
+		if (lineEnd == -1) {
+			lineEnd = getText().length();
+		}
+		return getText().substring(lineStart, lineEnd);
+	}
+
+	public void setLine(int index, String line) {
+		int lineStart = StringUtils.ordinalIndexOf(getText(), "\n", index) + 1;
+		int lineEnd = getText().indexOf('\n', lineStart);
+		if (lineEnd == -1) {
+			lineEnd = getText().length();
+		}
+
+		StringBuilder builder = new StringBuilder(getText());
+		builder.replace(lineStart, lineEnd, line);
+		setText(builder.toString());
 	}
 
 	protected int getHorizontalScroll() {
