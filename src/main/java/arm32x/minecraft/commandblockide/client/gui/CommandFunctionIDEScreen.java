@@ -30,7 +30,7 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen {
 	public void update(int index, String command) {
 		CommandEditor editor = editors.get(index);
 		if (editor instanceof CommandFunctionEditor) {
-			((CommandFunctionEditor)editor).update(command);
+			((CommandFunctionEditor)editor).update(functionId, command);
 		}
 	}
 
@@ -42,6 +42,9 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen {
 		buf.writeVarInt(editors.size());
 		for (CommandEditor editor : editors) {
 			buf.writeString(editor.getSingleLineCommand(), Integer.MAX_VALUE >> 2);
+			if (editor instanceof CommandFunctionEditor functionEditor) {
+				functionEditor.saveMultilineCommand(functionId);
+			}
 		}
 		PacketSplitter.updateChunkCount(buf);
 

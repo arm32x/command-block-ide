@@ -6,6 +6,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.util.Pair;
 
 @Environment(EnvType.CLIENT)
+@FunctionalInterface
 public interface CommandProcessor {
 	/**
 	 * Process a command into a version that is compatible with Minecraft's

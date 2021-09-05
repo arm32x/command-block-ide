@@ -1,9 +1,13 @@
 package arm32x.minecraft.commandblockide.client.gui;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
+import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
+import java.util.Objects;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 public final class CommandFunctionEditor extends CommandEditor implements Dirtyable {
@@ -19,9 +23,28 @@ public final class CommandFunctionEditor extends CommandEditor implements Dirtya
 		suggestorExtension.ide$setSlashForbidden(true);
 	}
 
-	public void update(String command) {
+	void saveMultilineCommand(Identifier function) {
+		MinecraftClient client = MinecraftClient.getInstance();
+		String world = client.isInSingleplayer()
+			? Objects.requireNonNull(client.getServer()).getSaveProperties().getLevelName()
+			: Objects.requireNonNull(client.getCurrentServerEntry()).name;
+
+		MultilineCommandStorage.getInstance().add(commandField.getText(), getSingleLineCommand(), client.isInSingleplayer(), world, function, index);
+	}
+
+	public void update(Identifier functionId, String command) {
 		originalCommand = command;
-		commandField.setText(command);
+		MinecraftClient client = MinecraftClient.getInstance();
+		commandField.setText(MultilineCommandStorage.getInstance().getRobust(
+			command,
+			processor,
+			client.isInSingleplayer(),
+			client.isInSingleplayer()
+				? Objects.requireNonNull(client.getServer()).getSaveProperties().getLevelName()
+				: Objects.requireNonNull(client.getCurrentServerEntry()).name,
+			functionId,
+			index
+		));
 
 		suggestor.setWindowActive(commandField.isActive());
 		suggestor.refresh();

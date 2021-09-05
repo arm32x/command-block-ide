@@ -1,9 +1,12 @@
 package arm32x.minecraft.commandblockide.client.gui;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
+import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import arm32x.minecraft.commandblockide.client.update.DataCommandUpdateRequester;
+import java.util.Objects;
 import java.util.stream.Stream;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -65,12 +68,31 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 			if (!trackOutputButton.trackingOutput) {
 				executor.setLastOutput(null);
 			}
+			saveMultilineCommand();
 		}
+	}
+
+	private void saveMultilineCommand() {
+		MinecraftClient client = MinecraftClient.getInstance();
+		String world = client.isInSingleplayer()
+			? Objects.requireNonNull(client.getServer()).getSaveProperties().getLevelName()
+			: Objects.requireNonNull(client.getCurrentServerEntry()).name;
+
+		MultilineCommandStorage.getInstance().add(commandField.getText(), getSingleLineCommand(), client.isInSingleplayer(), world, blockEntity.getPos());
 	}
 
 	public void update() {
 		CommandBlockExecutor executor = blockEntity.getCommandExecutor();
-		commandField.setText(executor.getCommand());
+		MinecraftClient client = MinecraftClient.getInstance();
+		commandField.setText(MultilineCommandStorage.getInstance().getRobust(
+			executor.getCommand(),
+			processor,
+			client.isInSingleplayer(),
+			client.isInSingleplayer()
+				? Objects.requireNonNull(client.getServer()).getSaveProperties().getLevelName()
+				: Objects.requireNonNull(client.getCurrentServerEntry()).name,
+			new BlockPos(executor.getPos())
+		));
 		typeButton.type = blockEntity.getCommandBlockType();
 		typeButton.conditional = blockEntity.isConditionalCommandBlock();
 		autoButton.auto = blockEntity.isAuto();
