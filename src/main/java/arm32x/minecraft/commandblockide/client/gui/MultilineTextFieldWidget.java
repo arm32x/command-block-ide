@@ -86,6 +86,25 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 				}
 				yield true;
 			}
+			case GLFW_KEY_HOME -> {
+				int position = getText().lastIndexOf('\n', self.getSelectionStart() == 0 ? 0 : self.getSelectionStart() - 1) + 1;
+				setSelectionStart(position);
+				if (!Screen.hasShiftDown()) {
+					setSelectionEnd(position);
+				}
+				yield true;
+			}
+			case GLFW_KEY_END -> {
+				int position = getText().indexOf('\n', self.getSelectionStart());
+				if (position == -1) {
+					position = getText().length();
+				}
+				setSelectionStart(position);
+				if (!Screen.hasShiftDown()) {
+					setSelectionEnd(position);
+				}
+				yield true;
+			}
 			default -> super.keyPressed(keyCode, scanCode, modifiers);
 		};
 	}
