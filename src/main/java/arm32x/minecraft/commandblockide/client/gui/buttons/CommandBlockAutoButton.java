@@ -1,4 +1,4 @@
-package arm32x.minecraft.commandblockide.client.gui;
+package arm32x.minecraft.commandblockide.client.gui.buttons;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import java.util.Collections;
