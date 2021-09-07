@@ -1,5 +1,6 @@
 package arm32x.minecraft.commandblockide.client.gui;
 
+import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import java.util.ArrayList;
 import java.util.List;
 import net.fabricmc.api.EnvType;
@@ -69,6 +70,8 @@ public abstract class CommandIDEScreen extends Screen {
 		maxScrollOffset = Math.max(combinedEditorHeight - (height - 50), 0);
 		// Make sure the scroll offset is in range.
 		setScrollOffset(getScrollOffset());
+
+		MultilineCommandStorage.load();
 	}
 
 	protected void initAfterFirst() {
@@ -90,7 +93,9 @@ public abstract class CommandIDEScreen extends Screen {
 		addSelectableChild(editor);
 	}
 
-	public abstract void apply();
+	public void apply() {
+		MultilineCommandStorage.save();
+	}
 
 	@Override
 	public boolean shouldCloseOnEsc() { return false; }

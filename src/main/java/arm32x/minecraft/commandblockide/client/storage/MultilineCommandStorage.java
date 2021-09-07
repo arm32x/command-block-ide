@@ -1,6 +1,8 @@
 package arm32x.minecraft.commandblockide.client.storage;
 
+import arm32x.minecraft.commandblockide.client.CommandBlockIDEClient;
 import arm32x.minecraft.commandblockide.client.processor.CommandProcessor;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -9,11 +11,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+import org.msgpack.core.*;
 
-public final class MultilineCommandStorage {
+@Environment(EnvType.CLIENT)
+public final class MultilineCommandStorage implements Serializable {
 	private static @Nullable MultilineCommandStorage instance = null;
 
 	public static MultilineCommandStorage getInstance() {
@@ -96,6 +105,105 @@ public final class MultilineCommandStorage {
 		commands.remove(ByteBuffer.wrap(singleLineHash));
 	}
 
+	public static void save() {
+		MultilineCommandStorage instance = getInstance();
+		try (MessagePacker packer = MessagePack.newDefaultPacker(new FileOutputStream(getFile()))) {
+			packer.packMapHeader(instance.commands.size());
+			for (var entry : instance.commands.entrySet()) {
+				byte[] hash = entry.getKey().array();
+				packer.packBinaryHeader(hash.length);
+				packer.writePayload(hash);
+
+				String command = entry.getValue();
+				packer.packString(command);
+			}
+
+			packer.packMapHeader(instance.blocks.size());
+			for (var entry : instance.blocks.entrySet()) {
+				var location = entry.getKey();
+				packer.packArrayHeader(5);
+				packer.packBoolean(location.isSingleplayer);
+				packer.packString(location.world);
+				packer.packInt(location.pos.getX());
+				packer.packInt(location.pos.getY());
+				packer.packInt(location.pos.getZ());
+
+				byte[] hash = entry.getValue();
+				packer.packBinaryHeader(hash.length);
+				packer.writePayload(hash);
+			}
+
+			packer.packMapHeader(instance.functions.size());
+			for (var entry : instance.functions.entrySet()) {
+				var location = entry.getKey();
+				packer.packArrayHeader(4);
+				packer.packBoolean(location.isSingleplayer);
+				packer.packString(location.world);
+				packer.packString(location.function.toString());
+				packer.packInt(location.lineIndex);
+			}
+		} catch (IOException ex) {
+			CommandBlockIDEClient.showErrorScreen(ex, "saving multiline commands");
+		}
+	}
+
+	public static void load() {
+		if (!getFile().exists()) {
+			return;
+		}
+
+		var instance = new MultilineCommandStorage();
+		try (MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(new FileInputStream(getFile()))) {
+			int commandsSize = unpacker.unpackMapHeader();
+			for (int index = 0; index < commandsSize; index++) {
+				byte[] hash = unpacker.readPayload(unpacker.unpackBinaryHeader());
+				String command = unpacker.unpackString();
+				instance.commands.put(ByteBuffer.wrap(hash), command);
+			}
+
+			int blocksSize = unpacker.unpackMapHeader();
+			for (int index = 0; index < blocksSize; index++) {
+				int length = unpacker.unpackArrayHeader();
+				if (length != 5) {
+					throw new Exception("Expected array of length 5, got length " + length);
+				}
+				boolean isSingleplayer = unpacker.unpackBoolean();
+				String world = unpacker.unpackString();
+				int x = unpacker.unpackInt();
+				int y = unpacker.unpackInt();
+				int z = unpacker.unpackInt();
+				var location = new CommandBlockLocation(isSingleplayer, world, new BlockPos(x, y, z));
+
+				byte[] hash = unpacker.readPayload(unpacker.unpackBinaryHeader());
+				instance.blocks.put(location, hash);
+			}
+
+			int functionsSize = unpacker.unpackMapHeader();
+			for (int index = 0; index < functionsSize; index++) {
+				int length = unpacker.unpackArrayHeader();
+				if (length != 4) {
+					throw new Exception("Expected array of length 4, got length " + length);
+				}
+				boolean isSingleplayer = unpacker.unpackBoolean();
+				String world = unpacker.unpackString();
+				var identifier = new Identifier(unpacker.unpackString());
+				int lineIndex = unpacker.unpackInt();
+				var location = new CommandFunctionLocation(isSingleplayer, world, identifier, lineIndex);
+
+				byte[] hash = unpacker.readPayload(unpacker.unpackBinaryHeader());
+				instance.functions.put(location, hash);
+			}
+
+			MultilineCommandStorage.instance = instance;
+		} catch (Exception ex) {
+			CommandBlockIDEClient.showErrorScreen(ex, "loading multiline commands");
+		}
+	}
+
+	private static File getFile() {
+		return new File(MinecraftClient.getInstance().runDirectory, "commandblockide.bin");
+	}
+
 	public static byte[] hash(String string) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -107,4 +215,6 @@ public final class MultilineCommandStorage {
 
 	private static record CommandBlockLocation(boolean isSingleplayer, String world, BlockPos pos) { }
 	private static record CommandFunctionLocation(boolean isSingleplayer, String world, Identifier function, int lineIndex) { }
+
+	private static final Logger LOGGER = LogManager.getLogger();
 }

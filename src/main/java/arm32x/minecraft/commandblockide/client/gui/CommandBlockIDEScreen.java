@@ -82,6 +82,7 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 			.filter(editor -> editor instanceof CommandBlockEditor)
 			.map(editor -> (CommandBlockEditor)editor)
 			.forEach(editor -> editor.apply(networkHandler));
+		super.apply();
 	}
 
 	@Override

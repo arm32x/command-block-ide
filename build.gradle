@@ -28,6 +28,9 @@ dependencies {
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
 
+    // TODO: Set up Gradle Shadow plugin.
+    implementation "org.msgpack:msgpack-core:${project.msgpack_java_version}"
+
     testImplementation "org.junit.jupiter:junit-jupiter-api:${project.junit_version}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${project.junit_version}"
     testImplementation "net.jqwik:jqwik:${project.jqwik_version}"

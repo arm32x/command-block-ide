@@ -2,6 +2,8 @@
     "arguments.editfunction.tag.unsupported": "Cannot edit function tags",
     "commands.editfunction.failed.modNotInstalled": "You must have the Command Block IDE mod installed",
     "commandBlockIDE.apply": "Apply",
+    "commandBlockIDE.error": "An unexpected error occurred:",
+    "commandBlockIDE.errorWithContext": "An unexpected error occurred while %s:",
     "commandBlockIDE.type.redstone": "Impulse",
     "commandBlockIDE.type.redstoneConditional": "Impulse, Conditional",
     "commandBlockIDE.type.auto": "Repeating",
