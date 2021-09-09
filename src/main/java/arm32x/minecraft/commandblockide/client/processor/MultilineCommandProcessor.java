@@ -1,6 +1,5 @@
 package arm32x.minecraft.commandblockide.client.processor;
 
-import arm32x.minecraft.commandblockide.util.StringMapping;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import net.fabricmc.api.EnvType;

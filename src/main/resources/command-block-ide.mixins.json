@@ -12,8 +12,9 @@
         "server.ReloadableResourceManagerImplAccessor"
     ],
     "client": [
-        "client.ClientPlayerEntityMixin",
         "client.ClientPlayNetworkHandlerMixin",
+        "client.ClientPlayerEntityMixin",
+        "client.CommandSuggestorAccessor",
         "client.CommandSuggestorMixin",
         "client.TextFieldWidgetAccessor"
     ],

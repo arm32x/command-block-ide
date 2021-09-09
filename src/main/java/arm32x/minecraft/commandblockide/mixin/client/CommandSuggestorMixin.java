@@ -1,6 +1,9 @@
 package arm32x.minecraft.commandblockide.mixin.client;
 
+import arm32x.minecraft.commandblockide.client.processor.CommandProcessor;
+import arm32x.minecraft.commandblockide.client.processor.StringMapping;
 import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
+import java.util.OptionalInt;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.CommandSuggestor;
@@ -8,6 +11,7 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,6 +26,9 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 	@Unique public int ide$y = 72;
 	@Unique public boolean ide$allowComments = false;
 	@Unique public boolean ide$slashForbidden = false;
+
+	@Unique public @Nullable CommandProcessor ide$commandProcessor = null;
+	@Unique private @Nullable StringMapping ide$mapping = null;
 
 	@Shadow @Final TextFieldWidget textField;
 
@@ -45,6 +52,16 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 		ide$slashForbidden = slashForbidden;
 	}
 
+	@Unique @Override
+	public CommandProcessor ide$getCommandProcessor() {
+		return ide$commandProcessor;
+	}
+
+	@Unique @Override
+	public void ide$setCommandProcessor(CommandProcessor processor) {
+		ide$commandProcessor = processor;
+	}
+
 	@Inject(method = "show()V", at = @At("HEAD"), cancellable = true)
 	public void onShow(CallbackInfo ci) {
 		if (ide$allowComments && textField.getText().startsWith("#")) {
@@ -62,5 +79,29 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	private boolean onCheckForSlash(boolean bl) {
 		return !ide$slashForbidden && bl;
+	}
+
+	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
+	public String onGetCommand(String command) {
+		if (ide$commandProcessor != null) {
+			var processed = ide$commandProcessor.processCommand(command);
+			ide$mapping = processed.getRight();
+			return processed.getLeft();
+		} else {
+			return command;
+		}
+	}
+
+	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
+	public int onGetTextFieldCursor(int cursor) {
+		if (ide$mapping != null) {
+			OptionalInt index;
+			do {
+				index = ide$mapping.inverted().mapIndex(cursor++);
+			} while (index.isEmpty());
+			return index.getAsInt();
+		} else {
+			return cursor;
+		}
 	}
 }

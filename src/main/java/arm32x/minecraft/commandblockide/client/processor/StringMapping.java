@@ -1,6 +1,7 @@
-package arm32x.minecraft.commandblockide.util;
+package arm32x.minecraft.commandblockide.client.processor;
 
 import java.util.NavigableMap;
+import java.util.OptionalInt;
 import java.util.TreeMap;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,13 +12,25 @@ public final class StringMapping {
 		this.indexMap = indexMap;
 	}
 
-	public int mapIndex(int index) {
+	public OptionalInt mapIndex(int index) {
 		@Nullable var entry = indexMap.floorEntry(index);
 		if (entry != null) {
-			return entry.getValue() - entry.getKey() + index;
+			int mapped = entry.getValue() - entry.getKey() + index;
+			var nextEntry = indexMap.higherEntry(index);
+			if (nextEntry != null) {
+				int nextValue = nextEntry.getValue();
+				if (nextValue <= mapped) {
+					return OptionalInt.empty();
+				}
+			}
+			return OptionalInt.of(mapped);
 		} else {
-			return index;
+			return OptionalInt.of(index);
 		}
+	}
+
+	public NavigableMap<Integer, Integer> getIndexMap() {
+		return indexMap;
 	}
 
 	public StringMapping inverted() {

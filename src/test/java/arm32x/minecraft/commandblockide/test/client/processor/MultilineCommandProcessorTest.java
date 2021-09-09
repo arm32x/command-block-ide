@@ -1,7 +1,7 @@
 package arm32x.minecraft.commandblockide.test.client.processor;
 
 import arm32x.minecraft.commandblockide.client.processor.MultilineCommandProcessor;
-import arm32x.minecraft.commandblockide.util.StringMapping;
+import arm32x.minecraft.commandblockide.client.processor.StringMapping;
 import net.jqwik.api.ForAll;
 import net.jqwik.api.Label;
 import net.jqwik.api.Property;
@@ -62,7 +62,7 @@ public final class MultilineCommandProcessorTest {
 
 		for (int index = 0; index < string.length(); index++) {
 			assertThat(string.charAt(index))
-				.isEqualTo(input.charAt(mapping.mapIndex(index)));
+				.isEqualTo(input.charAt(mapping.mapIndex(index).orElse(-1)));
 		}
 	}
 }

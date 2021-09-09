@@ -1,6 +1,5 @@
 package arm32x.minecraft.commandblockide.client.processor;
 
-import arm32x.minecraft.commandblockide.util.StringMapping;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.util.Pair;
