@@ -1,0 +1,23 @@
+{
+    "arguments.editfunction.tag.unsupported": "无法编辑函数标签",
+    "commands.editfunction.failed.modNotInstalled": "您必须安装 Command Block IDE 模组",
+    "commandBlockIDE.apply": "运用",
+    "commandBlockIDE.type.redstone": "普通",
+    "commandBlockIDE.type.redstoneConditional": "普通, 条件限制",
+    "commandBlockIDE.type.auto": "循环",
+    "commandBlockIDE.type.autoConditional": "循环, 条件限制",
+    "commandBlockIDE.type.sequence": "连锁",
+    "commandBlockIDE.type.sequenceConditional": "连锁, 重复",
+    "commandBlockIDE.unloaded": "未加载",
+    "commandBlockIDE.lastOutput.on": "跟踪输出",
+    "commandBlockIDE.lastOutput.off": "不跟踪输出",
+    "commandBlockIDE.lastOutput.none": "无输出",
+    "commandBlockIDE.narrator.editorIndex": "数字 %d",
+    "commandBlockIDE.saveFunction.success.file": "保存函数 '%s' 到文件。",
+    "commandBlockIDE.saveFunction.failed.resourceManager": "在修改 '%s' 时发生错误: 资源管理器的类型不正确。",
+    "commandBlockIDE.saveFunction.failed.missingNamespace": "在修改 '%s' 时发生错误: 资源管理器中没有 '%s' 命名空间。",
+    "commandBlockIDE.saveFunction.failed.noResourcePack": "在修改 '%s' 时发生错误: 在任何数据包中无法找到此函数。",
+    "commandBlockIDE.saveFunction.failed.ioException": "在修改 '%s' 时发生错误: 发生了 IO 错误。",
+    "commandBlockIDE.saveFunction.failed.zipNotSupported": "在修改 '%s' 时发生错误: 尚不支持 .zip 文件中的数据包。 ",
+    "commandBlockIDE.saveFunction.failed.packClassNotSupported": "在修改 '%s' 时发生错误: 不支持资源包类 '%s'。"
+}
