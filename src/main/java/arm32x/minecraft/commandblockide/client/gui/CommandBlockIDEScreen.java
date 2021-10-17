@@ -66,10 +66,12 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 	}
 
 	public void update(BlockPos position) {
-		CommandEditor editor = positionIndex.get(position);
-		if (editor instanceof CommandBlockEditor) {
-			((CommandBlockEditor)editor).update();
+		if (positionIndex.get(position) instanceof CommandBlockEditor editor) {
+			editor.update();
 			setLoaded(true);
+			if (getFocused() == editor) {
+				editor.setFocused(true);
+			}
 		}
 	}
 
