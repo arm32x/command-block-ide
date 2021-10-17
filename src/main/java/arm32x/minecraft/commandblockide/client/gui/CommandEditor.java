@@ -73,7 +73,6 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 		commandField.setMaxLength(Integer.MAX_VALUE);
 
 		suggestor = new CommandSuggestor(MinecraftClient.getInstance(), screen, commandField, textRenderer, true, true, 0, 16, false, Integer.MIN_VALUE);
-		((CommandSuggestorExtension)suggestor).ide$setY(commandField.y + commandField.getHeight() + 2);
 		((CommandSuggestorExtension)suggestor).ide$setCommandProcessor(processor);
 		suggestor.refresh();
 
@@ -180,7 +179,6 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
  		this.y = y;
 
  		commandField.y = y + 1;
-		((CommandSuggestorExtension)suggestor).ide$setY(commandField.y + commandField.getHeight() + 2);
 		suggestor.refresh();
 
 	}

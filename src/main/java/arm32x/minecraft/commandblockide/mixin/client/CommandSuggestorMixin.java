@@ -1,9 +1,12 @@
 package arm32x.minecraft.commandblockide.mixin.client;
 
+import arm32x.minecraft.commandblockide.client.gui.MultilineTextFieldWidget;
 import arm32x.minecraft.commandblockide.client.processor.CommandProcessor;
 import arm32x.minecraft.commandblockide.client.processor.StringMapping;
 import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
+import com.mojang.brigadier.suggestion.Suggestions;
 import java.util.OptionalInt;
+import java.util.concurrent.CompletableFuture;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.CommandSuggestor;
@@ -23,7 +26,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Environment(EnvType.CLIENT)
 @Mixin(CommandSuggestor.class)
 public final class CommandSuggestorMixin implements CommandSuggestorExtension {
-	@Unique public int ide$y = 72;
 	@Unique public boolean ide$allowComments = false;
 	@Unique public boolean ide$slashForbidden = false;
 
@@ -32,14 +34,18 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 
 	@Shadow @Final TextFieldWidget textField;
 
+	@Shadow private @Nullable CompletableFuture<Suggestions> pendingSuggestions;
+
 	@ModifyConstant(method = { "showSuggestions(Z)V", "render(Lnet/minecraft/client/util/math/MatrixStack;II)V" }, constant = @Constant(intValue = 72))
 	public int getY(int seventyTwo) {
-		return ide$y;
-	}
-
-	@Unique @Override
-	public void ide$setY(int y) {
-		ide$y = y;
+		if (textField instanceof MultilineTextFieldWidget multiline
+			&& pendingSuggestions != null) {
+			@Nullable Suggestions suggestions = pendingSuggestions.getNow(null);
+			if (suggestions != null) {
+				return multiline.getCharacterY(suggestions.getRange().getStart());
+			}
+		}
+		return textField.y + textField.getHeight() + 2;
 	}
 
 	@Unique @Override

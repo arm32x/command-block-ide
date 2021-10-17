@@ -432,4 +432,22 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	public void setHeight(int height) {
 		this.height = height;
 	}
+
+	@Override
+	public int getCharacterX(int charIndex) {
+		if (charIndex > getText().length()) {
+			return x;
+		}
+		String line = getLine(getLineIndex(charIndex));
+		int indexInLine = charIndex - getLineStartBefore(charIndex);
+		return indexInLine > line.length() ? x : x + self.getTextRenderer().getWidth(line.substring(0, indexInLine));
+	}
+
+	public int getCharacterY(int charIndex) {
+		if (charIndex > getText().length()) {
+			return y;
+		}
+		int lineIndex = getLineIndex(charIndex);
+		return y + (lineIndex + 1) * getLineHeight();
+	}
 }
