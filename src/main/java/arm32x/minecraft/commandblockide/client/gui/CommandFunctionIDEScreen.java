@@ -31,7 +31,7 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen {
 		if (editors.get(index) instanceof CommandFunctionEditor editor) {
 			editor.update(functionId, command);
 			if (getFocused() == editor) {
-				editor.setFocused(true);
+				setFocusedEditor(editor);
 			}
 		}
 	}
