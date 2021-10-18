@@ -435,12 +435,14 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 	@Override
 	public int getCharacterX(int charIndex) {
+		int effectiveX = this.x + (self.getDrawsBackground() ? 4 : 0);
+
 		if (charIndex > getText().length()) {
-			return x;
+			return effectiveX;
 		}
 		String line = getLine(getLineIndex(charIndex));
 		int indexInLine = charIndex - getLineStartBefore(charIndex);
-		return indexInLine > line.length() ? x : x + self.getTextRenderer().getWidth(line.substring(0, indexInLine));
+		return indexInLine > line.length() ? effectiveX : effectiveX + self.getTextRenderer().getWidth(line.substring(0, indexInLine));
 	}
 
 	public int getCharacterY(int charIndex) {
