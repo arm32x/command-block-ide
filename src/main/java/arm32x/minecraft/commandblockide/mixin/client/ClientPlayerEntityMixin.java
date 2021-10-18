@@ -6,26 +6,27 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Environment(EnvType.CLIENT)
 @Mixin(ClientPlayerEntity.class)
-public final class ClientPlayerEntityMixin {
+public class ClientPlayerEntityMixin {
 	@Shadow protected @Final MinecraftClient client;
 
-	/**
-	 * @author ARM32
-	 * @reason This could have been done with a cancellable inject, but I would
-	 *         have to rewrite the entire method anyway.
-	 */
-	@Overwrite
-	public void openCommandBlockScreen(CommandBlockBlockEntity commandBlock) {
-		if (!(client.currentScreen instanceof CommandIDEScreen)) {
-			client.setScreen(new CommandBlockIDEScreen(commandBlock));
+	@Inject(method = "openCommandBlockScreen(Lnet/minecraft/block/entity/CommandBlockBlockEntity;)V", at = @At("HEAD"), cancellable = true)
+	public void openCommandBlockScreen(CommandBlockBlockEntity commandBlock, CallbackInfo ci) {
+		if (!Screen.hasAltDown()) {
+			if (!(client.currentScreen instanceof CommandIDEScreen)) {
+				client.setScreen(new CommandBlockIDEScreen(commandBlock));
+			}
+			ci.cancel();
 		}
 	}
 }
