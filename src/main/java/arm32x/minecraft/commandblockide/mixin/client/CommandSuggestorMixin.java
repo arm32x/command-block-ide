@@ -42,7 +42,7 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 			&& pendingSuggestions != null) {
 			@Nullable Suggestions suggestions = pendingSuggestions.getNow(null);
 			if (suggestions != null) {
-				return multiline.getCharacterY(ide$mapIndex(suggestions.getRange().getStart()));
+				return multiline.getCharacterY(ide$mapIndex(suggestions.getRange().getStart(), false));
 			}
 		}
 		return textField.y + textField.getHeight() + 2;
@@ -50,7 +50,7 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 
 	@ModifyArg(method = "showSuggestions(Z)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;getCharacterX(I)I", ordinal = 0), index = 0)
 	public int mapSuggestionIndex(int index) {
-		return ide$mapIndex(index);
+		return ide$mapIndex(index, false);
 	}
 
 	@Unique @Override
@@ -106,15 +106,19 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 
 	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	public int onGetTextFieldCursor(int cursor) {
-		return ide$mapIndex(cursor);
+		return ide$mapIndex(cursor, true);
 	}
 
 	@Unique
-	private int ide$mapIndex(int i) {
+	private int ide$mapIndex(int i, boolean inverted) {
 		if (ide$mapping != null) {
+			StringMapping mapping = ide$mapping;
+			if (inverted) {
+				mapping = mapping.inverted();
+			}
 			OptionalInt index;
 			do {
-				index = ide$mapping.inverted().mapIndex(i++);
+				index = mapping.mapIndex(i++);
 			} while (index.isEmpty());
 			return index.getAsInt();
 		} else {
