@@ -4,6 +4,7 @@ import arm32x.minecraft.commandblockide.client.gui.MultilineTextFieldWidget;
 import arm32x.minecraft.commandblockide.client.processor.CommandProcessor;
 import arm32x.minecraft.commandblockide.client.processor.StringMapping;
 import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
+import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.suggestion.Suggestions;
 import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
@@ -11,6 +12,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.CommandSuggestor;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.command.CommandSource;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
@@ -34,21 +36,27 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 
 	@Shadow @Final TextFieldWidget textField;
 
+	@Shadow private @Nullable ParseResults<CommandSource> parse;
 	@Shadow private @Nullable CompletableFuture<Suggestions> pendingSuggestions;
+
+	@Shadow @Nullable CommandSuggestor.SuggestionWindow window;
 
 	@ModifyConstant(method = { "showSuggestions(Z)V", "render(Lnet/minecraft/client/util/math/MatrixStack;II)V" }, constant = @Constant(intValue = 72))
 	public int getY(int seventyTwo) {
-		if (textField instanceof MultilineTextFieldWidget multiline
-			&& pendingSuggestions != null) {
-			@Nullable Suggestions suggestions = pendingSuggestions.getNow(null);
-			if (suggestions != null) {
-				return multiline.getCharacterY(ide$mapIndex(suggestions.getRange().getStart(), false));
+		if (textField instanceof MultilineTextFieldWidget multiline) {
+			if (pendingSuggestions != null) {
+				@Nullable Suggestions suggestions = pendingSuggestions.getNow(null);
+				if (suggestions != null && !suggestions.isEmpty()) {
+					return multiline.getCharacterY(ide$mapIndex(suggestions.getRange().getStart(), false));
+				}
 			}
+			return multiline.getCharacterY(multiline.getText().length());
+		} else {
+			return textField.y + textField.getHeight() + 2;
 		}
-		return textField.y + textField.getHeight() + 2;
 	}
 
-	@ModifyArg(method = "showSuggestions(Z)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;getCharacterX(I)I", ordinal = 0), index = 0)
+	@ModifyArg(method = { "showSuggestions(Z)V", "showUsages(Lnet/minecraft/util/Formatting;)V" }, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;getCharacterX(I)I", ordinal = 0), index = 0)
 	public int mapSuggestionIndex(int index) {
 		return ide$mapIndex(index, false);
 	}
@@ -105,7 +113,12 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 	}
 
 	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
-	public int onGetTextFieldCursor(int cursor) {
+	public int onGetTextFieldCursor1(int cursor) {
+		return ide$mapIndex(cursor, true);
+	}
+
+	@ModifyArg(method = "showUsages(Lnet/minecraft/util/Formatting;)V", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/context/CommandContextBuilder;findSuggestionContext(I)Lcom/mojang/brigadier/context/SuggestionContext;", ordinal = 0), index = 0)
+	public int onGetTextFieldCursor2(int cursor) {
 		return ide$mapIndex(cursor, true);
 	}
 
