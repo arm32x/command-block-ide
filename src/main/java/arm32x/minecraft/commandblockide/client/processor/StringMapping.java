@@ -12,21 +12,26 @@ public final class StringMapping {
 		this.indexMap = indexMap;
 	}
 
+	// A: 'execute as @a run say hello!'
+	//     0       8     14
+	//     │       └───┐ └───────┐
+	// B: 'execute␊    as @a␊    run say hello!'
+	//     0       ░░░░12    ░░░░22
 	public OptionalInt mapIndex(int index) {
 		@Nullable var entry = indexMap.floorEntry(index);
+		int mapped;
 		if (entry != null) {
-			int mapped = entry.getValue() - entry.getKey() + index;
-			var nextEntry = indexMap.higherEntry(index);
-			if (nextEntry != null) {
-				int nextValue = nextEntry.getValue();
-				if (nextValue <= mapped) {
-					return OptionalInt.empty();
-				}
-			}
-			return OptionalInt.of(mapped);
+			mapped = entry.getValue() - entry.getKey() + index;
 		} else {
-			return OptionalInt.of(index);
+			mapped = index;
 		}
+		var nextEntry = indexMap.higherEntry(index);
+		if (nextEntry != null) {
+			if (mapped >= nextEntry.getValue() && index < nextEntry.getKey()) {
+				return OptionalInt.empty();
+			}
+		}
+		return OptionalInt.of(mapped);
 	}
 
 	public NavigableMap<Integer, Integer> getIndexMap() {

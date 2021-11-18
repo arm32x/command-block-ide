@@ -42,10 +42,15 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 			&& pendingSuggestions != null) {
 			@Nullable Suggestions suggestions = pendingSuggestions.getNow(null);
 			if (suggestions != null) {
-				return multiline.getCharacterY(suggestions.getRange().getStart());
+				return multiline.getCharacterY(ide$mapIndex(suggestions.getRange().getStart()));
 			}
 		}
 		return textField.y + textField.getHeight() + 2;
+	}
+
+	@ModifyArg(method = "showSuggestions(Z)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;getCharacterX(I)I", ordinal = 0), index = 0)
+	public int mapSuggestionIndex(int index) {
+		return ide$mapIndex(index);
 	}
 
 	@Unique @Override
@@ -70,7 +75,8 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 
 	@Inject(method = "show()V", at = @At("HEAD"), cancellable = true)
 	public void onShow(CallbackInfo ci) {
-		if (ide$allowComments && textField.getText().startsWith("#")) {
+		if (ide$allowComments && textField.getText().startsWith("#")
+			|| ide$mapping != null && ide$mapping.inverted().mapIndex(textField.getCursor()).isEmpty()) {
 			ci.cancel();
 		}
 	}
@@ -100,14 +106,19 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 
 	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	public int onGetTextFieldCursor(int cursor) {
+		return ide$mapIndex(cursor);
+	}
+
+	@Unique
+	private int ide$mapIndex(int i) {
 		if (ide$mapping != null) {
 			OptionalInt index;
 			do {
-				index = ide$mapping.inverted().mapIndex(cursor++);
+				index = ide$mapping.inverted().mapIndex(i++);
 			} while (index.isEmpty());
 			return index.getAsInt();
 		} else {
-			return cursor;
+			return i;
 		}
 	}
 }
