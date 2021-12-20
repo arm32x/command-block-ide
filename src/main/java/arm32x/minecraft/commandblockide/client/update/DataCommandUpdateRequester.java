@@ -90,7 +90,7 @@ public final class DataCommandUpdateRequester implements UpdateRequester {
 		}
 
 		blockEntity.readNbt(tag);
-		blockEntity.setNeedsUpdatePacket(false);
+//		blockEntity.setNeedsUpdatePacket(false);
 		if (client.currentScreen instanceof CommandBlockIDEScreen) {
 			((CommandBlockIDEScreen)client.currentScreen).update(position);
 		}

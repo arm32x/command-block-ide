@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.9-SNAPSHOT'
+    id 'fabric-loom' version '0.10-SNAPSHOT'
     id 'maven-publish'
     id 'com.gladed.androidgitversion' version '0.4.14'
 }
@@ -31,15 +31,9 @@ dependencies {
 
 processResources {
     inputs.property "version", project.version
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
-    from(sourceSets.main.resources.srcDirs) {
-        include "fabric.mod.json"
+    filesMatching("fabric.mod.json") {
         expand "version": project.version
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude "fabric.mod.json"
     }
 }
 

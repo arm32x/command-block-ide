@@ -86,7 +86,7 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton implemen
 		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, active ? 1.0f : 0.5f);
 
 		// Drawing must be done manually in order to flip the texture upside-down.
-		Matrix4f matrix = matrices.peek().getModel();
+		Matrix4f matrix = matrices.peek().getPositionMatrix();
 		float x0 = (float)x, x1 = x0 + 16, y0 = (float)y, y1 = y0 + 16, z = getZOffset();
 		float u0 = 0.0f, u1 = 1.0f, v0 = 0.0f, v1 = 0.25f;
 		BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
