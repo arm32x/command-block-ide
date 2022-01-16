@@ -1,0 +1,6 @@
+These icons are from the Clarity Design System, but redrawn by hand to appear
+better in a Minecraft GUI.
+
+Clarity Design System:
+  - https://clarity.design/foundation/icons/
+  - https://github.com/vmware/clarity-assets/
