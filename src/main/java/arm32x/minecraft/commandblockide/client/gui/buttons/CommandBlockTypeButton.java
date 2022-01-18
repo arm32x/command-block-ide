@@ -7,12 +7,12 @@ import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
 
-public final class CommandBlockTypeButton extends DynamicTexturedButton implements Dirtyable {
+public final class CommandBlockTypeButton extends IconButton implements Dirtyable {
 	public CommandBlockBlockEntity.Type type = CommandBlockBlockEntity.Type.REDSTONE;
 	public boolean conditional = false;
 
@@ -21,7 +21,7 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton implemen
 	private boolean dirty = false;
 
 	public CommandBlockTypeButton(Screen screen, int x, int y) {
-		super(x, y, 16, 16, 0, 0, 16, 64);
+		super(x, y, 16, 16);
 		this.screen = screen;
 	}
 
@@ -40,13 +40,13 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton implemen
 	}
 
 	@Override
-	public Text getMessage() {
+	public MutableText getNarrationMessage() {
 		StringBuilder keyBuilder = new StringBuilder("commandBlockIDE.type.");
 		keyBuilder.append(type.name().toLowerCase());
 		if (conditional) {
 			keyBuilder.append("Conditional");
 		}
-		return new TranslatableText(keyBuilder.toString());
+		return getNarrationMessage(new TranslatableText(keyBuilder.toString()));
 	}
 
 	@Override
