@@ -1,5 +1,6 @@
-package arm32x.minecraft.commandblockide.client.gui;
+package arm32x.minecraft.commandblockide.client.gui.screen;
 
+import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import java.util.ArrayList;
 import java.util.List;
 import net.fabricmc.api.EnvType;

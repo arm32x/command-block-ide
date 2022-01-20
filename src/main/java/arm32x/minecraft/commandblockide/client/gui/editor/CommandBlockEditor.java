@@ -1,9 +1,9 @@
-package arm32x.minecraft.commandblockide.client.gui;
+package arm32x.minecraft.commandblockide.client.gui.editor;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
-import arm32x.minecraft.commandblockide.client.gui.buttons.CommandBlockAutoButton;
-import arm32x.minecraft.commandblockide.client.gui.buttons.CommandBlockTrackOutputButton;
-import arm32x.minecraft.commandblockide.client.gui.buttons.CommandBlockTypeButton;
+import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockAutoButton;
+import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockTrackOutputButton;
+import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockTypeButton;
 import arm32x.minecraft.commandblockide.client.update.DataCommandUpdateRequester;
 import java.util.stream.Stream;
 import net.minecraft.block.entity.CommandBlockBlockEntity;

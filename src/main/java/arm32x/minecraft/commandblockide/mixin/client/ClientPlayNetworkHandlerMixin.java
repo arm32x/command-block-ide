@@ -1,6 +1,6 @@
 package arm32x.minecraft.commandblockide.mixin.client;
 
-import arm32x.minecraft.commandblockide.client.gui.CommandBlockIDEScreen;
+import arm32x.minecraft.commandblockide.client.gui.screen.CommandBlockIDEScreen;
 import arm32x.minecraft.commandblockide.client.update.DataCommandUpdateRequester;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

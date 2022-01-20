@@ -1,4 +1,4 @@
-package arm32x.minecraft.commandblockide.client.gui.buttons;
+package arm32x.minecraft.commandblockide.client.gui.button;
 
 import java.util.function.Consumer;
 import net.minecraft.text.MutableText;

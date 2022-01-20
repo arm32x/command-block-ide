@@ -1,7 +1,7 @@
 package arm32x.minecraft.commandblockide.client;
 
 import arm32x.minecraft.commandblockide.Packets;
-import arm32x.minecraft.commandblockide.client.gui.CommandFunctionIDEScreen;
+import arm32x.minecraft.commandblockide.client.gui.screen.CommandFunctionIDEScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

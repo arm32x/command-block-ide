@@ -1,4 +1,4 @@
-package arm32x.minecraft.commandblockide.client.gui;
+package arm32x.minecraft.commandblockide.client.gui.editor;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;

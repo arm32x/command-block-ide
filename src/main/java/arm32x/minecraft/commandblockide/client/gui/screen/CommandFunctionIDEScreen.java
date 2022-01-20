@@ -1,6 +1,8 @@
-package arm32x.minecraft.commandblockide.client.gui;
+package arm32x.minecraft.commandblockide.client.gui.screen;
 
 import arm32x.minecraft.commandblockide.Packets;
+import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
+import arm32x.minecraft.commandblockide.client.gui.editor.CommandFunctionEditor;
 import arm32x.minecraft.commandblockide.util.PacketSplitter;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;

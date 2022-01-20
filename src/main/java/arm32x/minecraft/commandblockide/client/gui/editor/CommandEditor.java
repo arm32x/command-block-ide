@@ -1,5 +1,6 @@
-package arm32x.minecraft.commandblockide.client.gui;
+package arm32x.minecraft.commandblockide.client.gui.editor;
 
+import arm32x.minecraft.commandblockide.client.gui.Container;
 import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

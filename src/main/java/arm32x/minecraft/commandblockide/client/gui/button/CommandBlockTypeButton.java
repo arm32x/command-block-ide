@@ -1,4 +1,4 @@
-package arm32x.minecraft.commandblockide.client.gui.buttons;
+package arm32x.minecraft.commandblockide.client.gui.button;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import com.mojang.blaze3d.systems.RenderSystem;
