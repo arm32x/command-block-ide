@@ -39,7 +39,7 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen {
 	}
 
 	@Override
-	public void apply() {
+	public void save() {
 		PacketByteBuf buf = PacketByteBufs.create();
 		PacketSplitter.writeHeader(buf);
 		buf.writeIdentifier(functionId);

@@ -1,7 +1,8 @@
 {
     "arguments.editfunction.tag.unsupported": "Cannot edit function tags",
     "commands.editfunction.failed.modNotInstalled": "You must have the Command Block IDE mod installed",
-    "commandBlockIDE.apply": "Apply",
+    "commandBlockIDE.close": "Close",
+    "commandBlockIDE.save": "Save",
     "commandBlockIDE.type.redstone": "Impulse",
     "commandBlockIDE.type.redstoneConditional": "Impulse, Conditional",
     "commandBlockIDE.type.auto": "Repeating",
@@ -12,12 +13,13 @@
     "commandBlockIDE.lastOutput.on": "Tracking Output",
     "commandBlockIDE.lastOutput.off": "Not Tracking Output",
     "commandBlockIDE.lastOutput.none": "No output",
-    "commandBlockIDE.narrator.editorIndex": "Number %d",
+    "commandBlockIDE.narrator.editorIndex": "Number %s",
     "commandBlockIDE.saveFunction.success.file": "Saved function '%s' to file.",
     "commandBlockIDE.saveFunction.failed.resourceManager": "Error saving function '%s': Resource manager was not the correct type.",
     "commandBlockIDE.saveFunction.failed.missingNamespace": "Error saving function '%s': Resource manager has no namespace '%s'.",
     "commandBlockIDE.saveFunction.failed.noResourcePack": "Error saving function '%s': Not found in any datapack.",
     "commandBlockIDE.saveFunction.failed.ioException": "Error saving function '%s': An IO error occurred.",
     "commandBlockIDE.saveFunction.failed.zipNotSupported": "Error saving function '%s': Datapacks in '.zip' files are not supported yet.",
-    "commandBlockIDE.saveFunction.failed.packClassNotSupported": "Error saving function '%s': Resource pack class '%s' not supported."
+    "commandBlockIDE.saveFunction.failed.packClassNotSupported": "Error saving function '%s': Resource pack class '%s' not supported.",
+    "commandBlockIDE.statusText.commandBlock": "[%s, %s, %s] - %s"
 }

@@ -10,8 +10,16 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public abstract class IconButton extends PressableWidget {
+	protected int iconWidth, iconHeight;
+
 	public IconButton(int x, int y, int width, int height) {
+		this(x, y, width, height, width, height);
+	}
+
+	public IconButton(int x, int y, int width, int height, int iconWidth, int iconHeight) {
 		super(x, y, width, height, LiteralText.EMPTY);
+		this.iconWidth = iconWidth;
+		this.iconHeight = iconHeight;
 	}
 
 	@Override
@@ -41,22 +49,25 @@ public abstract class IconButton extends PressableWidget {
 
 		RenderSystem.setShaderTexture(0, getTexture());
 
+		int iconX = x + (width - iconWidth) / 2;
+		int iconY = y + (height - iconHeight) / 2;
+
 		if (drawsBackground) {
 			float brightness = active ? 1.0f : (float)0xA0 / 0xFF;
 			RenderSystem.setShaderColor(brightness / 4, brightness / 4, brightness / 4, alpha);
-			drawTexture(matrices, x + 1, y + 1, 0, 0, width, height, width, height);
+			drawTexture(matrices, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
 			RenderSystem.setShaderColor(brightness, brightness, brightness, alpha);
-			drawTexture(matrices, x, y, 0, 0, width, height, width, height);
+			drawTexture(matrices, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
 		} else {
 			RenderSystem.enableBlend();
 			RenderSystem.defaultBlendFunc();
 			RenderSystem.enableDepthTest();
 			if (active) {
 				RenderSystem.setShaderColor(0.0f, 0.0f, 0.0f, 0.25f * alpha);
-				drawTexture(matrices, x + 1, y + 1, 0, 0, width, height, width, height);
+				drawTexture(matrices, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
 			}
 			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, active ? alpha : 0.5f * alpha);
-			drawTexture(matrices, x, y, 0, 0, width, height, width, height);
+			drawTexture(matrices, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
 		}
 
 		if (isHovered()) {

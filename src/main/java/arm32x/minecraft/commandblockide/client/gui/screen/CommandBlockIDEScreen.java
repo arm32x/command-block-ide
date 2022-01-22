@@ -40,6 +40,7 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 			addEditor(getBlockEntityAt(position));
 		}
 
+		statusText = StatusTexts.commandBlock(client, startingBlockEntity.getPos());
 		super.firstInit();
 	}
 
@@ -78,14 +79,14 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 	}
 
 	@Override
-	public void apply() {
+	public void save() {
 		assert client != null;
 		ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
 		assert networkHandler != null;
 		editors.stream()
 			.filter(editor -> editor instanceof CommandBlockEditor)
 			.map(editor -> (CommandBlockEditor)editor)
-			.forEach(editor -> editor.apply(networkHandler));
+			.forEach(editor -> editor.save(networkHandler));
 	}
 
 	@Override

@@ -53,7 +53,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 		trackOutputButton.active = false;
 	}
 
-	public void apply(ClientPlayNetworkHandler networkHandler) {
+	public void save(ClientPlayNetworkHandler networkHandler) {
 		if (isLoaded() && Stream.<Dirtyable>of(this, typeButton, autoButton, trackOutputButton).anyMatch(Dirtyable::isDirty)) {
 			CommandBlockExecutor executor = blockEntity.getCommandExecutor();
 			networkHandler.sendPacket(new UpdateCommandBlockC2SPacket(

@@ -8,6 +8,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
@@ -41,12 +42,16 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 
 	@Override
 	public MutableText getNarrationMessage() {
+		return getNarrationMessage(getTooltip());
+	}
+
+	private Text getTooltip() {
 		StringBuilder keyBuilder = new StringBuilder("commandBlockIDE.type.");
 		keyBuilder.append(type.name().toLowerCase());
 		if (conditional) {
 			keyBuilder.append("Conditional");
 		}
-		return getNarrationMessage(new TranslatableText(keyBuilder.toString()));
+		return new TranslatableText(keyBuilder.toString());
 	}
 
 	@Override
@@ -105,7 +110,7 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 
 	@Override
 	public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY) {
-		screen.renderOrderedTooltip(matrices, Collections.singletonList(getMessage().asOrderedText()), mouseX, mouseY);
+		screen.renderOrderedTooltip(matrices, Collections.singletonList(getTooltip().asOrderedText()), mouseX, mouseY);
 	}
 
 	@Override

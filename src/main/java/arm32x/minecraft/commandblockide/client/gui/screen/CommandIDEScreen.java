@@ -1,20 +1,25 @@
 package arm32x.minecraft.commandblockide.client.gui.screen;
 
+import arm32x.minecraft.commandblockide.client.gui.ToolbarSeparator;
+import arm32x.minecraft.commandblockide.client.gui.button.SimpleIconButton;
 import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.OrderedText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
@@ -23,8 +28,7 @@ public abstract class CommandIDEScreen extends Screen {
 	protected int combinedEditorHeight = Integer.MAX_VALUE;
 	private boolean initialized = false;
 
-	private ButtonWidget doneButton;
-	private ButtonWidget applyButton;
+	private SimpleIconButton saveButton;
 
 	private int scrollOffset = 0, maxScrollOffset = Integer.MAX_VALUE;
 	public static final double SCROLL_SENSITIVITY = 50.0;
@@ -32,6 +36,12 @@ public abstract class CommandIDEScreen extends Screen {
 	private boolean draggingScrollbar = false;
 	private double mouseYAtScrollbarDragStart = 0;
 	private int scrollOffsetAtScrollbarDragStart = 0;
+
+	private static final int TOOLBAR_Y = 8;
+	private static final int TOOLBAR_SPACING = 4;
+
+	protected @Nullable OrderedText statusText = null;
+	private int statusTextX = 0;
 
 	public CommandIDEScreen() {
 		super(LiteralText.EMPTY);
@@ -43,16 +53,13 @@ public abstract class CommandIDEScreen extends Screen {
 		assert client != null;
 		client.keyboard.setRepeatEvents(true);
 
-		doneButton = addDrawableChild(new ButtonWidget(this.width - 324, this.height - 28, 100, 20, ScreenTexts.DONE, (widget) -> {
-			apply();
-			onClose();
-		}));
-		/* cancelButton = */ addDrawableChild(new ButtonWidget(this.width - 216, this.height - 28, 100, 20, ScreenTexts.CANCEL, (widget) -> {
-			onClose();
-		}));
-		applyButton = addDrawableChild(new ButtonWidget(this.width - 108, this.height - 28, 100, 20, new TranslatableText("commandBlockIDE.apply"), (widget) -> {
-			apply();
-		}));
+		addDrawableChild(new SimpleIconButton(this.width - 28, 8, "close", this, List.of(new TranslatableText("commandBlockIDE.close")), b -> onClose()));
+
+		statusTextX = addToolbarButtons(List.of(
+			Optional.of(saveButton = new SimpleIconButton(0, 0, "save", this, List.of(new TranslatableText("commandBlockIDE.save")), b -> save())),
+			Optional.of(new ButtonWidget(0, 0, 60, 20, new LiteralText("Test"), w -> {})),
+			Optional.empty()
+		));
 
 		if (!initialized) {
 			firstInit();
@@ -90,7 +97,7 @@ public abstract class CommandIDEScreen extends Screen {
 		addSelectableChild(editor);
 	}
 
-	public abstract void apply();
+	public abstract void save();
 
 	@Override
 	public boolean shouldCloseOnEsc() { return false; }
@@ -118,7 +125,7 @@ public abstract class CommandIDEScreen extends Screen {
 		} else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
 			Element element = getFocused();
 			if (element == null) {
-				apply();
+				save();
 				onClose();
 			} else {
 				setFocused(null);
@@ -219,7 +226,7 @@ public abstract class CommandIDEScreen extends Screen {
 	}
 
 	protected void repositionEditors() {
-		int heightAccumulator = 8;
+		int heightAccumulator = 36;
 		for (CommandEditor editor : editors) {
 			editor.setY(heightAccumulator - scrollOffset);
 			heightAccumulator += editor.getHeight() + 4;
@@ -229,6 +236,28 @@ public abstract class CommandIDEScreen extends Screen {
 		// to avoid scrolling without the user intending to. The scroll offset
 		// will be clamped when the user next scrolls.
 		maxScrollOffset = Math.max(combinedEditorHeight - (height - 50), 0);
+	}
+
+	/**
+	 * Adds the provided toolbar buttons to the screen in order.
+	 * @param buttons The list of buttons to add. A null item represents a
+	 *                separator.
+	 * @return The X coordinate at which the next button would have been placed.
+	 */
+	private int addToolbarButtons(List<Optional<ClickableWidget>> buttons) {
+		int x = 8;
+		for (Optional<ClickableWidget> button : buttons) {
+			if (button.isEmpty()) {
+				addDrawableChild(new ToolbarSeparator(x, TOOLBAR_Y + 1, 18));
+				x += TOOLBAR_SPACING;
+			} else {
+				button.get().x = x;
+				button.get().y = TOOLBAR_Y;
+				x += button.get().getWidth() + TOOLBAR_SPACING;
+				addDrawableChild(button.get());
+			}
+		}
+		return x;
 	}
 
 	@Override
@@ -290,17 +319,21 @@ public abstract class CommandIDEScreen extends Screen {
 
 		matrices.push();
 		matrices.translate(0.0, 0.0, 10.0);
+
 		super.render(matrices, mouseX, mouseY, delta);
+		if (statusText != null) {
+			renderOrderedTooltip(matrices, List.of(statusText), statusTextX - 7, 26);
+		}
+
 		matrices.pop();
 	}
 
 	public boolean isLoaded() {
-		return doneButton.active && applyButton.active;
+		return saveButton.active;
 	}
 
 	protected void setLoaded(boolean loaded) {
-		doneButton.active = loaded;
-		applyButton.active = loaded;
+		saveButton.active = loaded;
 	}
 
 	private static final Logger LOGGER = LogManager.getLogger();
