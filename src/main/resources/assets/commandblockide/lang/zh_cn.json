@@ -13,9 +13,9 @@
     "commandBlockIDE.lastOutput.on": "跟踪输出",
     "commandBlockIDE.lastOutput.off": "未跟踪输出",
     "commandBlockIDE.lastOutput.none": "没有输出",
-    "commandBlockIDE.narrator.editorIndex": "数字 %s",
+    "commandBlockIDE.narrator.editorIndex": "数字 %s",e
     "commandBlockIDE.saveFunction.success.file": "保存函数 '%s' 成功。",
-    "commandBlockIDE.saveFunction.failed.resourceManager": "保存 '%s' 函数时出错: Resource manager was not the correct type.",
+    "commandBlockIDE.saveFunction.failed.resourceManager": "保存 '%s' 函数时出错: Resource manager 没有被解析为正确的 Java 类型。",
     "commandBlockIDE.saveFunction.failed.missingNamespace": "保存 '%s' 函数时出错: 资源管理器中没有名为 '%s' 命名空间。",
     "commandBlockIDE.saveFunction.failed.noResourcePack": "保存 '%s' 函数时出错: 没在任何数据包中找到该函数。",
     "commandBlockIDE.saveFunction.failed.ioException": "保存 '%s' 函数时出错: 发生了文件读写（IO）错误。",
