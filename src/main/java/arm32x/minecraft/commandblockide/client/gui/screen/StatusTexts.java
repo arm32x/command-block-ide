@@ -7,6 +7,7 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,6 +16,14 @@ public final class StatusTexts {
 		return new TranslatableText(
 			"commandBlockIDE.statusText.commandBlock",
 			pos.getX(), pos.getY(), pos.getZ(),
+			getWorldOrServerName(client)
+		).setStyle(Style.EMPTY.withColor(Formatting.GRAY)).asOrderedText();
+	}
+
+	public static OrderedText function(MinecraftClient client, Identifier functionId) {
+		return new TranslatableText(
+			"commandBlockIDE.statusText.function",
+			functionId.toString(),
 			getWorldOrServerName(client)
 		).setStyle(Style.EMPTY.withColor(Formatting.GRAY)).asOrderedText();
 	}

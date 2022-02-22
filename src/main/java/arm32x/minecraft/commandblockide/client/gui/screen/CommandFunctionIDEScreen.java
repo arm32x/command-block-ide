@@ -27,11 +27,15 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen {
 			}
 			addEditor(editor);
 		}
+
+		statusText = StatusTexts.function(client, functionId);
+		super.firstInit();
 	}
 
 	public void update(int index, String command) {
 		if (editors.get(index) instanceof CommandFunctionEditor editor) {
 			editor.update(command);
+			setLoaded(true);
 			if (getFocused() == editor) {
 				setFocusedEditor(editor);
 			}
