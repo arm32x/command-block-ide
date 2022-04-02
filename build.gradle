@@ -4,8 +4,8 @@ plugins {
     id 'com.gladed.androidgitversion' version '0.4.14'
 }
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 androidGitVersion {
     format = "%tag%%+count%%.commit%%.dirty%"
