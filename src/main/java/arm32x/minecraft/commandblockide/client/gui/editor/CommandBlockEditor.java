@@ -64,7 +64,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 				typeButton.conditional,
 				autoButton.auto
 			));
-			executor.setTrackingOutput(trackOutputButton.trackingOutput);
+			executor.setTrackOutput(trackOutputButton.trackingOutput);
 			if (!trackOutputButton.trackingOutput) {
 				executor.setLastOutput(null);
 			}

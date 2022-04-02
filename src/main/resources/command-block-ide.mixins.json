@@ -7,9 +7,7 @@
         "server.AbstractFileResourcePackInvoker",
         "server.CommandFunctionMixin",
         "server.DirectoryResourcePackInvoker",
-        "server.MinecraftServerAccessor",
-        "server.NamespaceResourceManagerAccessor",
-        "server.ReloadableResourceManagerImplAccessor"
+        "server.NamespaceResourceManagerAccessor"
     ],
     "client": [
         "client.ClientPlayerEntityMixin",

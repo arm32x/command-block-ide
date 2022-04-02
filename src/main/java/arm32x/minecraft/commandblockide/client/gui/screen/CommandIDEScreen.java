@@ -53,7 +53,7 @@ public abstract class CommandIDEScreen extends Screen {
 		assert client != null;
 		client.keyboard.setRepeatEvents(true);
 
-		addDrawableChild(new SimpleIconButton(this.width - 28, 8, "close", this, List.of(new TranslatableText("commandBlockIDE.close")), b -> onClose()));
+		addDrawableChild(new SimpleIconButton(this.width - 28, 8, "close", this, List.of(new TranslatableText("commandBlockIDE.close")), b -> close()));
 
 		statusTextX = addToolbarButtons(List.of(
 			Optional.of(saveButton = new SimpleIconButton(0, 0, "save", this, List.of(new TranslatableText("commandBlockIDE.save")), b -> save())),
@@ -103,10 +103,10 @@ public abstract class CommandIDEScreen extends Screen {
 	public boolean shouldCloseOnEsc() { return false; }
 
 	@Override
-	public void onClose() {
+	public void close() {
 		assert client != null;
 		client.keyboard.setRepeatEvents(false);
-		super.onClose();
+		super.close();
 	}
 
 	@Override
@@ -114,7 +114,7 @@ public abstract class CommandIDEScreen extends Screen {
 		if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
 			Element element = getFocused();
 			if (element == null) {
-				onClose();
+				close();
 			} else {
 				setFocused(null);
 				if (element instanceof CommandEditor) {
@@ -126,7 +126,7 @@ public abstract class CommandIDEScreen extends Screen {
 			Element element = getFocused();
 			if (element == null) {
 				save();
-				onClose();
+				close();
 			} else {
 				setFocused(null);
 				if (element instanceof CommandEditor) {
