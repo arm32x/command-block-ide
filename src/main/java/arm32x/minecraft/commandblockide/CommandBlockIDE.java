@@ -63,23 +63,12 @@ public final class CommandBlockIDE implements ModInitializer {
 	private static Text saveFunction(MinecraftServer server, Identifier functionId, List<String> lines) {
 		Identifier functionResourceId = new Identifier(functionId.getNamespace(), String.format("functions/%s.mcfunction", functionId.getPath()));
 
-		// Mixin accessor bullshit.
-		ServerResourceManager serverResourceManager = ((MinecraftServerAccessor)server).getServerResourceManager();
-		ResourceManager resourceManager = serverResourceManager.getResourceManager();
+		ResourceManager resourceManager = server.getResourceManager();
 		if (!(resourceManager instanceof ReloadableResourceManagerImpl resourceManagerImpl)) {
 			return new TranslatableText("commandBlockIDE.saveFunction.failed.resourceManager", functionId).formatted(Formatting.RED);
 		}
-		Map<String, NamespaceResourceManager> namespaceResourceManagers = ((ReloadableResourceManagerImplAccessor)resourceManagerImpl).getNamespaceManagers();
-		@Nullable NamespaceResourceManager namespaceResourceManager = namespaceResourceManagers.get(functionId.getNamespace());
-		if (namespaceResourceManager == null) {
-			return new TranslatableText("commandBlockIDE.saveFunction.failed.missingNamespace", functionId, functionId.getNamespace()).formatted(Formatting.RED);
-		}
-		List<ResourcePack> packList = ((NamespaceResourceManagerAccessor)namespaceResourceManager).getPackList();
 
-		Optional<ResourcePack> maybePack = packList.stream()
-			.filter(p -> p.contains(ResourceType.SERVER_DATA, functionResourceId))
-			.findFirst();
-
+		Optional<ResourcePack> maybePack = resourceManager.streamResourcePacks().filter(p -> p.contains(ResourceType.SERVER_DATA, functionResourceId)).findFirst();
 		if (maybePack.isEmpty()) {
 			return new TranslatableText("commandBlockIDE.saveFunction.failed.noResourcePack", functionId).formatted(Formatting.RED);
 		}
@@ -94,7 +83,7 @@ public final class CommandBlockIDE implements ModInitializer {
 				LOGGER.error("IO exception occurred while saving function '" + functionId.toString() + "':", e);
 				return new TranslatableText("commandBlockIDE.saveFunction.failed.ioException", functionId).formatted(Formatting.RED);
 			}
-			updateFunctionLines(serverResourceManager, functionId, lines);
+			updateFunctionLines(server, functionId, lines);
 			return new TranslatableText("commandBlockIDE.saveFunction.success.file", functionId);
 		} else if (pack instanceof ZipResourcePack) {
 			return new TranslatableText("commandBlockIDE.saveFunction.failed.zipNotSupported", functionId).formatted(Formatting.RED);
@@ -103,8 +92,8 @@ public final class CommandBlockIDE implements ModInitializer {
 		}
 	}
 
-	private static void updateFunctionLines(ServerResourceManager serverResourceManager, Identifier functionId, List<String> lines) {
-		Optional<CommandFunction> maybeFunction = serverResourceManager.getFunctionLoader().get(functionId);
+	private static void updateFunctionLines(MinecraftServer server, Identifier functionId, List<String> lines) {
+		Optional<CommandFunction> maybeFunction = server.getCommandFunctionManager().getFunction(functionId);
 		maybeFunction.ifPresent(function -> ((CommandFunctionExtension)function).ide$setOriginalLines(lines));
 	}
 
