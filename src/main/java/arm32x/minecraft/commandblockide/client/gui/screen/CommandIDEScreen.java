@@ -5,12 +5,10 @@ import arm32x.minecraft.commandblockide.client.gui.button.SimpleIconButton;
 import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
@@ -55,7 +53,6 @@ public abstract class CommandIDEScreen extends Screen {
 
 		statusTextX = addToolbarWidgets(List.of(
 			saveButton = new SimpleIconButton(0, 0, "save", this, List.of(new TranslatableText("commandBlockIDE.save")), b -> save()),
-           new ButtonWidget(0, 0, 60, 20, new LiteralText("Test"), w -> {}),
 			new ToolbarSeparator()
 		));
 
