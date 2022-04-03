@@ -1,26 +1,24 @@
 package arm32x.minecraft.commandblockide.client.gui;
 
 import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 
-public final class ToolbarSeparator extends DrawableHelper implements Drawable, Element, Selectable {
+public final class ToolbarSeparator extends ClickableWidget implements Drawable, Element, Selectable {
 	public static final int COLOR = 0x3FFFFFFF;
 
-	public int x, y, height;
-
-	public ToolbarSeparator(int x, int y, int height) {
-		this.x = x;
-		this.y = y;
-		this.height = height;
+	public ToolbarSeparator() {
+		super(0, 0, 0, 18, LiteralText.EMPTY);
 	}
 
 	@Override
-	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		fill(matrices, x, y, x + 1, y + height, COLOR);
+	public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+		fill(matrices, x, y + 1, x + 1, y + 1 + height, COLOR);
 	}
 
 	@Override
@@ -34,7 +32,10 @@ public final class ToolbarSeparator extends DrawableHelper implements Drawable, 
 	}
 
 	@Override
-	public void appendNarrations(NarrationMessageBuilder builder) {
-
+	protected MutableText getNarrationMessage() {
+		return LiteralText.EMPTY.copy();
 	}
+
+	@Override
+	public void appendNarrations(NarrationMessageBuilder builder) { }
 }

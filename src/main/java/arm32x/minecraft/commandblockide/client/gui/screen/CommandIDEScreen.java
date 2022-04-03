@@ -53,13 +53,13 @@ public abstract class CommandIDEScreen extends Screen {
 		assert client != null;
 		client.keyboard.setRepeatEvents(true);
 
-		addDrawableChild(new SimpleIconButton(this.width - 28, 8, "close", this, List.of(new TranslatableText("commandBlockIDE.close")), b -> close()));
-
-		statusTextX = addToolbarButtons(List.of(
-			Optional.of(saveButton = new SimpleIconButton(0, 0, "save", this, List.of(new TranslatableText("commandBlockIDE.save")), b -> save())),
-			Optional.of(new ButtonWidget(0, 0, 60, 20, new LiteralText("Test"), w -> {})),
-			Optional.empty()
+		statusTextX = addToolbarWidgets(List.of(
+			saveButton = new SimpleIconButton(0, 0, "save", this, List.of(new TranslatableText("commandBlockIDE.save")), b -> save()),
+           new ButtonWidget(0, 0, 60, 20, new LiteralText("Test"), w -> {}),
+			new ToolbarSeparator()
 		));
+
+		addDrawableChild(new SimpleIconButton(this.width - 28, 8, "close", this, List.of(new TranslatableText("commandBlockIDE.close")), b -> close()));
 
 		if (!initialized) {
 			firstInit();
@@ -239,23 +239,17 @@ public abstract class CommandIDEScreen extends Screen {
 	}
 
 	/**
-	 * Adds the provided toolbar buttons to the screen in order.
-	 * @param buttons The list of buttons to add. A null item represents a
-	 *                separator.
-	 * @return The X coordinate at which the next button would have been placed.
+	 * Adds the provided toolbar widgets to the screen in order.
+	 * @param widgets The list of widgets to add.
+	 * @return The X coordinate at which the next widget would have been placed.
 	 */
-	private int addToolbarButtons(List<Optional<ClickableWidget>> buttons) {
+	private int addToolbarWidgets(List<ClickableWidget> widgets) {
 		int x = 8;
-		for (Optional<ClickableWidget> button : buttons) {
-			if (button.isEmpty()) {
-				addDrawableChild(new ToolbarSeparator(x, TOOLBAR_Y + 1, 18));
-				x += TOOLBAR_SPACING;
-			} else {
-				button.get().x = x;
-				button.get().y = TOOLBAR_Y;
-				x += button.get().getWidth() + TOOLBAR_SPACING;
-				addDrawableChild(button.get());
-			}
+		for (ClickableWidget widget : widgets) {
+			widget.x = x;
+			widget.y = TOOLBAR_Y;
+			x += widget.getWidth() + TOOLBAR_SPACING;
+			addDrawableChild(widget);
 		}
 		return x;
 	}
