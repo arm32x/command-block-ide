@@ -42,7 +42,7 @@ public final class CommandBlockTrackOutputButton extends IconButton implements D
 	@Override
 	public void onPress() {
 		trackingOutput = !trackingOutput;
-		markDirty();
+		dirty = true;
 	}
 
 	@Override
@@ -52,7 +52,4 @@ public final class CommandBlockTrackOutputButton extends IconButton implements D
 
 	@Override
 	public boolean isDirty() { return dirty; }
-
-	@Override
-	public void markDirty() { dirty = true; }
 }

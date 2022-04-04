@@ -99,7 +99,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 	@Override
 	public void commandChanged(String newCommand) {
 		if (!newCommand.equals(blockEntity.getCommandExecutor().getCommand())) {
-			markDirty();
+			dirty = true;
 		}
 		super.commandChanged(newCommand);
 	}
@@ -127,9 +127,6 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 
 	@Override
 	public boolean isDirty() { return dirty; }
-
-	@Override
-	public void markDirty() { dirty = true; }
 
 	@Override
 	public void setY(int y) {

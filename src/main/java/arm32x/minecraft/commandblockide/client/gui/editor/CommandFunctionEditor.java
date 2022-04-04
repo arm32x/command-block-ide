@@ -33,7 +33,7 @@ public final class CommandFunctionEditor extends CommandEditor implements Dirtya
 	@Override
 	public void commandChanged(String newCommand) {
 		if (!newCommand.equals(originalCommand)) {
-			markDirty();
+			dirty = true;
 		}
 		super.commandChanged(newCommand);
 	}
@@ -43,8 +43,4 @@ public final class CommandFunctionEditor extends CommandEditor implements Dirtya
 		return dirty;
 	}
 
-	@Override
-	public void markDirty() {
-		this.dirty = true;
-	}
 }

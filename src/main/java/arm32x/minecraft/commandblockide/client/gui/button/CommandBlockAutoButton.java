@@ -42,7 +42,7 @@ public final class CommandBlockAutoButton extends IconButton implements Dirtyabl
 	@Override
 	public void onPress() {
 		auto = !auto;
-		markDirty();
+		dirty = true;
 	}
 
 	@Override
@@ -52,7 +52,4 @@ public final class CommandBlockAutoButton extends IconButton implements Dirtyabl
 
 	@Override
 	public boolean isDirty() { return dirty; }
-
-	@Override
-	public void markDirty() { dirty = true; }
 }

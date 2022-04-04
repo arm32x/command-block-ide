@@ -37,7 +37,7 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 				case SEQUENCE -> type = CommandBlockBlockEntity.Type.REDSTONE;
 			}
 		}
-		markDirty();
+		dirty = true;
 	}
 
 	@Override
@@ -115,7 +115,4 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 
 	@Override
 	public boolean isDirty() { return dirty; }
-
-	@Override
-	public void markDirty() { dirty = true; }
 }
