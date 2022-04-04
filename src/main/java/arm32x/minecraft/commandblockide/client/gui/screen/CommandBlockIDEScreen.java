@@ -11,6 +11,8 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
 public final class CommandBlockIDEScreen extends CommandIDEScreen {
@@ -40,7 +42,11 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 			addEditor(getBlockEntityAt(position));
 		}
 
-		statusText = StatusTexts.commandBlock(client, startingBlockEntity.getPos());
+		BlockPos pos = startingBlockEntity.getPos();
+		statusText = new TranslatableText("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())
+			.formatted(Formatting.GRAY)
+			.asOrderedText();
+
 		super.firstInit();
 	}
 

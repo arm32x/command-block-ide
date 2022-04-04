@@ -7,6 +7,8 @@ import arm32x.minecraft.commandblockide.util.PacketSplitter;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
 public final class CommandFunctionIDEScreen extends CommandIDEScreen {
@@ -28,7 +30,7 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen {
 			addEditor(editor);
 		}
 
-		statusText = StatusTexts.function(client, functionId);
+		statusText = new LiteralText(functionId.toString()).formatted(Formatting.GRAY).asOrderedText();
 		super.firstInit();
 	}
 
