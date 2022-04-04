@@ -1,17 +1,20 @@
 package arm32x.minecraft.commandblockide.client.gui.screen;
 
 import arm32x.minecraft.commandblockide.Packets;
+import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import arm32x.minecraft.commandblockide.client.gui.editor.CommandFunctionEditor;
 import arm32x.minecraft.commandblockide.util.PacketSplitter;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.OrderedText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-public final class CommandFunctionIDEScreen extends CommandIDEScreen {
+public final class CommandFunctionIDEScreen extends CommandIDEScreen implements Dirtyable {
 	private final Identifier functionId;
 	private final int startingLineCount;
 
@@ -30,8 +33,16 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen {
 			addEditor(editor);
 		}
 
-		statusText = new LiteralText(functionId.toString()).formatted(Formatting.GRAY).asOrderedText();
+		updateStatusText();
 		super.firstInit();
+	}
+
+	private void updateStatusText() {
+		OrderedText statusText = new LiteralText(functionId.toString()).formatted(Formatting.GRAY).asOrderedText();
+		if (isDirty()) {
+			statusText = OrderedText.concat(statusText, DIRTY_INDICATOR);
+		}
+		this.statusText = statusText;
 	}
 
 	public void update(int index, String command) {
@@ -59,5 +70,19 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen {
 		for (PacketByteBuf splitBuf : splitter) {
 			ClientPlayNetworking.send(Packets.APPLY_FUNCTION, splitBuf);
 		}
+	}
+
+	@Override
+	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+		updateStatusText();
+		super.render(matrices, mouseX, mouseY, delta);
+	}
+
+	@Override
+	public boolean isDirty() {
+		return editors.stream()
+			.filter(editor -> editor instanceof Dirtyable)
+			.map(editor -> (Dirtyable)editor)
+			.anyMatch(Dirtyable::isDirty);
 	}
 }

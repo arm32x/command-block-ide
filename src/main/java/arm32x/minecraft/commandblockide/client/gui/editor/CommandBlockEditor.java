@@ -26,7 +26,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 	private final CommandBlockAutoButton autoButton;
 	private final CommandBlockTrackOutputButton trackOutputButton;
 
-	private boolean dirty = false;
+	private boolean commandFieldDirty = false;
 
 	public CommandBlockEditor(Screen screen, TextRenderer textRenderer, int x, int y, int width, int height, CommandBlockBlockEntity blockEntity, int index) {
 		super(screen, textRenderer, x, y, width, height, 40, 20, index);
@@ -54,7 +54,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 	}
 
 	public void save(ClientPlayNetworkHandler networkHandler) {
-		if (isLoaded() && Stream.<Dirtyable>of(this, typeButton, autoButton, trackOutputButton).anyMatch(Dirtyable::isDirty)) {
+		if (isLoaded() && isDirty()) {
 			CommandBlockExecutor executor = blockEntity.getCommandExecutor();
 			networkHandler.sendPacket(new UpdateCommandBlockC2SPacket(
 				new BlockPos(executor.getPos()),
@@ -88,7 +88,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 		suggestor.setWindowActive(commandField.isActive());
 		suggestor.refresh();
 
-		dirty = false;
+		commandFieldDirty = false;
 		setLoaded(true);
 	}
 
@@ -99,7 +99,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 	@Override
 	public void commandChanged(String newCommand) {
 		if (!newCommand.equals(blockEntity.getCommandExecutor().getCommand())) {
-			dirty = true;
+			commandFieldDirty = true;
 		}
 		super.commandChanged(newCommand);
 	}
@@ -126,7 +126,10 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 	}
 
 	@Override
-	public boolean isDirty() { return dirty; }
+	public boolean isDirty() {
+		return commandFieldDirty
+			|| Stream.<Dirtyable>of(typeButton, autoButton, trackOutputButton).anyMatch(Dirtyable::isDirty);
+	}
 
 	@Override
 	public void setY(int y) {

@@ -14,6 +14,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +41,10 @@ public abstract class CommandIDEScreen extends Screen {
 
 	protected @Nullable OrderedText statusText = null;
 	private int statusTextX = 0;
+
+	protected static final OrderedText DIRTY_INDICATOR = new LiteralText(" *")
+		.formatted(Formatting.BOLD, Formatting.ITALIC)
+		.asOrderedText();
 
 	public CommandIDEScreen() {
 		super(LiteralText.EMPTY);
