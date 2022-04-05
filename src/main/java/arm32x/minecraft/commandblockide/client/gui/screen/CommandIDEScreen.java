@@ -22,8 +22,8 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
-public abstract class CommandIDEScreen extends Screen {
-	protected final List<CommandEditor> editors = new ArrayList<>();
+public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen {
+	protected final List<E> editors = new ArrayList<>();
 	protected int combinedEditorHeight = Integer.MAX_VALUE;
 	private boolean initialized = false;
 
@@ -94,7 +94,7 @@ public abstract class CommandIDEScreen extends Screen {
 		}
 	}
 
-	protected void addEditor(CommandEditor editor) {
+	protected void addEditor(E editor) {
 		editors.add(editor);
 		addSelectableChild(editor);
 	}

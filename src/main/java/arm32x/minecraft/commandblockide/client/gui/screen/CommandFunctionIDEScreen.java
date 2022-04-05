@@ -14,7 +14,7 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-public final class CommandFunctionIDEScreen extends CommandIDEScreen implements Dirtyable {
+public final class CommandFunctionIDEScreen extends CommandIDEScreen<CommandFunctionEditor> implements Dirtyable {
 	private final Identifier functionId;
 	private final int startingLineCount;
 
@@ -46,12 +46,11 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen implements 
 	}
 
 	public void update(int index, String command) {
-		if (editors.get(index) instanceof CommandFunctionEditor editor) {
-			editor.update(command);
-			setLoaded(true);
-			if (getFocused() == editor) {
-				setFocusedEditor(editor);
-			}
+		var editor = editors.get(index);
+		editor.update(command);
+		setLoaded(true);
+		if (getFocused() == editor) {
+			setFocusedEditor(editor);
 		}
 	}
 

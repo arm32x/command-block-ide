@@ -17,7 +17,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
-public final class CommandBlockIDEScreen extends CommandIDEScreen implements Dirtyable {
+public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEditor> implements Dirtyable {
 	private final Map<BlockPos, CommandEditor> positionIndex = new HashMap<>();
 
 	private final CommandBlockBlockEntity startingBlockEntity;
@@ -98,10 +98,7 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen implements Dir
 		assert client != null;
 		ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
 		assert networkHandler != null;
-		editors.stream()
-			.filter(editor -> editor instanceof CommandBlockEditor)
-			.map(editor -> (CommandBlockEditor)editor)
-			.forEach(editor -> editor.save(networkHandler));
+		editors.forEach(editor -> editor.save(networkHandler));
 	}
 
 	@Override
