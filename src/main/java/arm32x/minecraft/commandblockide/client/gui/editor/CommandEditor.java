@@ -1,5 +1,6 @@
 package arm32x.minecraft.commandblockide.client.gui.editor;
 
+import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.client.gui.Container;
 import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
 import net.fabricmc.api.EnvType;
@@ -18,7 +19,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
 
 @Environment(EnvType.CLIENT)
-public abstract class CommandEditor extends Container implements Drawable, Element {
+public abstract class CommandEditor extends Container implements Dirtyable, Drawable, Element {
 	@SuppressWarnings("FieldMayBeFinal")
 	private int x, y, width, height;
 	private final int leftPadding, rightPadding;

@@ -1,7 +1,6 @@
 package arm32x.minecraft.commandblockide.client.gui.screen;
 
 import arm32x.minecraft.commandblockide.Packets;
-import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import arm32x.minecraft.commandblockide.client.gui.editor.CommandFunctionEditor;
 import arm32x.minecraft.commandblockide.util.PacketSplitter;
@@ -14,7 +13,7 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-public final class CommandFunctionIDEScreen extends CommandIDEScreen<CommandFunctionEditor> implements Dirtyable {
+public final class CommandFunctionIDEScreen extends CommandIDEScreen<CommandFunctionEditor> {
 	private final Identifier functionId;
 	private final int startingLineCount;
 
@@ -75,13 +74,5 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen<CommandFunc
 	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 		updateStatusText();
 		super.render(matrices, mouseX, mouseY, delta);
-	}
-
-	@Override
-	public boolean isDirty() {
-		return editors.stream()
-			.filter(editor -> editor instanceof Dirtyable)
-			.map(editor -> (Dirtyable)editor)
-			.anyMatch(Dirtyable::isDirty);
 	}
 }

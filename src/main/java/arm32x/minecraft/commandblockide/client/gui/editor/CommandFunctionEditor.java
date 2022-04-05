@@ -1,12 +1,11 @@
 package arm32x.minecraft.commandblockide.client.gui.editor;
 
-import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import org.jetbrains.annotations.Nullable;
 
-public final class CommandFunctionEditor extends CommandEditor implements Dirtyable {
+public final class CommandFunctionEditor extends CommandEditor {
 	private @Nullable String originalCommand;
 
 	private boolean dirty = false;

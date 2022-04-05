@@ -17,7 +17,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.CommandBlockExecutor;
 
-public final class CommandBlockEditor extends CommandEditor implements Dirtyable {
+public final class CommandBlockEditor extends CommandEditor {
 	private CommandBlockBlockEntity blockEntity;
 
 	private final TextFieldWidget lastOutputField;

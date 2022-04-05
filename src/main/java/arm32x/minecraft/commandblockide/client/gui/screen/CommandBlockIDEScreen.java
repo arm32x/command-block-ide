@@ -109,15 +109,4 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 		updateStatusText();
 		super.render(matrices, mouseX, mouseY, delta);
 	}
-
-	@Override
-	public boolean isDirty() {
-		// FIXME: A CommandBlockIDEScreen should only contain editors of type
-		//  	  CommandBlockEditor, so this instanceof check shouldn't be
-		//        necessary.
-		return editors.stream()
-			.filter(editor -> editor instanceof Dirtyable)
-			.map(editor -> (Dirtyable)editor)
-			.anyMatch(Dirtyable::isDirty);
-	}
 }

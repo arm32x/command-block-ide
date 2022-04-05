@@ -1,5 +1,6 @@
 package arm32x.minecraft.commandblockide.client.gui.screen;
 
+import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.client.gui.ToolbarSeparator;
 import arm32x.minecraft.commandblockide.client.gui.button.SimpleIconButton;
 import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
@@ -22,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
-public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen {
+public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen implements Dirtyable {
 	protected final List<E> editors = new ArrayList<>();
 	protected int combinedEditorHeight = Integer.MAX_VALUE;
 	private boolean initialized = false;
@@ -322,6 +323,11 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen {
 		}
 
 		matrices.pop();
+	}
+
+	@Override
+	public boolean isDirty() {
+		return editors.stream().anyMatch(Dirtyable::isDirty);
 	}
 
 	public boolean isLoaded() {
