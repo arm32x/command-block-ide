@@ -19,9 +19,13 @@ Replaces the command block GUI to allow editing multiple command blocks at once.
 
 ## Screenshots
 
-![Screenshot](https://i.imgur.com/Ed06Xng.png)
+![Screenshot](https://i.imgur.com/CJgyxe7.png)
 
 ## FAQ
+
+#### How do you make a command block conditional?
+
+Shift-click on the command block icon in the GUI.
 
 #### Can you port this to Forge?
 
