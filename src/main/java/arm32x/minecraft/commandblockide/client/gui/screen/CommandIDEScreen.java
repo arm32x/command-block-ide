@@ -10,6 +10,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ScreenTexts;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
@@ -54,7 +56,10 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			new ToolbarSeparator()
 		));
 
-		addDrawableChild(new SimpleIconButton(this.width - 28, this.height - 28, "close", this, List.of(new TranslatableText("commandBlockIDE.close")), b -> close()));
+		// Done button
+		addDrawableChild(new ButtonWidget(width - 216, height - 28, 100, 20, ScreenTexts.DONE, b -> { save(); close(); }));
+		// Cancel button
+		addDrawableChild(new ButtonWidget(width - 108, height - 28, 100, 20, ScreenTexts.CANCEL, b -> close()));
 
 		if (!initialized) {
 			firstInit();
