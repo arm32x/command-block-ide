@@ -42,8 +42,6 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	protected @Nullable OrderedText statusText = null;
 	private int statusTextX = 0;
 
-	protected static final OrderedText DIRTY_INDICATOR = new LiteralText("  ●").asOrderedText();
-
 	public CommandIDEScreen() {
 		super(LiteralText.EMPTY);
 	}

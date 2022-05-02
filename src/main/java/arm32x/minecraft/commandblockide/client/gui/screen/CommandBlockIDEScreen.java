@@ -12,7 +12,6 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.OrderedText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
@@ -44,19 +43,12 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 			addEditor(getBlockEntityAt(position));
 		}
 
-		updateStatusText();
-		super.firstInit();
-	}
-
-	private void updateStatusText() {
 		BlockPos pos = startingBlockEntity.getPos();
-		OrderedText statusText = new TranslatableText("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())
+		statusText = new TranslatableText("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())
 			.formatted(Formatting.GRAY)
 			.asOrderedText();
-		if (isDirty()) {
-			statusText = OrderedText.concat(statusText, DIRTY_INDICATOR);
-		}
-		this.statusText = statusText;
+
+		super.firstInit();
 	}
 
 	private void addEditor(CommandBlockBlockEntity blockEntity) {
@@ -106,7 +98,6 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 		for (CommandEditor editor : editors) {
 			editor.lineNumberHighlighted = editor.index == startingIndex;
 		}
-		updateStatusText();
 		super.render(matrices, mouseX, mouseY, delta);
 	}
 }
