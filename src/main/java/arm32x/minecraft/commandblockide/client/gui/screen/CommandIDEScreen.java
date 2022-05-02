@@ -226,7 +226,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	}
 
 	protected void repositionEditors() {
-		int heightAccumulator = 36;
+		int heightAccumulator = 8;
 		for (CommandEditor editor : editors) {
 			editor.setY(heightAccumulator - scrollOffset);
 			heightAccumulator += editor.getHeight() + 4;
