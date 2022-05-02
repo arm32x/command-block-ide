@@ -36,9 +36,6 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	private double mouseYAtScrollbarDragStart = 0;
 	private int scrollOffsetAtScrollbarDragStart = 0;
 
-	private static final int TOOLBAR_Y = 8;
-	private static final int TOOLBAR_SPACING = 4;
-
 	protected @Nullable OrderedText statusText = null;
 	private int statusTextX = 0;
 
@@ -57,7 +54,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			new ToolbarSeparator()
 		));
 
-		addDrawableChild(new SimpleIconButton(this.width - 28, 8, "close", this, List.of(new TranslatableText("commandBlockIDE.close")), b -> close()));
+		addDrawableChild(new SimpleIconButton(this.width - 28, this.height - 28, "close", this, List.of(new TranslatableText("commandBlockIDE.close")), b -> close()));
 
 		if (!initialized) {
 			firstInit();
@@ -245,8 +242,8 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 		int x = 8;
 		for (ClickableWidget widget : widgets) {
 			widget.x = x;
-			widget.y = TOOLBAR_Y;
-			x += widget.getWidth() + TOOLBAR_SPACING;
+			widget.y = height - 28;
+			x += widget.getWidth() + 4;
 			addDrawableChild(widget);
 		}
 		return x;
@@ -314,7 +311,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 
 		super.render(matrices, mouseX, mouseY, delta);
 		if (statusText != null) {
-			renderOrderedTooltip(matrices, List.of(statusText), statusTextX - 7, 26);
+			renderOrderedTooltip(matrices, List.of(statusText), statusTextX - 7, height - 10);
 		}
 
 		matrices.pop();
