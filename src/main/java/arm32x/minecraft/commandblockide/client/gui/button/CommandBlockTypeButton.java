@@ -9,7 +9,6 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
 
@@ -51,7 +50,7 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 		if (conditional) {
 			keyBuilder.append("Conditional");
 		}
-		return new TranslatableText(keyBuilder.toString());
+		return Text.translatable(keyBuilder.toString());
 	}
 
 	@Override
@@ -100,8 +99,8 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 		bufferBuilder.vertex(matrix, x1, y1, z).texture(u0, v0).next();
 		bufferBuilder.vertex(matrix, x1, y0, z).texture(u0, v1).next();
 		bufferBuilder.vertex(matrix, x0, y0, z).texture(u1, v1).next();
-		bufferBuilder.end();
-		BufferRenderer.draw(bufferBuilder);
+		var builtBuffer = bufferBuilder.end();
+		BufferRenderer.drawWithShader(builtBuffer);
 
 		if (isHovered()) {
 			renderTooltip(matrices, mouseX, mouseY);

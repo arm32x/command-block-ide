@@ -11,9 +11,10 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.packet.c2s.play.UpdateCommandBlockC2SPacket;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.CommandBlockExecutor;
 
@@ -34,10 +35,16 @@ public final class CommandBlockEditor extends CommandEditor {
 
 		commandField.setMaxLength(32500);
 
-		lastOutputField = new TextFieldWidget(textRenderer, commandField.x, commandField.y, commandField.getWidth(), commandField.getHeight(), new TranslatableText("advMode.previousOutput").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1)));
+		lastOutputField = new TextFieldWidget(
+			textRenderer,
+			commandField.x, commandField.y,
+			commandField.getWidth(), commandField.getHeight(),
+			Text.translatable("advMode.previousOutput")
+				.append(Text.translatable("commandBlockIDE.narrator.editorIndex", index + 1))
+		);
 		lastOutputField.setEditable(false);
 		lastOutputField.setMaxLength(32500);
-		lastOutputField.setText(new TranslatableText("commandBlockIDE.unloaded").getString());
+		lastOutputField.setText(Text.translatable("commandBlockIDE.unloaded").getString());
 		lastOutputField.visible = false;
 
 		typeButton = addDrawableChild(new CommandBlockTypeButton(screen, x + 20, y));
@@ -81,7 +88,7 @@ public final class CommandBlockEditor extends CommandEditor {
 
 		String lastOutput = executor.getLastOutput().getString();
 		if (lastOutput.equals("")) {
-			lastOutput = new TranslatableText("commandBlockIDE.lastOutput.none").getString();
+			lastOutput = Text.translatable("commandBlockIDE.lastOutput.none").getString();
 		}
 		lastOutputField.setText(lastOutput);
 
@@ -92,8 +99,8 @@ public final class CommandBlockEditor extends CommandEditor {
 		setLoaded(true);
 	}
 
-	public void requestUpdate(ClientPlayNetworkHandler networkHandler) {
-		DataCommandUpdateRequester.getInstance().requestUpdate(networkHandler, blockEntity);
+	public void requestUpdate(ClientPlayerEntity player) {
+		DataCommandUpdateRequester.getInstance().requestUpdate(player, blockEntity);
 	}
 
 	@Override

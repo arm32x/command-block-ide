@@ -6,7 +6,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 
 public final class CommandBlockAutoButton extends IconButton implements Dirtyable {
@@ -35,8 +34,8 @@ public final class CommandBlockAutoButton extends IconButton implements Dirtyabl
 
 	private Text getTooltip() {
 		return auto
-			? new TranslatableText("advMode.mode.autoexec.bat")
-			: new TranslatableText("advMode.mode.redstoneTriggered");
+			? Text.translatable("advMode.mode.autoexec.bat")
+			: Text.translatable("advMode.mode.redstoneTriggered");
 	}
 
 	@Override

@@ -4,7 +4,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -17,14 +16,14 @@ public abstract class IconButton extends PressableWidget {
 	}
 
 	public IconButton(int x, int y, int width, int height, int iconWidth, int iconHeight) {
-		super(x, y, width, height, LiteralText.EMPTY);
+		super(x, y, width, height, Text.empty());
 		this.iconWidth = iconWidth;
 		this.iconHeight = iconHeight;
 	}
 
 	@Override
 	public final Text getMessage() {
-		return LiteralText.EMPTY;
+		return Text.empty();
 	}
 
 	@Override

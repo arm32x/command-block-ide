@@ -6,8 +6,7 @@
     "mixins": [
         "server.AbstractFileResourcePackInvoker",
         "server.CommandFunctionMixin",
-        "server.DirectoryResourcePackInvoker",
-        "server.NamespaceResourceManagerAccessor"
+        "server.DirectoryResourcePackInvoker"
     ],
     "client": [
         "client.ClientPlayerEntityMixin",

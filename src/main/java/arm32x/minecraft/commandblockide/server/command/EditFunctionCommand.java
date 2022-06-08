@@ -21,7 +21,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.function.CommandFunction;
 import net.minecraft.server.function.CommandFunctionManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 
 public final class EditFunctionCommand {
 	/**
@@ -33,8 +33,8 @@ public final class EditFunctionCommand {
 		return CommandSource.suggestIdentifiers(functionManager.getAllFunctions(), builder);
 	};
 
-	private static final SimpleCommandExceptionType EDIT_TAG_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("arguments.editfunction.tag.unsupported"));
-	private static final SimpleCommandExceptionType MOD_NOT_INSTALLED_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("commands.editfunction.failed.modNotInstalled"));
+	private static final SimpleCommandExceptionType EDIT_TAG_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("arguments.editfunction.tag.unsupported"));
+	private static final SimpleCommandExceptionType MOD_NOT_INSTALLED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.editfunction.failed.modNotInstalled"));
 
 	public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literal("editfunction")

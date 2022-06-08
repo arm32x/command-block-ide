@@ -8,11 +8,11 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.network.MessageType;
+import net.minecraft.network.message.MessageType;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Util;
+import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -28,9 +28,18 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public final class ClientPlayNetworkHandlerMixin {
 	@Shadow private @Final MinecraftClient client;
 
-	@Inject(method = "onGameMessage(Lnet/minecraft/network/packet/s2c/play/GameMessageS2CPacket;)V", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/util/thread/ThreadExecutor;)V", shift = At.Shift.AFTER))
-	public void onGameMessage(GameMessageS2CPacket packet, CallbackInfo ci) {
-		if (packet.getSender().equals(Util.NIL_UUID) && packet.getType() == MessageType.SYSTEM && packet.getMessage() instanceof TranslatableText message) {
+	@Inject(
+		method = "onGameMessage(Lnet/minecraft/network/packet/s2c/play/GameMessageS2CPacket;)V",
+		cancellable = true,
+		at = @At(
+			value = "INVOKE",
+			target = "Lnet/minecraft/client/gui/hud/InGameHud;onGameMessage(Lnet/minecraft/network/message/MessageType;Lnet/minecraft/text/Text;)V"
+		),
+		locals = LocalCapture.CAPTURE_FAILHARD
+	)
+	public void onGameMessage(GameMessageS2CPacket packet, CallbackInfo ci, Registry<MessageType> registry, MessageType messageType) {
+		boolean isSystemMessage = registry.getKey(messageType).orElseThrow().equals(MessageType.SYSTEM);
+		if (isSystemMessage && packet.content().getContent() instanceof TranslatableTextContent message) {
 			if (message.getKey().equals("commands.data.block.query")) {
 				if (DataCommandUpdateRequester.getInstance().handleFeedback(client, message)) {
 					ci.cancel();

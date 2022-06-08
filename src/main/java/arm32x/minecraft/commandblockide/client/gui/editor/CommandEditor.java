@@ -16,7 +16,7 @@ import net.minecraft.client.gui.screen.narration.NarrationPart;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 
 @Environment(EnvType.CLIENT)
 public abstract class CommandEditor extends Container implements Dirtyable, Drawable, Element {
@@ -44,7 +44,13 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 		this.index = index;
 		this.textRenderer = textRenderer;
 
-		commandField = addSelectableChild(new TextFieldWidget(textRenderer, x + leftPadding + 20 + 1, y + 1, width - leftPadding - rightPadding - 20 - 2, height - 2, new TranslatableText("advMode.command").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1))) {
+		commandField = addSelectableChild(new TextFieldWidget(
+			textRenderer,
+			x + leftPadding + 20 + 1, y + 1,
+			width - leftPadding - rightPadding - 20 - 2, height - 2,
+			Text.translatable("advMode.command")
+				.append(Text.translatable("commandBlockIDE.narrator.editorIndex", index + 1))
+		) {
 			@Override
 			protected MutableText getNarrationMessage() {
 				return super.getNarrationMessage().append(suggestor.getNarration());
@@ -100,7 +106,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 		if (isLoaded()) {
 			renderCommandField(matrices, mouseX, mouseY, delta);
 		} else {
-			textRenderer.draw(matrices, new TranslatableText("commandBlockIDE.unloaded"), commandField.x, y + 5, 0x7FFFFFFF);
+			textRenderer.draw(matrices, Text.translatable("commandBlockIDE.unloaded"), commandField.x, y + 5, 0x7FFFFFFF);
 		}
 		super.render(matrices, mouseX, mouseY, delta);
 	}
@@ -175,7 +181,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 
 	@Override
 	public void appendNarrations(NarrationMessageBuilder builder) {
-		builder.put(NarrationPart.TITLE, new TranslatableText("narration.edit_box", commandField.getText()));
+		builder.put(NarrationPart.TITLE, Text.translatable("narration.edit_box", commandField.getText()));
 	}
 }
 

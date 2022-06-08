@@ -7,12 +7,11 @@ import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
@@ -44,7 +43,7 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 		}
 
 		BlockPos pos = startingBlockEntity.getPos();
-		statusText = new TranslatableText("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())
+		statusText = Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())
 			.formatted(Formatting.GRAY)
 			.asOrderedText();
 
@@ -60,8 +59,8 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 			startingIndex = index;
 			setFocusedEditor(editor);
 		} else {
-			assert client != null;
-			editor.requestUpdate(Objects.requireNonNull(client.getNetworkHandler()));
+			assert client != null && client.player != null;
+			editor.requestUpdate(client.player);
 		}
 	}
 

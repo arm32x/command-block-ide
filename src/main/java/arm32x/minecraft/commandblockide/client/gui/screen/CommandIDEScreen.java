@@ -10,13 +10,12 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.OrderedText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,7 +41,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	private int statusTextX = 0;
 
 	public CommandIDEScreen() {
-		super(LiteralText.EMPTY);
+		super(Text.empty());
 	}
 
 	@SuppressWarnings("CodeBlock2Expr")
@@ -52,7 +51,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 		client.keyboard.setRepeatEvents(true);
 
 		statusTextX = addToolbarWidgets(List.of(
-			saveButton = new SimpleIconButton(0, 0, "save", this, List.of(new TranslatableText("commandBlockIDE.save")), b -> save()),
+			saveButton = new SimpleIconButton(0, 0, "save", this, List.of(Text.translatable("commandBlockIDE.save")), b -> save()),
 			new ToolbarSeparator()
 		));
 

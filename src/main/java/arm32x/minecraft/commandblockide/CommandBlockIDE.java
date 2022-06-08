@@ -1,6 +1,7 @@
 package arm32x.minecraft.commandblockide;
 
-import arm32x.minecraft.commandblockide.mixin.server.*;
+import arm32x.minecraft.commandblockide.mixin.server.AbstractFileResourcePackInvoker;
+import arm32x.minecraft.commandblockide.mixin.server.DirectoryResourcePackInvoker;
 import arm32x.minecraft.commandblockide.mixinextensions.server.CommandFunctionExtension;
 import arm32x.minecraft.commandblockide.server.command.EditFunctionCommand;
 import arm32x.minecraft.commandblockide.util.PacketMerger;
@@ -10,28 +11,25 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.message.MessageType;
 import net.minecraft.resource.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.function.CommandFunction;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
 public final class CommandBlockIDE implements ModInitializer {
 	@Override
 	public void onInitialize() {
-		CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			EditFunctionCommand.register(dispatcher);
 		});
 
@@ -54,23 +52,25 @@ public final class CommandBlockIDE implements ModInitializer {
 
 				server.execute(() -> {
 					Text feedbackMessage = saveFunction(server, functionId, Arrays.asList(lines));
-					player.sendSystemMessage(feedbackMessage, Util.NIL_UUID);
+					player.sendMessage(feedbackMessage, MessageType.SYSTEM);
 				});
 			}
 		});
 	}
 
 	private static Text saveFunction(MinecraftServer server, Identifier functionId, List<String> lines) {
+		// TODO: Make saving functions use a CompletableFuture so errors can be
+		//       properly shown to the user.
 		Identifier functionResourceId = new Identifier(functionId.getNamespace(), String.format("functions/%s.mcfunction", functionId.getPath()));
 
 		ResourceManager resourceManager = server.getResourceManager();
 		if (!(resourceManager instanceof ReloadableResourceManagerImpl resourceManagerImpl)) {
-			return new TranslatableText("commandBlockIDE.saveFunction.failed.resourceManager", functionId).formatted(Formatting.RED);
+			return Text.translatable("commandBlockIDE.saveFunction.failed.resourceManager", functionId).formatted(Formatting.RED);
 		}
 
 		Optional<ResourcePack> maybePack = resourceManager.streamResourcePacks().filter(p -> p.contains(ResourceType.SERVER_DATA, functionResourceId)).findFirst();
 		if (maybePack.isEmpty()) {
-			return new TranslatableText("commandBlockIDE.saveFunction.failed.noResourcePack", functionId).formatted(Formatting.RED);
+			return Text.translatable("commandBlockIDE.saveFunction.failed.noResourcePack", functionId).formatted(Formatting.RED);
 		}
 
 		ResourcePack pack = maybePack.get();
@@ -81,14 +81,14 @@ public final class CommandBlockIDE implements ModInitializer {
 				Files.write(file.toPath(), lines, StandardOpenOption.TRUNCATE_EXISTING);
 			} catch (IOException e) {
 				LOGGER.error("IO exception occurred while saving function '" + functionId.toString() + "':", e);
-				return new TranslatableText("commandBlockIDE.saveFunction.failed.ioException", functionId).formatted(Formatting.RED);
+				return Text.translatable("commandBlockIDE.saveFunction.failed.ioException", functionId).formatted(Formatting.RED);
 			}
 			updateFunctionLines(server, functionId, lines);
-			return new TranslatableText("commandBlockIDE.saveFunction.success.file", functionId);
+			return Text.translatable("commandBlockIDE.saveFunction.success.file", functionId);
 		} else if (pack instanceof ZipResourcePack) {
-			return new TranslatableText("commandBlockIDE.saveFunction.failed.zipNotSupported", functionId).formatted(Formatting.RED);
+			return Text.translatable("commandBlockIDE.saveFunction.failed.zipNotSupported", functionId).formatted(Formatting.RED);
 		} else {
-			return new TranslatableText("commandBlockIDE.saveFunction.failed.packClassNotSupported", functionId, pack.getClass().getSimpleName()).formatted(Formatting.RED);
+			return Text.translatable("commandBlockIDE.saveFunction.failed.packClassNotSupported", functionId, pack.getClass().getSimpleName()).formatted(Formatting.RED);
 		}
 	}
 

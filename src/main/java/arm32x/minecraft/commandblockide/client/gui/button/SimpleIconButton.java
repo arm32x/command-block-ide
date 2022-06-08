@@ -5,7 +5,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -71,6 +70,6 @@ public final class SimpleIconButton extends IconButton {
 
 	@Override
 	protected MutableText getNarrationMessage() {
-		return getNarrationMessage(getTooltip().stream().findFirst().orElse(LiteralText.EMPTY));
+		return getNarrationMessage(getTooltip().stream().findFirst().orElse(Text.empty()));
 	}
 }

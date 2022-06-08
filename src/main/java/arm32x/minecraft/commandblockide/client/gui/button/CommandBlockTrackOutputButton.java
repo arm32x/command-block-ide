@@ -6,7 +6,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 
 public final class CommandBlockTrackOutputButton extends IconButton implements Dirtyable {
@@ -35,8 +34,8 @@ public final class CommandBlockTrackOutputButton extends IconButton implements D
 
 	private Text getTooltip() {
 		return trackingOutput
-			? new TranslatableText("commandBlockIDE.lastOutput.on")
-			: new TranslatableText("commandBlockIDE.lastOutput.off");
+			? Text.translatable("commandBlockIDE.lastOutput.on")
+			: Text.translatable("commandBlockIDE.lastOutput.off");
 	}
 
 	@Override
