@@ -16,7 +16,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.message.MessageType;
 import net.minecraft.resource.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.function.CommandFunction;
@@ -52,7 +51,7 @@ public final class CommandBlockIDE implements ModInitializer {
 
 				server.execute(() -> {
 					Text feedbackMessage = saveFunction(server, functionId, Arrays.asList(lines));
-					player.sendMessage(feedbackMessage, MessageType.SYSTEM);
+					player.sendMessage(feedbackMessage);
 				});
 			}
 		});
@@ -99,4 +98,3 @@ public final class CommandBlockIDE implements ModInitializer {
 
 	private static final Logger LOGGER = LogManager.getLogger();
 }
-

@@ -2,14 +2,14 @@ package arm32x.minecraft.commandblockide.client.gui.editor;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.client.gui.Container;
-import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
+import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggestorExtension;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.CommandSuggestor;
+import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
@@ -30,7 +30,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 	protected final TextRenderer textRenderer;
 
 	protected final TextFieldWidget commandField;
-	protected final CommandSuggestor suggestor;
+	protected final ChatInputSuggestor suggestor;
 
 	private boolean loaded = false;
 
@@ -59,13 +59,13 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 		commandField.setEditable(false);
 		commandField.setMaxLength(Integer.MAX_VALUE);
 
-		suggestor = new CommandSuggestor(MinecraftClient.getInstance(), screen, commandField, textRenderer, true, true, 0, 16, false, Integer.MIN_VALUE);
+		suggestor = new ChatInputSuggestor(MinecraftClient.getInstance(), screen, commandField, textRenderer, true, true, 0, 16, false, Integer.MIN_VALUE);
 		suggestor.refresh();
 
 		commandField.setChangedListener(this::commandChanged);
 
 		//noinspection ConstantConditions
-		((CommandSuggestorExtension)suggestor).ide$setY(commandField.y + commandField.getHeight() + 2);
+		((ChatInputSuggestorExtension)suggestor).ide$setY(commandField.y + commandField.getHeight() + 2);
 
 	}
 
@@ -158,7 +158,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
  		this.y = y;
 
  		commandField.y = y + 1;
-		((CommandSuggestorExtension)suggestor).ide$setY(commandField.y + commandField.getHeight() + 2);
+		((ChatInputSuggestorExtension)suggestor).ide$setY(commandField.y + commandField.getHeight() + 2);
 		suggestor.refresh();
 
 	}
@@ -184,4 +184,3 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 		builder.put(NarrationPart.TITLE, Text.translatable("narration.edit_box", commandField.getText()));
 	}
 }
-

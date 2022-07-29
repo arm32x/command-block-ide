@@ -9,9 +9,10 @@
         "server.DirectoryResourcePackInvoker"
     ],
     "client": [
+        "client.ChatInputSuggestorMixin",
         "client.ClientPlayerEntityMixin",
         "client.ClientPlayNetworkHandlerMixin",
-        "client.CommandSuggestorMixin"
+        "client.MessageHandlerMixin"
     ],
     "injectors": {
         "defaultRequire": 1

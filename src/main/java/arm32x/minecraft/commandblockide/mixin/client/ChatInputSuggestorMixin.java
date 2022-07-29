@@ -1,9 +1,9 @@
 package arm32x.minecraft.commandblockide.mixin.client;
 
-import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
+import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggestorExtension;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.screen.CommandSuggestor;
+import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
@@ -17,15 +17,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Environment(EnvType.CLIENT)
-@Mixin(CommandSuggestor.class)
-public final class CommandSuggestorMixin implements CommandSuggestorExtension {
+@Mixin(ChatInputSuggestor.class)
+public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtension {
 	@Unique public int ide$y = 72;
 	@Unique public boolean ide$allowComments = false;
 	@Unique public boolean ide$slashForbidden = false;
 
 	@Shadow @Final TextFieldWidget textField;
 
-	@ModifyConstant(method = { "showSuggestions(Z)V", "render(Lnet/minecraft/client/util/math/MatrixStack;II)V" }, constant = @Constant(intValue = 72))
+	@ModifyConstant(
+		method = { "show(Z)V", "renderMessages(Lnet/minecraft/client/util/math/MatrixStack;)V" },
+		constant = @Constant(intValue = 72)
+	)
 	public int getY(int seventyTwo) {
 		return ide$y;
 	}
@@ -45,8 +48,8 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 		ide$slashForbidden = slashForbidden;
 	}
 
-	@Inject(method = "show()V", at = @At("HEAD"), cancellable = true)
-	public void onShow(CallbackInfo ci) {
+	@Inject(method = "showCommandSuggestions()V", at = @At("HEAD"), cancellable = true)
+	public void onShowCommandSuggestions(CallbackInfo ci) {
 		if (ide$allowComments && textField.getText().startsWith("#")) {
 			ci.cancel();
 		}

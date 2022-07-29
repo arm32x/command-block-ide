@@ -1,6 +1,6 @@
 package arm32x.minecraft.commandblockide.client.gui.editor;
 
-import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
+import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggestorExtension;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +13,7 @@ public final class CommandFunctionEditor extends CommandEditor {
 	public CommandFunctionEditor(Screen screen, TextRenderer textRenderer, int x, int y, int width, int height, int index) {
 		super(screen, textRenderer, x, y, width, height, 0, 0, index);
 
-		CommandSuggestorExtension suggestorExtension = (CommandSuggestorExtension)suggestor;
+		ChatInputSuggestorExtension suggestorExtension = (ChatInputSuggestorExtension)suggestor;
 		suggestorExtension.ide$setAllowComments(true);
 		suggestorExtension.ide$setSlashForbidden(true);
 	}
