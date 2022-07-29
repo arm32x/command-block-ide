@@ -15,7 +15,6 @@
     "commandBlockIDE.lastOutput.none": "No output",
     "commandBlockIDE.narrator.editorIndex": "Number %s",
     "commandBlockIDE.saveFunction.success.file": "Saved function '%s' to file.",
-    "commandBlockIDE.saveFunction.failed.resourceManager": "Error saving function '%s': Resource manager was not the correct type.",
     "commandBlockIDE.saveFunction.failed.missingNamespace": "Error saving function '%s': Resource manager has no namespace '%s'.",
     "commandBlockIDE.saveFunction.failed.noResourcePack": "Error saving function '%s': Not found in any datapack.",
     "commandBlockIDE.saveFunction.failed.ioException": "Error saving function '%s': An IO error occurred.",

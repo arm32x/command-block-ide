@@ -63,9 +63,6 @@ public final class CommandBlockIDE implements ModInitializer {
 		Identifier functionResourceId = new Identifier(functionId.getNamespace(), String.format("functions/%s.mcfunction", functionId.getPath()));
 
 		ResourceManager resourceManager = server.getResourceManager();
-		if (!(resourceManager instanceof ReloadableResourceManagerImpl resourceManagerImpl)) {
-			return Text.translatable("commandBlockIDE.saveFunction.failed.resourceManager", functionId).formatted(Formatting.RED);
-		}
 
 		Optional<ResourcePack> maybePack = resourceManager.streamResourcePacks().filter(p -> p.contains(ResourceType.SERVER_DATA, functionResourceId)).findFirst();
 		if (maybePack.isEmpty()) {
