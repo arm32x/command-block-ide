@@ -118,6 +118,8 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 		return !ide$slashForbidden && bl;
 	}
 
+	// See above.
+	@SuppressWarnings("InvalidInjectorMethodSignature")
 	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	public String onGetCommand(String command) {
 		if (ide$commandProcessor != null) {
@@ -129,6 +131,8 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 		}
 	}
 
+	// See above.
+	@SuppressWarnings("InvalidInjectorMethodSignature")
 	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	public int onGetTextFieldCursor1(int cursor) {
 		return ide$mapIndex(cursor, true);
