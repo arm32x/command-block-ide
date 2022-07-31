@@ -1,5 +1,9 @@
-package arm32x.minecraft.commandblockide.client.gui;
+package arm32x.minecraft.commandblockide.client.gui.screen;
 
+import arm32x.minecraft.commandblockide.client.Dirtyable;
+import arm32x.minecraft.commandblockide.client.gui.ToolbarSeparator;
+import arm32x.minecraft.commandblockide.client.gui.button.SimpleIconButton;
+import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,24 +11,25 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.screen.ScreenTexts;
+import net.minecraft.text.OrderedText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
-public abstract class CommandIDEScreen extends Screen {
-	protected final List<CommandEditor> editors = new ArrayList<>();
+public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen implements Dirtyable {
+	protected final List<E> editors = new ArrayList<>();
 	protected int combinedEditorHeight = Integer.MAX_VALUE;
 	private boolean initialized = false;
 
-	private ButtonWidget doneButton;
-	private ButtonWidget applyButton;
+	private SimpleIconButton saveButton;
 
 	private int scrollOffset = 0, maxScrollOffset = Integer.MAX_VALUE;
 	public static final double SCROLL_SENSITIVITY = 50.0;
@@ -33,8 +38,11 @@ public abstract class CommandIDEScreen extends Screen {
 	private double mouseYAtScrollbarDragStart = 0;
 	private int scrollOffsetAtScrollbarDragStart = 0;
 
+	protected @Nullable OrderedText statusText = null;
+	private int statusTextX = 0;
+
 	public CommandIDEScreen() {
-		super(LiteralText.EMPTY);
+		super(Text.empty());
 	}
 
 	@SuppressWarnings("CodeBlock2Expr")
@@ -43,16 +51,15 @@ public abstract class CommandIDEScreen extends Screen {
 		assert client != null;
 		client.keyboard.setRepeatEvents(true);
 
-		doneButton = addDrawableChild(new ButtonWidget(this.width - 324, this.height - 28, 100, 20, ScreenTexts.DONE, (widget) -> {
-			apply();
-			onClose();
-		}));
-		/* cancelButton = */ addDrawableChild(new ButtonWidget(this.width - 216, this.height - 28, 100, 20, ScreenTexts.CANCEL, (widget) -> {
-			onClose();
-		}));
-		applyButton = addDrawableChild(new ButtonWidget(this.width - 108, this.height - 28, 100, 20, new TranslatableText("commandBlockIDE.apply"), (widget) -> {
-			apply();
-		}));
+		statusTextX = addToolbarWidgets(List.of(
+			saveButton = new SimpleIconButton(0, 0, "save", this, List.of(Text.translatable("commandBlockIDE.save")), b -> save()),
+			new ToolbarSeparator()
+		));
+
+		// Done button
+		addDrawableChild(new ButtonWidget(width - 216, height - 28, 100, 20, ScreenTexts.DONE, b -> { save(); close(); }));
+		// Cancel button
+		addDrawableChild(new ButtonWidget(width - 108, height - 28, 100, 20, ScreenTexts.CANCEL, b -> close()));
 
 		if (!initialized) {
 			firstInit();
@@ -87,13 +94,13 @@ public abstract class CommandIDEScreen extends Screen {
 		}
 	}
 
-	protected void addEditor(CommandEditor editor) {
+	protected void addEditor(E editor) {
 		editor.setHeightChangedListener(height -> repositionEditors());
 		editors.add(editor);
 		addSelectableChild(editor);
 	}
 
-	public void apply() {
+	public void save() {
 		MultilineCommandStorage.save();
 	}
 
@@ -101,10 +108,10 @@ public abstract class CommandIDEScreen extends Screen {
 	public boolean shouldCloseOnEsc() { return false; }
 
 	@Override
-	public void onClose() {
+	public void close() {
 		assert client != null;
 		client.keyboard.setRepeatEvents(false);
-		super.onClose();
+		super.close();
 	}
 
 	@Override
@@ -112,7 +119,7 @@ public abstract class CommandIDEScreen extends Screen {
 		if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
 			Element element = getFocused();
 			if (element == null) {
-				onClose();
+				close();
 			} else {
 				setFocused(null);
 				if (element instanceof CommandEditor) {
@@ -123,8 +130,8 @@ public abstract class CommandIDEScreen extends Screen {
 		} else if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && !Screen.hasShiftDown()) {
 			Element element = getFocused();
 			if (element == null) {
-				apply();
-				onClose();
+				save();
+				close();
 			} else {
 				setFocused(null);
 				if (element instanceof CommandEditor) {
@@ -236,6 +243,22 @@ public abstract class CommandIDEScreen extends Screen {
 		maxScrollOffset = Math.max(combinedEditorHeight - (height - 50), 0);
 	}
 
+	/**
+	 * Adds the provided toolbar widgets to the screen in order.
+	 * @param widgets The list of widgets to add.
+	 * @return The X coordinate at which the next widget would have been placed.
+	 */
+	private int addToolbarWidgets(List<ClickableWidget> widgets) {
+		int x = 8;
+		for (ClickableWidget widget : widgets) {
+			widget.x = x;
+			widget.y = height - 28;
+			x += widget.getWidth() + 4;
+			addDrawableChild(widget);
+		}
+		return x;
+	}
+
 	@Override
 	public boolean changeFocus(boolean lookForwards) {
 		Element element = getFocused();
@@ -295,17 +318,26 @@ public abstract class CommandIDEScreen extends Screen {
 
 		matrices.push();
 		matrices.translate(0.0, 0.0, 10.0);
+
 		super.render(matrices, mouseX, mouseY, delta);
+		if (statusText != null) {
+			renderOrderedTooltip(matrices, List.of(statusText), statusTextX - 7, height - 10);
+		}
+
 		matrices.pop();
 	}
 
+	@Override
+	public boolean isDirty() {
+		return editors.stream().anyMatch(Dirtyable::isDirty);
+	}
+
 	public boolean isLoaded() {
-		return doneButton.active && applyButton.active;
+		return saveButton.active;
 	}
 
 	protected void setLoaded(boolean loaded) {
-		doneButton.active = loaded;
-		applyButton.active = loaded;
+		saveButton.active = loaded;
 	}
 
 	private static final Logger LOGGER = LogManager.getLogger();

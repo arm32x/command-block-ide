@@ -1,10 +1,10 @@
-package arm32x.minecraft.commandblockide.client.gui;
+package arm32x.minecraft.commandblockide.client.gui.editor;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
-import arm32x.minecraft.commandblockide.client.gui.buttons.CommandBlockAutoButton;
-import arm32x.minecraft.commandblockide.client.gui.buttons.CommandBlockTrackOutputButton;
-import arm32x.minecraft.commandblockide.client.gui.buttons.CommandBlockTypeButton;
 import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
+import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockAutoButton;
+import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockTrackOutputButton;
+import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockTypeButton;
 import arm32x.minecraft.commandblockide.client.update.DataCommandUpdateRequester;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -14,13 +14,14 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.packet.c2s.play.UpdateCommandBlockC2SPacket;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.CommandBlockExecutor;
 
-public final class CommandBlockEditor extends CommandEditor implements Dirtyable {
+public final class CommandBlockEditor extends CommandEditor {
 	private CommandBlockBlockEntity blockEntity;
 
 	private final TextFieldWidget lastOutputField;
@@ -29,7 +30,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 	private final CommandBlockAutoButton autoButton;
 	private final CommandBlockTrackOutputButton trackOutputButton;
 
-	private boolean dirty = false;
+	private boolean commandFieldDirty = false;
 
 	public CommandBlockEditor(Screen screen, TextRenderer textRenderer, int x, int y, int width, int height, CommandBlockBlockEntity blockEntity, int index) {
 		super(screen, textRenderer, x, y, width, height, 40, 20, index);
@@ -37,10 +38,16 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 
 		commandField.setMaxLength(32500);
 
-		lastOutputField = new TextFieldWidget(textRenderer, commandField.x, commandField.y, commandField.getWidth(), commandField.getHeight(), new TranslatableText("advMode.previousOutput").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1)));
+		lastOutputField = new TextFieldWidget(
+			textRenderer,
+			commandField.x, commandField.y,
+			commandField.getWidth(), commandField.getHeight(),
+			Text.translatable("advMode.previousOutput")
+				.append(Text.translatable("commandBlockIDE.narrator.editorIndex", index + 1))
+		);
 		lastOutputField.setEditable(false);
 		lastOutputField.setMaxLength(32500);
-		lastOutputField.setText(new TranslatableText("commandBlockIDE.unloaded").getString());
+		lastOutputField.setText(Text.translatable("commandBlockIDE.unloaded").getString());
 		lastOutputField.visible = false;
 
 		typeButton = addDrawableChild(new CommandBlockTypeButton(screen, x + 20, y));
@@ -56,8 +63,8 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 		trackOutputButton.active = false;
 	}
 
-	public void apply(ClientPlayNetworkHandler networkHandler) {
-		if (isLoaded() && Stream.<Dirtyable>of(this, typeButton, autoButton, trackOutputButton).anyMatch(Dirtyable::isDirty)) {
+	public void save(ClientPlayNetworkHandler networkHandler) {
+		if (isLoaded() && isDirty()) {
 			CommandBlockExecutor executor = blockEntity.getCommandExecutor();
 			networkHandler.sendPacket(new UpdateCommandBlockC2SPacket(
 				new BlockPos(executor.getPos()),
@@ -67,7 +74,7 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 				typeButton.conditional,
 				autoButton.auto
 			));
-			executor.setTrackingOutput(trackOutputButton.trackingOutput);
+			executor.setTrackOutput(trackOutputButton.trackingOutput);
 			if (!trackOutputButton.trackingOutput) {
 				executor.setLastOutput(null);
 			}
@@ -103,25 +110,25 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 
 		String lastOutput = executor.getLastOutput().getString();
 		if (lastOutput.equals("")) {
-			lastOutput = new TranslatableText("commandBlockIDE.lastOutput.none").getString();
+			lastOutput = Text.translatable("commandBlockIDE.lastOutput.none").getString();
 		}
 		lastOutputField.setText(lastOutput);
 
 		suggestor.setWindowActive(commandField.isActive());
 		suggestor.refresh();
 
-		dirty = false;
+		commandFieldDirty = false;
 		setLoaded(true);
 	}
 
-	public void requestUpdate(ClientPlayNetworkHandler networkHandler) {
-		DataCommandUpdateRequester.getInstance().requestUpdate(networkHandler, blockEntity);
+	public void requestUpdate(ClientPlayerEntity player) {
+		DataCommandUpdateRequester.getInstance().requestUpdate(player, blockEntity);
 	}
 
 	@Override
 	public void commandChanged(String newCommand) {
 		if (!newCommand.equals(blockEntity.getCommandExecutor().getCommand())) {
-			markDirty();
+			commandFieldDirty = true;
 		}
 		super.commandChanged(newCommand);
 	}
@@ -148,10 +155,10 @@ public final class CommandBlockEditor extends CommandEditor implements Dirtyable
 	}
 
 	@Override
-	public boolean isDirty() { return dirty; }
-
-	@Override
-	public void markDirty() { dirty = true; }
+	public boolean isDirty() {
+		return commandFieldDirty
+			|| Stream.<Dirtyable>of(typeButton, autoButton, trackOutputButton).anyMatch(Dirtyable::isDirty);
+	}
 
 	@Override
 	public void setY(int y) {

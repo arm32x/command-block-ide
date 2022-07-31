@@ -1,8 +1,7 @@
-package arm32x.minecraft.commandblockide.client.gui;
+package arm32x.minecraft.commandblockide.client.gui.editor;
 
-import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
-import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
+import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggestorExtension;
 import java.util.Objects;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -10,7 +9,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
-public final class CommandFunctionEditor extends CommandEditor implements Dirtyable {
+public final class CommandFunctionEditor extends CommandEditor {
 	private @Nullable String originalCommand;
 
 	private boolean dirty = false;
@@ -18,12 +17,12 @@ public final class CommandFunctionEditor extends CommandEditor implements Dirtya
 	public CommandFunctionEditor(Screen screen, TextRenderer textRenderer, int x, int y, int width, int height, int index) {
 		super(screen, textRenderer, x, y, width, height, 0, 0, index);
 
-		CommandSuggestorExtension suggestorExtension = (CommandSuggestorExtension)suggestor;
+		ChatInputSuggestorExtension suggestorExtension = (ChatInputSuggestorExtension)suggestor;
 		suggestorExtension.ide$setAllowComments(true);
 		suggestorExtension.ide$setSlashForbidden(true);
 	}
 
-	void saveMultilineCommand(Identifier function) {
+	public void saveMultilineCommand(Identifier function) {
 		MinecraftClient client = MinecraftClient.getInstance();
 		String world = client.isInSingleplayer()
 			? Objects.requireNonNull(client.getServer()).getSaveProperties().getLevelName()
@@ -56,7 +55,7 @@ public final class CommandFunctionEditor extends CommandEditor implements Dirtya
 	@Override
 	public void commandChanged(String newCommand) {
 		if (!newCommand.equals(originalCommand)) {
-			markDirty();
+			dirty = true;
 		}
 		super.commandChanged(newCommand);
 	}
@@ -64,10 +63,5 @@ public final class CommandFunctionEditor extends CommandEditor implements Dirtya
 	@Override
 	public boolean isDirty() {
 		return dirty;
-	}
-
-	@Override
-	public void markDirty() {
-		this.dirty = true;
 	}
 }

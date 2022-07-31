@@ -6,16 +6,15 @@
     "mixins": [
         "server.AbstractFileResourcePackInvoker",
         "server.CommandFunctionMixin",
-        "server.DirectoryResourcePackInvoker",
-        "server.MinecraftServerAccessor",
-        "server.NamespaceResourceManagerAccessor",
-        "server.ReloadableResourceManagerImplAccessor"
+        "server.DirectoryResourcePackInvoker"
     ],
     "client": [
-        "client.ClientPlayNetworkHandlerMixin",
+        "client.ChatInputSuggestorAccessor",
+        "client.ChatInputSuggestorMixin",
         "client.ClientPlayerEntityMixin",
-        "client.CommandSuggestorAccessor",
-        "client.CommandSuggestorMixin",
+        "client.ClientPlayNetworkHandlerMixin",
+        "client.MessageHandlerMixin",
+        "client.ClientPlayerEntityMixin",
         "client.TextFieldWidgetAccessor"
     ],
     "injectors": {

@@ -1,15 +1,14 @@
 package arm32x.minecraft.commandblockide.client;
 
 import arm32x.minecraft.commandblockide.Packets;
-import arm32x.minecraft.commandblockide.client.gui.CommandFunctionIDEScreen;
+import arm32x.minecraft.commandblockide.client.gui.screen.CommandFunctionIDEScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.FatalErrorScreen;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,8 +43,8 @@ public final class CommandBlockIDEClient implements ClientModInitializer {
 			LOGGER.error("Error screen shown:", ex);
 		}
 		MinecraftClient.getInstance().setScreen(new FatalErrorScreen(
-			new TranslatableText(currentAction != null ? "commandBlockIDE.errorWithContext" : "commandBlockIDE.error", currentAction),
-			new LiteralText(ex.toString())
+			Text.translatable(currentAction != null ? "commandBlockIDE.errorWithContext" : "commandBlockIDE.error", currentAction),
+			Text.literal(ex.toString())
 		));
 	}
 

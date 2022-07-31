@@ -1,13 +1,17 @@
-package arm32x.minecraft.commandblockide.client.gui;
+package arm32x.minecraft.commandblockide.client.gui.screen;
 
 import arm32x.minecraft.commandblockide.Packets;
+import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
+import arm32x.minecraft.commandblockide.client.gui.editor.CommandFunctionEditor;
 import arm32x.minecraft.commandblockide.util.PacketSplitter;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 
-public final class CommandFunctionIDEScreen extends CommandIDEScreen {
+public final class CommandFunctionIDEScreen extends CommandIDEScreen<CommandFunctionEditor> {
 	private final Identifier functionId;
 	private final int startingLineCount;
 
@@ -25,19 +29,23 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen {
 			}
 			addEditor(editor);
 		}
+
+		statusText = Text.literal(functionId.toString()).formatted(Formatting.GRAY).asOrderedText();
+
+		super.firstInit();
 	}
 
 	public void update(int index, String command) {
-		if (editors.get(index) instanceof CommandFunctionEditor editor) {
-			editor.update(functionId, command);
-			if (getFocused() == editor) {
-				setFocusedEditor(editor);
-			}
+		var editor = editors.get(index);
+		editor.update(functionId, command);
+		setLoaded(true);
+		if (getFocused() == editor) {
+			setFocusedEditor(editor);
 		}
 	}
 
 	@Override
-	public void apply() {
+	public void save() {
 		PacketByteBuf buf = PacketByteBufs.create();
 		PacketSplitter.writeHeader(buf);
 		buf.writeIdentifier(functionId);
@@ -55,6 +63,6 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen {
 			ClientPlayNetworking.send(Packets.APPLY_FUNCTION, splitBuf);
 		}
 
-		super.apply();
+		super.save();
 	}
 }

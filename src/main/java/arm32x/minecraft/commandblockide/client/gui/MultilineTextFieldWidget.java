@@ -211,7 +211,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		int leftEdge = this.x + (self.getDrawsBackground() ? 4 : 0);
 		int rightEdge = leftEdge + this.getInnerWidth();
 
-		Matrix4f matrix = matrices.peek().getModel();
+		Matrix4f matrix = matrices.peek().getPositionMatrix();
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder bufferBuilder = tessellator.getBuffer();
 		RenderSystem.setShader(GameRenderer::getPositionShader);

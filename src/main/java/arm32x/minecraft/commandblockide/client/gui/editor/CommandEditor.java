@@ -1,10 +1,13 @@
-package arm32x.minecraft.commandblockide.client.gui;
+package arm32x.minecraft.commandblockide.client.gui.editor;
 
+import arm32x.minecraft.commandblockide.client.Dirtyable;
+import arm32x.minecraft.commandblockide.client.gui.Container;
+import arm32x.minecraft.commandblockide.client.gui.MultilineTextFieldWidget;
 import arm32x.minecraft.commandblockide.client.processor.CommandProcessor;
 import arm32x.minecraft.commandblockide.client.processor.MultilineCommandProcessor;
 import arm32x.minecraft.commandblockide.client.processor.StringMapping;
-import arm32x.minecraft.commandblockide.mixin.client.CommandSuggestorAccessor;
-import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
+import arm32x.minecraft.commandblockide.mixin.client.ChatInputSuggestorAccessor;
+import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggestorExtension;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.context.ParsedArgument;
 import com.mojang.brigadier.context.StringRange;
@@ -20,7 +23,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.CommandSuggestor;
+import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
@@ -29,12 +32,12 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
-public abstract class CommandEditor extends Container implements Drawable, Element {
+public abstract class CommandEditor extends Container implements Dirtyable, Drawable, Element {
 	@SuppressWarnings("FieldMayBeFinal")
 	private int x, y, width, height;
 	private final int leftPadding, rightPadding;
@@ -45,7 +48,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 	protected final TextRenderer textRenderer;
 
 	protected final MultilineTextFieldWidget commandField;
-	protected final CommandSuggestor suggestor;
+	protected final ChatInputSuggestor suggestor;
 	protected final CommandProcessor processor = MultilineCommandProcessor.getInstance();
 
 	private boolean loaded = false;
@@ -63,7 +66,13 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 		this.index = index;
 		this.textRenderer = textRenderer;
 
-		commandField = addSelectableChild(new MultilineTextFieldWidget(textRenderer, x + leftPadding + 20 + 1, y + 1, width - leftPadding - rightPadding - 20 - 2, height - 2, new TranslatableText("advMode.command").append(new TranslatableText("commandBlockIDE.narrator.editorIndex", index + 1))) {
+		commandField = addSelectableChild(new MultilineTextFieldWidget(
+			textRenderer,
+			x + leftPadding + 20 + 1, y + 1,
+			width - leftPadding - rightPadding - 20 - 2, height - 2,
+			Text.translatable("advMode.command")
+				.append(Text.translatable("commandBlockIDE.narrator.editorIndex", index + 1))
+		) {
 			@Override
 			protected MutableText getNarrationMessage() {
 				return super.getNarrationMessage().append(suggestor.getNarration());
@@ -72,18 +81,18 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 		commandField.setEditable(false);
 		commandField.setMaxLength(Integer.MAX_VALUE);
 
-		suggestor = new CommandSuggestor(MinecraftClient.getInstance(), screen, commandField, textRenderer, true, true, 0, 16, false, Integer.MIN_VALUE);
-		((CommandSuggestorExtension)suggestor).ide$setCommandProcessor(processor);
+		suggestor = new ChatInputSuggestor(MinecraftClient.getInstance(), screen, commandField, textRenderer, true, true, 0, 16, false, Integer.MIN_VALUE);
+		((ChatInputSuggestorExtension)suggestor).ide$setCommandProcessor(processor);
 		suggestor.refresh();
 
 		commandField.setChangedListener(this::commandChanged);
 		commandField.setRenderTextProvider((original, firstCharacterIndex) -> {
 			assert firstCharacterIndex == 0;
-			var parse = ((CommandSuggestorAccessor)suggestor).getParseResults();
+			var parse = ((ChatInputSuggestorAccessor)suggestor).getParseResults();
 			if (parse != null) {
 				return highlight(parse, original, processor.processCommand(original).getRight());
 			} else {
-				return ((CommandSuggestorAccessor)suggestor).invokeProvideRenderText(original, firstCharacterIndex);
+				return ((ChatInputSuggestorAccessor)suggestor).invokeProvideRenderText(original, firstCharacterIndex);
 			}
 		});
 	}
@@ -127,7 +136,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 		if (isLoaded()) {
 			renderCommandField(matrices, mouseX, mouseY, delta);
 		} else {
-			textRenderer.draw(matrices, new TranslatableText("commandBlockIDE.unloaded"), commandField.x, y + 5, 0x7FFFFFFF);
+			textRenderer.draw(matrices, Text.translatable("commandBlockIDE.unloaded"), commandField.x, y + 5, 0x7FFFFFFF);
 		}
 		super.render(matrices, mouseX, mouseY, delta);
 	}
@@ -224,7 +233,7 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 
 	@Override
 	public void appendNarrations(NarrationMessageBuilder builder) {
-		builder.put(NarrationPart.TITLE, new TranslatableText("narration.edit_box", commandField.getText()));
+		builder.put(NarrationPart.TITLE, Text.translatable("narration.edit_box", commandField.getText()));
 	}
 
 	protected static OrderedText highlight(ParseResults<CommandSource> parse, String multiline, StringMapping mapping) {
@@ -277,4 +286,3 @@ public abstract class CommandEditor extends Container implements Drawable, Eleme
 	private static final Style ERROR_STYLE = Style.EMPTY.withColor(Formatting.RED);
 	private static final Style COMMENT_STYLE = Style.EMPTY.withColor(Formatting.DARK_GRAY);
 }
-

@@ -1,17 +1,21 @@
-package arm32x.minecraft.commandblockide.client.gui;
+package arm32x.minecraft.commandblockide.client.gui.screen;
 
 import arm32x.minecraft.commandblockide.client.CommandChainTracer;
+import arm32x.minecraft.commandblockide.client.Dirtyable;
+import arm32x.minecraft.commandblockide.client.gui.editor.CommandBlockEditor;
+import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
-public final class CommandBlockIDEScreen extends CommandIDEScreen {
+public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEditor> implements Dirtyable {
 	private final Map<BlockPos, CommandEditor> positionIndex = new HashMap<>();
 
 	private final CommandBlockBlockEntity startingBlockEntity;
@@ -38,6 +42,11 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 			addEditor(getBlockEntityAt(position));
 		}
 
+		BlockPos pos = startingBlockEntity.getPos();
+		statusText = Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())
+			.formatted(Formatting.GRAY)
+			.asOrderedText();
+
 		super.firstInit();
 	}
 
@@ -50,8 +59,8 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 			startingIndex = index;
 			setFocusedEditor(editor);
 		} else {
-			assert client != null;
-			editor.requestUpdate(Objects.requireNonNull(client.getNetworkHandler()));
+			assert client != null && client.player != null;
+			editor.requestUpdate(client.player);
 		}
 	}
 
@@ -76,15 +85,12 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen {
 	}
 
 	@Override
-	public void apply() {
+	public void save() {
 		assert client != null;
 		ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
 		assert networkHandler != null;
-		editors.stream()
-			.filter(editor -> editor instanceof CommandBlockEditor)
-			.map(editor -> (CommandBlockEditor)editor)
-			.forEach(editor -> editor.apply(networkHandler));
-		super.apply();
+		editors.forEach(editor -> editor.save(networkHandler));
+		super.save();
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package arm32x.minecraft.commandblockide.client.gui.buttons;
+package arm32x.minecraft.commandblockide.client.gui.button;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -7,12 +7,12 @@ import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
 
-public final class CommandBlockTypeButton extends DynamicTexturedButton implements Dirtyable {
+public final class CommandBlockTypeButton extends IconButton implements Dirtyable {
 	public CommandBlockBlockEntity.Type type = CommandBlockBlockEntity.Type.REDSTONE;
 	public boolean conditional = false;
 
@@ -21,7 +21,7 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton implemen
 	private boolean dirty = false;
 
 	public CommandBlockTypeButton(Screen screen, int x, int y) {
-		super(x, y, 16, 16, 0, 0, 16, 64);
+		super(x, y, 16, 16);
 		this.screen = screen;
 	}
 
@@ -36,17 +36,21 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton implemen
 				case SEQUENCE -> type = CommandBlockBlockEntity.Type.REDSTONE;
 			}
 		}
-		markDirty();
+		dirty = true;
 	}
 
 	@Override
-	public Text getMessage() {
+	public MutableText getNarrationMessage() {
+		return getNarrationMessage(getTooltip());
+	}
+
+	private Text getTooltip() {
 		StringBuilder keyBuilder = new StringBuilder("commandBlockIDE.type.");
 		keyBuilder.append(type.name().toLowerCase());
 		if (conditional) {
 			keyBuilder.append("Conditional");
 		}
-		return new TranslatableText(keyBuilder.toString());
+		return Text.translatable(keyBuilder.toString());
 	}
 
 	@Override
@@ -86,7 +90,7 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton implemen
 		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, active ? 1.0f : 0.5f);
 
 		// Drawing must be done manually in order to flip the texture upside-down.
-		Matrix4f matrix = matrices.peek().getModel();
+		Matrix4f matrix = matrices.peek().getPositionMatrix();
 		float x0 = (float)x, x1 = x0 + 16, y0 = (float)y, y1 = y0 + 16, z = getZOffset();
 		float u0 = 0.0f, u1 = 1.0f, v0 = 0.0f, v1 = 0.25f;
 		BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
@@ -95,8 +99,8 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton implemen
 		bufferBuilder.vertex(matrix, x1, y1, z).texture(u0, v0).next();
 		bufferBuilder.vertex(matrix, x1, y0, z).texture(u0, v1).next();
 		bufferBuilder.vertex(matrix, x0, y0, z).texture(u1, v1).next();
-		bufferBuilder.end();
-		BufferRenderer.draw(bufferBuilder);
+		var builtBuffer = bufferBuilder.end();
+		BufferRenderer.drawWithShader(builtBuffer);
 
 		if (isHovered()) {
 			renderTooltip(matrices, mouseX, mouseY);
@@ -105,12 +109,9 @@ public final class CommandBlockTypeButton extends DynamicTexturedButton implemen
 
 	@Override
 	public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY) {
-		screen.renderOrderedTooltip(matrices, Collections.singletonList(getMessage().asOrderedText()), mouseX, mouseY);
+		screen.renderOrderedTooltip(matrices, Collections.singletonList(getTooltip().asOrderedText()), mouseX, mouseY);
 	}
 
 	@Override
 	public boolean isDirty() { return dirty; }
-
-	@Override
-	public void markDirty() { dirty = true; }
 }

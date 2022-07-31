@@ -3,14 +3,14 @@ package arm32x.minecraft.commandblockide.mixin.client;
 import arm32x.minecraft.commandblockide.client.gui.MultilineTextFieldWidget;
 import arm32x.minecraft.commandblockide.client.processor.CommandProcessor;
 import arm32x.minecraft.commandblockide.client.processor.StringMapping;
-import arm32x.minecraft.commandblockide.mixinextensions.client.CommandSuggestorExtension;
+import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggestorExtension;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.suggestion.Suggestions;
 import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.screen.CommandSuggestor;
+import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.command.CommandSource;
 import net.minecraft.text.OrderedText;
@@ -26,8 +26,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Environment(EnvType.CLIENT)
-@Mixin(CommandSuggestor.class)
-public final class CommandSuggestorMixin implements CommandSuggestorExtension {
+@Mixin(ChatInputSuggestor.class)
+public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtension {
 	@Unique public boolean ide$allowComments = false;
 	@Unique public boolean ide$slashForbidden = false;
 
@@ -39,9 +39,12 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 	@Shadow private @Nullable ParseResults<CommandSource> parse;
 	@Shadow private @Nullable CompletableFuture<Suggestions> pendingSuggestions;
 
-	@Shadow @Nullable CommandSuggestor.SuggestionWindow window;
+	@Shadow @Nullable ChatInputSuggestor.SuggestionWindow window;
 
-	@ModifyConstant(method = { "showSuggestions(Z)V", "render(Lnet/minecraft/client/util/math/MatrixStack;II)V" }, constant = @Constant(intValue = 72))
+	@ModifyConstant(
+		method = { "show(Z)V", "renderMessages(Lnet/minecraft/client/util/math/MatrixStack;)V" },
+		constant = @Constant(intValue = 72)
+	)
 	public int getY(int seventyTwo) {
 		if (textField instanceof MultilineTextFieldWidget multiline) {
 			if (pendingSuggestions != null) {
@@ -56,7 +59,18 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 		}
 	}
 
-	@ModifyArg(method = { "showSuggestions(Z)V", "showUsages(Lnet/minecraft/util/Formatting;)V" }, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;getCharacterX(I)I", ordinal = 0), index = 0)
+	@ModifyArg(
+		method = {
+			"show(Z)V",
+			"showUsages(Lnet/minecraft/util/Formatting;)V"
+		},
+		at = @At(
+			value = "INVOKE",
+			target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;getCharacterX(I)I",
+			ordinal = 0
+		),
+		index = 0
+	)
 	public int mapSuggestionIndex(int index) {
 		return ide$mapIndex(index, false);
 	}
@@ -81,8 +95,8 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 		ide$commandProcessor = processor;
 	}
 
-	@Inject(method = "show()V", at = @At("HEAD"), cancellable = true)
-	public void onShow(CallbackInfo ci) {
+	@Inject(method = "showCommandSuggestions()V", at = @At("HEAD"), cancellable = true)
+	public void onShowCommandSuggestions(CallbackInfo ci) {
 		if (ide$allowComments && textField.getText().startsWith("#")
 			|| ide$mapping != null && ide$mapping.inverted().mapIndex(textField.getCursor()).isEmpty()) {
 			ci.cancel();
@@ -96,6 +110,9 @@ public final class CommandSuggestorMixin implements CommandSuggestorExtension {
 		}
 	}
 
+	// The IntelliJ Minecraft Development plugin seems to think the method
+	// signature is wrong when in reality it works just fine.
+	@SuppressWarnings("InvalidInjectorMethodSignature")
 	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	private boolean onCheckForSlash(boolean bl) {
 		return !ide$slashForbidden && bl;

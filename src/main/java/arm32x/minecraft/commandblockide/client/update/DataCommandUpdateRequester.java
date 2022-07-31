@@ -1,25 +1,24 @@
 package arm32x.minecraft.commandblockide.client.update;
 
 import static arm32x.minecraft.commandblockide.client.CommandChainTracer.isCommandBlock;
-import arm32x.minecraft.commandblockide.client.gui.CommandBlockIDEScreen;
+import arm32x.minecraft.commandblockide.client.gui.screen.CommandBlockIDEScreen;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
-public final class DataCommandUpdateRequester implements UpdateRequester {
+public final class DataCommandUpdateRequester {
 	private static @Nullable DataCommandUpdateRequester INSTANCE = null;
 
 	private final Map<BlockPos, CommandBlockBlockEntity> blocksToUpdate = new HashMap<>();
@@ -34,17 +33,15 @@ public final class DataCommandUpdateRequester implements UpdateRequester {
 		}
 	}
 
-	@Override
-	public void requestUpdate(ClientPlayNetworkHandler networkHandler, CommandBlockBlockEntity blockEntity) {
+	public void requestUpdate(ClientPlayerEntity player, CommandBlockBlockEntity blockEntity) {
 		BlockPos position = blockEntity.getPos();
 		blocksToUpdate.put(position, blockEntity);
 
-		String command = String.format("/data get block %d %d %d", position.getX(), position.getY(), position.getZ());
-		ChatMessageC2SPacket packet = new ChatMessageC2SPacket(command);
-		networkHandler.sendPacket(packet);
+		String command = String.format("data get block %d %d %d", position.getX(), position.getY(), position.getZ());
+		player.sendCommand(command);
 	}
 
-	public boolean handleFeedback(MinecraftClient client, TranslatableText message) {
+	public boolean handleFeedback(MinecraftClient client, TranslatableTextContent message) {
 		Object[] args = message.getArgs();
 		LOGGER.trace("Handling feedback for message {} with args {}.", message, args);
 
@@ -90,7 +87,7 @@ public final class DataCommandUpdateRequester implements UpdateRequester {
 		}
 
 		blockEntity.readNbt(tag);
-		blockEntity.setNeedsUpdatePacket(false);
+//		blockEntity.setNeedsUpdatePacket(false);
 		if (client.currentScreen instanceof CommandBlockIDEScreen) {
 			((CommandBlockIDEScreen)client.currentScreen).update(position);
 		}
