@@ -45,7 +45,6 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 		super(Text.empty());
 	}
 
-	@SuppressWarnings("CodeBlock2Expr")
 	@Override
 	protected void init() {
 		assert client != null;

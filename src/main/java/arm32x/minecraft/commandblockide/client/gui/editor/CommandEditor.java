@@ -38,11 +38,14 @@ import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
 public abstract class CommandEditor extends Container implements Dirtyable, Drawable, Element {
-	@SuppressWarnings("FieldMayBeFinal")
-	private int x, y, width, height;
+	private final int x;
+	private int y;
+	private int width;
+	private int height;
+
 	private final int leftPadding, rightPadding;
 
-	public int index;
+	public final int index;
 	public boolean lineNumberHighlighted = false;
 
 	protected final TextRenderer textRenderer;

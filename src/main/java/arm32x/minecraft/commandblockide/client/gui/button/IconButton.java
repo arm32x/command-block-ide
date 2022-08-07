@@ -9,7 +9,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public abstract class IconButton extends PressableWidget {
-	protected int iconWidth, iconHeight;
+	protected final int iconWidth;
+	protected final int iconHeight;
 
 	public IconButton(int x, int y, int width, int height) {
 		this(x, y, width, height, width, height);

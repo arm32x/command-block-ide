@@ -22,7 +22,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.CommandBlockExecutor;
 
 public final class CommandBlockEditor extends CommandEditor {
-	private CommandBlockBlockEntity blockEntity;
+	private final CommandBlockBlockEntity blockEntity;
 
 	private final TextFieldWidget lastOutputField;
 

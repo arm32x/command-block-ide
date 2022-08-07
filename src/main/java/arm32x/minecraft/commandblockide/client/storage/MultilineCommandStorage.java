@@ -213,8 +213,8 @@ public final class MultilineCommandStorage implements Serializable {
 		}
 	}
 
-	private static record CommandBlockLocation(boolean isSingleplayer, String world, BlockPos pos) { }
-	private static record CommandFunctionLocation(boolean isSingleplayer, String world, Identifier function, int lineIndex) { }
+	private record CommandBlockLocation(boolean isSingleplayer, String world, BlockPos pos) { }
+	private record CommandFunctionLocation(boolean isSingleplayer, String world, Identifier function, int lineIndex) { }
 
 	private static final Logger LOGGER = LogManager.getLogger();
 }
