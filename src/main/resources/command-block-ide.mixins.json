@@ -13,8 +13,8 @@
         "client.ChatInputSuggestorMixin",
         "client.ClientPlayerEntityMixin",
         "client.ClientPlayNetworkHandlerMixin",
+        "client.EditBoxAccessor",
         "client.MessageHandlerMixin",
-        "client.ClientPlayerEntityMixin",
         "client.TextFieldWidgetAccessor"
     ],
     "injectors": {

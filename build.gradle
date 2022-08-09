@@ -12,6 +12,10 @@ androidGitVersion {
     untrackedIsDirty = true
 }
 
+loom {
+    accessWidenerPath = file("src/main/resources/commandblockide.accesswidener")
+}
+
 archivesBaseName = "command-block-ide"
 version = androidGitVersion.name()
 group = "arm32x.minecraft"
