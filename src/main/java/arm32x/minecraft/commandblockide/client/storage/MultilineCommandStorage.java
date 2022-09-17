@@ -141,6 +141,10 @@ public final class MultilineCommandStorage implements Serializable {
 				packer.packString(location.world);
 				packer.packString(location.function.toString());
 				packer.packInt(location.lineIndex);
+
+				byte[] hash = entry.getValue();
+				packer.packBinaryHeader(hash.length);
+				packer.writePayload(hash);
 			}
 		} catch (IOException ex) {
 			CommandBlockIDEClient.showErrorScreen(ex, "saving multiline commands");
