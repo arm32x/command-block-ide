@@ -41,6 +41,9 @@ dependencies {
     testImplementation("net.jqwik:jqwik:${jqwik_version}")
     val assertj_version: String by project
     testImplementation("org.assertj:assertj-core:${assertj_version}")
+
+    val layout_version: String by project
+    shadow("io.github.abvadabra:layout-java:$layout_version")
 }
 
 java {
