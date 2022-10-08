@@ -54,15 +54,25 @@ public final class MultilineCommandProcessorTest {
 	}
 
 	@Property
-	@Label("Test if the generated string mapping can recreate the retained parts of the original command")
+	@Label("The output mapping correctly maps non-whitespace characters back to the input")
 	public void testGeneratedStringMapping(@ForAll String input) {
 		var output = processor.processCommand(input);
 		String string = output.getLeft();
 		StringMapping mapping = output.getRight();
 
 		for (int index = 0; index < string.length(); index++) {
-			assertThat(string.charAt(index))
-				.isEqualTo(input.charAt(mapping.mapIndex(index).orElse(-1)));
+			char outputChar = string.charAt(index);
+			assertThat(input.charAt(mapping.mapIndex(index).orElse(-1))).satisfiesAnyOf(
+				inputChar -> {
+                    assertThat(inputChar).isEqualTo(outputChar);
+                },
+                inputChar -> {
+                    // Newlines can be replaced by spaces in the output; that's
+                    // the whole point of the processor.
+                    assertThat(inputChar).isEqualTo('\n');
+                    assertThat(outputChar).isEqualTo(' ');
+                }
+			);
 		}
 	}
 }
