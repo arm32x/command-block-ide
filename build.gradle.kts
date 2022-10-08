@@ -36,7 +36,6 @@ dependencies {
     shadow("org.msgpack:msgpack-core:${msgpack_java_version}")
 
     val junit_version: String by project
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${junit_version}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junit_version}")
     val jqwik_version: String by project
     testImplementation("net.jqwik:jqwik:${jqwik_version}")
