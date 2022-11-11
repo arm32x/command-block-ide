@@ -39,7 +39,7 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 	@Shadow private @Nullable ParseResults<CommandSource> parse;
 	@Shadow private @Nullable CompletableFuture<Suggestions> pendingSuggestions;
 
-	@Shadow @Nullable ChatInputSuggestor.SuggestionWindow window;
+	@Shadow private @Nullable ChatInputSuggestor.SuggestionWindow window;
 
 	@ModifyConstant(
 		method = { "show(Z)V", "renderMessages(Lnet/minecraft/client/util/math/MatrixStack;)V" },
@@ -50,7 +50,8 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 			if (pendingSuggestions != null) {
 				@Nullable Suggestions suggestions = pendingSuggestions.getNow(null);
 				if (suggestions != null && !suggestions.isEmpty()) {
-					return multiline.getCharacterY(ide$mapIndex(suggestions.getRange().getStart(), false));
+					int charIndex = StringMapping.mapIndexOrAfter(ide$mapping, false, suggestions.getRange().getStart());
+					return multiline.getCharacterY(charIndex);
 				}
 			}
 			return multiline.getCharacterY(multiline.getText().length());
@@ -72,7 +73,7 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 		index = 0
 	)
 	public int mapSuggestionIndex(int index) {
-		return ide$mapIndex(index, false);
+		return StringMapping.mapIndexOrAfter(ide$mapping, false, index);
 	}
 
 	@Unique @Override
@@ -93,6 +94,11 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 	@Unique @Override
 	public void ide$setCommandProcessor(CommandProcessor processor) {
 		ide$commandProcessor = processor;
+	}
+
+	@Unique @Override
+	public @Nullable StringMapping ide$getMapping() {
+		return ide$mapping;
 	}
 
 	@Inject(method = "showCommandSuggestions()V", at = @At("HEAD"), cancellable = true)
@@ -135,7 +141,7 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 	@SuppressWarnings("InvalidInjectorMethodSignature")
 	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	public int onGetTextFieldCursor1(int cursor) {
-		return ide$mapIndex(cursor, true);
+		return StringMapping.mapIndexOrAfter(ide$mapping, true, cursor);
 	}
 
 	@ModifyArg(
@@ -149,23 +155,6 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 		index = 0
 	)
 	public int onGetTextFieldCursor2(int cursor) {
-		return ide$mapIndex(cursor, true);
-	}
-
-	@Unique
-	private int ide$mapIndex(int i, boolean inverted) {
-		if (ide$mapping != null) {
-			StringMapping mapping = ide$mapping;
-			if (inverted) {
-				mapping = mapping.inverted();
-			}
-			OptionalInt index;
-			do {
-				index = mapping.mapIndex(i++);
-			} while (index.isEmpty());
-			return index.getAsInt();
-		} else {
-			return i;
-		}
+		return StringMapping.mapIndexOrAfter(ide$mapping, true, cursor);
 	}
 }

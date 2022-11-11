@@ -34,6 +34,26 @@ public final class StringMapping {
 		return OptionalInt.of(mapped);
 	}
 
+	public int mapIndexOrAfter(int index) {
+		OptionalInt mapped;
+		do {
+			mapped = mapIndex(index++);
+		} while (mapped.isEmpty());
+		return mapped.getAsInt();
+	}
+
+	public static int mapIndexOrAfter(@Nullable StringMapping mapping, boolean inverted, int index) {
+		if (mapping != null) {
+			if (inverted) {
+				return mapping.inverted().mapIndexOrAfter(index);
+			} else {
+				return mapping.mapIndexOrAfter(index);
+			}
+		} else {
+			return index;
+		}
+	}
+
 	public NavigableMap<Integer, Integer> getIndexMap() {
 		return indexMap;
 	}

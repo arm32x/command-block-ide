@@ -15,6 +15,7 @@
         "client.ClientPlayNetworkHandlerMixin",
         "client.EditBoxAccessor",
         "client.MessageHandlerMixin",
+        "client.SuggestionWindowMixin",
         "client.TextFieldWidgetAccessor"
     ],
     "injectors": {
