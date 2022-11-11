@@ -92,7 +92,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 		commandField.setCursorChangeListener(suggestor::refresh);
 		commandField.setRenderTextProvider((original, firstCharacterIndex) -> {
 			assert firstCharacterIndex == 0;
-			var parse = ((ChatInputSuggestorAccessor)suggestor).getParseResults();
+			var parse = suggestor.getParse();
 			if (parse != null) {
 				return highlight(parse, original, processor.processCommand(original).getRight());
 			} else {

@@ -14,7 +14,5 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Environment(EnvType.CLIENT)
 @Mixin(ChatInputSuggestor.class)
 public interface ChatInputSuggestorAccessor {
-	@Accessor("parse") @Nullable ParseResults<CommandSource> getParseResults();
-
 	@Invoker OrderedText invokeProvideRenderText(String original, int firstCharacterIndex);
 }
