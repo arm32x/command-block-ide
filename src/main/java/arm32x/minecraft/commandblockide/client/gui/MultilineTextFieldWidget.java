@@ -25,7 +25,10 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public class MultilineTextFieldWidget extends TextFieldWidget {
@@ -34,7 +37,10 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	 */
 	private final TextFieldWidgetAccessor self = (TextFieldWidgetAccessor)this;
 
-	private static final String INDENT = "    ";
+    // TODO: Allow the user to configure this or to indent with tabs.
+    // Note that both the text field renderer and the command processor do not
+    // support tabs yet.
+	private static final int INDENT_SIZE = 4;
 
 	private final EditBox editBox;
 
@@ -137,7 +143,18 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        return editBox.handleSpecialKey(keyCode);
+		if (keyCode == GLFW.GLFW_KEY_TAB) {
+            if (editBox.hasSelection()) {
+                logger.warn("Indenting selected lines is not yet supported");
+            } else {
+                int cursorLeft = getCursor() - getLineStartBefore(getCursor());
+                String indent = " ".repeat(4 - cursorLeft % INDENT_SIZE);
+                editBox.replaceSelection(indent);
+            }
+            return true;
+        } else {
+			return editBox.handleSpecialKey(keyCode);
+		}
     }
 
     @Override
@@ -342,6 +359,14 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		return getText().lastIndexOf('\n', Math.max(charIndex - 1, 0)) + 1;
 	}
 
+    // Naming things is hard.
+    public boolean isBeforeFirstNonWhitespaceCharacterInLine(int charIndex) {
+        return getText()
+            .substring(getLineStartBefore(charIndex), charIndex)
+            .chars()
+            .allMatch(Character::isWhitespace);
+    }
+
 	public String getLine(int lineIndex) {
 		var line = editBox.getLine(lineIndex);
 		return getText().substring(line.beginIndex(), line.endIndex());
@@ -421,4 +446,6 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		int lineIndex = getLineIndex(charIndex);
 		return y + (lineIndex + 1) * getLineHeight();
 	}
+
+    private static final Logger logger = LogManager.getLogger();
 }

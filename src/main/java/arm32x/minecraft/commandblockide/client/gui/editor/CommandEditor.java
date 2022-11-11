@@ -126,7 +126,11 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 	}
 
     private boolean handleSpecialKey(int keyCode) {
-		if (keyCode == GLFW.GLFW_KEY_TAB && !isSuggestorActive()) {
+		if (
+			keyCode == GLFW.GLFW_KEY_TAB
+				&& !isSuggestorActive()
+				&& !commandField.isBeforeFirstNonWhitespaceCharacterInLine(commandField.getCursor())
+		) {
 			setSuggestorActive(true);
 			suggestor.refresh();
 			// Immediately trigger completion without using Mixin by
