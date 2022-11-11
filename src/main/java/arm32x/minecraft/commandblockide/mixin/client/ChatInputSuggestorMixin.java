@@ -138,7 +138,16 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 		return ide$mapIndex(cursor, true);
 	}
 
-	@ModifyArg(method = "showUsages(Lnet/minecraft/util/Formatting;)V", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/context/CommandContextBuilder;findSuggestionContext(I)Lcom/mojang/brigadier/context/SuggestionContext;", ordinal = 0), index = 0)
+	@ModifyArg(
+		method = "showUsages(Lnet/minecraft/util/Formatting;)V",
+		at = @At(
+			value = "INVOKE",
+			target = "Lcom/mojang/brigadier/context/CommandContextBuilder;findSuggestionContext(I)Lcom/mojang/brigadier/context/SuggestionContext;",
+			remap = false,
+			ordinal = 0
+		),
+		index = 0
+	)
 	public int onGetTextFieldCursor2(int cursor) {
 		return ide$mapIndex(cursor, true);
 	}
