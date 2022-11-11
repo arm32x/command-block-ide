@@ -35,6 +35,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public abstract class CommandEditor extends Container implements Dirtyable, Drawable, Element {
@@ -53,6 +54,8 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 	protected final MultilineTextFieldWidget commandField;
 	protected final ChatInputSuggestor suggestor;
 	protected final CommandProcessor processor = MultilineCommandProcessor.getInstance();
+
+	private boolean suggestorActive = false;
 
 	private boolean loaded = false;
 
@@ -108,16 +111,55 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		return suggestor.keyPressed(keyCode, scanCode, modifiers)
-			|| super.keyPressed(keyCode, scanCode, modifiers);
+        if (handleSpecialKey(keyCode)) {
+			return true;
+		} else if (isSuggestorActive() && suggestor.keyPressed(keyCode, scanCode, modifiers)) {
+			return true;
+		} else if (commandField.keyPressed(keyCode, scanCode, modifiers)) {
+			// Movement commands such as arrow keys should hide the suggestion
+			// window since it's likely the user will want to move up or down.
+			setSuggestorActive(false);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+    private boolean handleSpecialKey(int keyCode) {
+		if (keyCode == GLFW.GLFW_KEY_TAB && !isSuggestorActive()) {
+			setSuggestorActive(true);
+			suggestor.refresh();
+			// Immediately trigger completion without using Mixin by
+			// simulating a key press. The scancode and modifiers arguments
+			// are never used.
+			suggestor.keyPressed(GLFW.GLFW_KEY_TAB, -1, 0);
+			return true;
+		} else if (keyCode == GLFW.GLFW_KEY_SPACE && Screen.hasControlDown()) {
+			setSuggestorActive(true);
+			suggestor.show(true);
+			return true;
+		}
+		return false;
+    }
+
+	@Override
+	public boolean charTyped(char chr, int modifiers) {
+		if (super.charTyped(chr, modifiers)) {
+			// The if statement ensures that only valid characters will trigger
+			// the suggestions box.
+			setSuggestorActive(true);
+			suggestor.refresh();
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
 		boolean result = suggestor.mouseClicked(mouseX, mouseY, button)
 			|| super.mouseClicked(mouseX, mouseY, button);
-		suggestor.setWindowActive(commandField.isActive());
-		suggestor.refresh();
+		suggestor.setWindowActive(false);
 		return result;
 	}
 
@@ -130,8 +172,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 	public void setFocused(boolean focused) {
 		setFocused(commandField);
 		commandField.setTextFieldFocused(focused);
-		suggestor.setWindowActive(commandField.isActive());
-		suggestor.refresh();
+		suggestor.setWindowActive(false);
 	}
 
 	@Override
@@ -223,6 +264,15 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 		if (changed) {
 			onHeightChange(height);
 		}
+	}
+
+	public boolean isSuggestorActive() {
+		return suggestorActive;
+	}
+
+	public void setSuggestorActive(boolean suggestorActive) {
+		suggestor.setWindowActive(suggestorActive);
+		this.suggestorActive = suggestorActive;
 	}
 
 	protected void onHeightChange(int height) {

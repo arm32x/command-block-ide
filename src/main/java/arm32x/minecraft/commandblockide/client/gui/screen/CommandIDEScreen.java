@@ -115,38 +115,14 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-			Element element = getFocused();
-			if (element == null) {
-				close();
-			} else {
-				setFocused(null);
-				if (element instanceof CommandEditor) {
-					((CommandEditor)element).setFocused(false);
-				}
-			}
-			return true;
-		} else if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && !Screen.hasShiftDown()) {
-			Element element = getFocused();
-			if (element == null) {
-				save();
-				close();
-			} else {
-				setFocused(null);
-				if (element instanceof CommandEditor) {
-					((CommandEditor)element).setFocused(false);
-				}
-			}
-			return true;
-		} else if (keyCode == GLFW.GLFW_KEY_TAB && !hasControlDown()) {
-			Element focused = getFocused();
-			if (focused != null && focused.keyPressed(keyCode, scanCode, modifiers)) {
-				return true;
-			} else {
-				return super.keyPressed(keyCode, scanCode, modifiers);
-			}
+		// TODO: Add shortcuts for actions outside of the command field.
+		// Forward all keyboard input to the focused element. This bypasses the
+		// special cases for Escape and Tab added in the Screen class, and
+		// allows CommandEditor to handle the Tab key.
+		if (getFocused() != null) {
+			return getFocused().keyPressed(keyCode, scanCode, modifiers);
 		} else {
-			return super.keyPressed(keyCode, scanCode, modifiers);
+			return false;
 		}
 	}
 
