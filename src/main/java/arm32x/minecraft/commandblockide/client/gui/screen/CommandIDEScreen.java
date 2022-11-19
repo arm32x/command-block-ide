@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -115,12 +116,43 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		// TODO: Add shortcuts for actions outside of the command field.
-		// Forward all keyboard input to the focused element. This bypasses the
-		// special cases for Escape and Tab added in the Screen class, and
-		// allows CommandEditor to handle the Tab key.
-		if (getFocused() != null) {
+		if (handleSpecialKey(keyCode)) {
+			return true;
+		} else if (getFocused() != null) {
 			return getFocused().keyPressed(keyCode, scanCode, modifiers);
+		} else {
+			// Bypass the special cases for Escape and Tab added in the Screen
+			// class to maintain full control over keyboard shortcuts.
+			return false;
+		}
+	}
+
+	private boolean handleSpecialKey(int keyCode) {
+		if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+			Element focused = getFocused();
+			if (focused == null) {
+				// TODO: Warn about unsaved changes.
+				close();
+				return true;
+			}
+			if (focused instanceof CommandEditor editor) {
+				if (editor.isSuggestorActive()) {
+					editor.setSuggestorActive(false);
+					return true;
+				} else {
+					editor.setFocused(false);
+				}
+			}
+			setFocused(null);
+			return true;
+		} else if (keyCode == GLFW.GLFW_KEY_UP && Screen.hasControlDown()) {
+			return changeFocus(false);
+		} else if (keyCode == GLFW.GLFW_KEY_DOWN && Screen.hasControlDown()) {
+			return changeFocus(true);
+		} else if (keyCode == GLFW.GLFW_KEY_S && Screen.hasControlDown()) {
+			saveButton.playDownSound(MinecraftClient.getInstance().getSoundManager());
+			save();
+			return true;
 		} else {
 			return false;
 		}
