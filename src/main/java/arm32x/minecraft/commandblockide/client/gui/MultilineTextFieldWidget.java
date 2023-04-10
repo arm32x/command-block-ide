@@ -407,7 +407,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 	protected boolean setVerticalScroll(int verticalScroll) {
 		int previous = this.verticalScroll;
-		this.verticalScroll = MathHelper.clamp(verticalScroll, 0, getVerticalScroll());
+		this.verticalScroll = MathHelper.clamp(verticalScroll, 0, getMaxVerticalScroll());
 		return this.verticalScroll != previous;
 	}
 
