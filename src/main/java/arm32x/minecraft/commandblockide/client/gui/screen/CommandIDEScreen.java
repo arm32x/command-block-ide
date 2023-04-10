@@ -145,6 +145,24 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			}
 			setFocused(null);
 			return true;
+		} else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+			Element focused = getFocused();
+			if (focused == null) {
+				save();
+				close();
+				return true;
+			}
+			if (Screen.hasControlDown() && focused instanceof CommandEditor editor) {
+				if (editor.isSuggestorActive()) {
+					editor.setSuggestorActive(false);
+					return true;
+				} else {
+					editor.setFocused(false);
+				}
+				setFocused(null);
+				return true;
+			}
+			return false;
 		} else if (keyCode == GLFW.GLFW_KEY_UP && Screen.hasControlDown()) {
 			return changeFocus(false);
 		} else if (keyCode == GLFW.GLFW_KEY_DOWN && Screen.hasControlDown()) {
