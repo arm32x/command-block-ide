@@ -143,7 +143,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 			suggestor.show(true);
 			return true;
 		}
-		// The Escape key is handled in CommandEditor, not here.
+		// The Escape key is handled in CommandIDEScreen, not here.
 		return false;
     }
 
