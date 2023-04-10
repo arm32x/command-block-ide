@@ -329,10 +329,6 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 		for (CommandEditor editor : editors) {
 			editor.render(matrices, mouseX, mouseY, delta);
 		}
-		for (CommandEditor editor : editors) {
-			// This is done in a separate loop to ensure it's rendered on top.
-			editor.renderSuggestions(matrices, mouseX, mouseY);
-		}
 
 		if (maxScrollOffset > 0) {
 			int virtualHeight = maxScrollOffset + height;
@@ -347,6 +343,11 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 		super.render(matrices, mouseX, mouseY, delta);
 		if (statusText != null) {
 			renderOrderedTooltip(matrices, List.of(statusText), statusTextX - 7, height - 10);
+		}
+
+		for (CommandEditor editor : editors) {
+			// This is done in a separate loop to ensure it's rendered on top.
+			editor.renderSuggestions(matrices, mouseX, mouseY);
 		}
 
 		matrices.pop();
