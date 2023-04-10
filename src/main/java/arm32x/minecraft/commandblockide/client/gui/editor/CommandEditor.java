@@ -136,8 +136,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 			// Immediately trigger completion without using Mixin by
 			// simulating a key press. The scancode and modifiers arguments
 			// are never used.
-			suggestor.keyPressed(GLFW.GLFW_KEY_TAB, -1, 0);
-			return true;
+			return suggestor.keyPressed(GLFW.GLFW_KEY_TAB, -1, 0);
 		} else if (keyCode == GLFW.GLFW_KEY_SPACE && Screen.hasControlDown()) {
 			setSuggestorActive(true);
 			suggestor.show(true);
