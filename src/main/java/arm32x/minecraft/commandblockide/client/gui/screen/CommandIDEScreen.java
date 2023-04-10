@@ -163,9 +163,9 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 				return true;
 			}
 			return false;
-		} else if (keyCode == GLFW.GLFW_KEY_UP && Screen.hasControlDown()) {
+		} else if (keyCode == GLFW.GLFW_KEY_UP && Screen.hasControlDown() || keyCode == GLFW.GLFW_KEY_TAB && Screen.hasControlDown() && Screen.hasShiftDown()) {
 			return changeFocus(false);
-		} else if (keyCode == GLFW.GLFW_KEY_DOWN && Screen.hasControlDown()) {
+		} else if (keyCode == GLFW.GLFW_KEY_DOWN && Screen.hasControlDown() || keyCode == GLFW.GLFW_KEY_TAB && Screen.hasControlDown() && !Screen.hasShiftDown()) {
 			return changeFocus(true);
 		} else if (keyCode == GLFW.GLFW_KEY_S && Screen.hasControlDown()) {
 			saveButton.playDownSound(MinecraftClient.getInstance().getSoundManager());
