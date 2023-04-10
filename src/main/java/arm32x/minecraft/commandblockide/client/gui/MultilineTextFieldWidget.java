@@ -52,6 +52,8 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 	private int lineHeight = 12;
 
+	private @Nullable Runnable cursorChangeListener = null;
+
 	public MultilineTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text, boolean horizontalScrollEnabled, boolean verticalScrollEnabled) {
 		super(textRenderer, x, y, width, height, text);
 		this.horizontalScrollEnabled = horizontalScrollEnabled;
@@ -63,6 +65,12 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 	public MultilineTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text) {
 		this(textRenderer, x, y, width, height, text, true, true);
+		editBox.setCursorChangeListener(() -> {
+			scrollToEnsureCursorVisible();
+			if (cursorChangeListener != null) {
+				cursorChangeListener.run();
+			}
+		});
 	}
 
 	@Override
@@ -71,7 +79,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	public void setCursorChangeListener(@Nullable Runnable cursorChangeListener) {
-		editBox.setCursorChangeListener((Objects.requireNonNullElseGet(cursorChangeListener, () -> () -> {})));
+		this.cursorChangeListener = cursorChangeListener;
 	}
 
     @Override
@@ -376,13 +384,16 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		return horizontalScroll;
 	}
 
-	protected boolean setHorizontalScroll(int horizontalScroll) {
-		int previous = this.horizontalScroll;
-		int max = Math.max(0, Arrays.stream(getText().split("\n"))
+	protected int getMaxHorizontalScroll() {
+		return Math.max(0, Arrays.stream(getText().split("\n"))
 			.mapToInt(self.getTextRenderer()::getWidth)
 			.max()
 			.orElse(0) + 8 - width);
-		this.horizontalScroll = MathHelper.clamp(horizontalScroll, 0, max);
+	}
+
+	protected boolean setHorizontalScroll(int horizontalScroll) {
+		int previous = this.horizontalScroll;
+		this.horizontalScroll = MathHelper.clamp(horizontalScroll, 0, getMaxHorizontalScroll());
 		return this.horizontalScroll != previous;
 	}
 
@@ -390,10 +401,13 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		return verticalScroll;
 	}
 
+	protected int getMaxVerticalScroll() {
+		return Math.max(0, getLineCount() * getLineHeight() + 2 - height);
+	}
+
 	protected boolean setVerticalScroll(int verticalScroll) {
 		int previous = this.verticalScroll;
-		int max = Math.max(0, getLineCount() * getLineHeight() + 2 - height);
-		this.verticalScroll = MathHelper.clamp(verticalScroll, 0, max);
+		this.verticalScroll = MathHelper.clamp(verticalScroll, 0, getVerticalScroll());
 		return this.verticalScroll != previous;
 	}
 
@@ -413,6 +427,19 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	public void setVerticalScrollEnabled(boolean enabled) {
 		verticalScrollEnabled = enabled;
 		verticalScroll = 0;
+	}
+
+	protected void scrollToEnsureCursorVisible() {
+		int effectiveX = this.x + (self.getDrawsBackground() ? 4 : 0);
+		int effectiveY = this.y + (self.getDrawsBackground() ? 3 : 0);
+		int internalWidth = this.width - 8;
+		int internalHeight = this.height - 6;
+
+		int virtualX = getCharacterX(getCursor()) - effectiveX;
+		int virtualY = getCharacterY(getCursor()) - effectiveY;
+
+		horizontalScroll = MathHelper.clamp(horizontalScroll, virtualX - internalWidth, virtualX);
+		verticalScroll = MathHelper.clamp(verticalScroll, virtualY - internalHeight, virtualY);
 	}
 
 	public int getLineHeight() {
@@ -435,16 +462,24 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			return effectiveX;
 		}
 		String line = getLine(getLineIndex(charIndex));
+
 		int indexInLine = charIndex - getLineStartBefore(charIndex);
-		return indexInLine > line.length() ? effectiveX : effectiveX + self.getTextRenderer().getWidth(line.substring(0, indexInLine));
+		if (indexInLine > line.length()) {
+			indexInLine = line.length();
+		}
+
+		return effectiveX + self.getTextRenderer().getWidth(line.substring(0, indexInLine));
 	}
 
 	public int getCharacterY(int charIndex) {
+		int effectiveY = this.y + (self.getDrawsBackground() ? 3 : 0);
+
 		if (charIndex > getText().length()) {
-			return y;
+			charIndex = getText().length();
 		}
 		int lineIndex = getLineIndex(charIndex);
-		return y + (lineIndex + 1) * getLineHeight();
+
+		return effectiveY + lineIndex * getLineHeight();
 	}
 
     private static final Logger logger = LogManager.getLogger();

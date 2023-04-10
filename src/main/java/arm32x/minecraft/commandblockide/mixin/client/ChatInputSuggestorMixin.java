@@ -28,6 +28,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Environment(EnvType.CLIENT)
 @Mixin(ChatInputSuggestor.class)
 public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtension {
+	private static final int SUGGESTOR_Y_OFFSET = 9;
+
 	@Unique public boolean ide$allowComments = false;
 	@Unique public boolean ide$slashForbidden = false;
 
@@ -51,10 +53,10 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 				@Nullable Suggestions suggestions = pendingSuggestions.getNow(null);
 				if (suggestions != null && !suggestions.isEmpty()) {
 					int charIndex = StringMapping.mapIndexOrAfter(ide$mapping, false, suggestions.getRange().getStart());
-					return multiline.getCharacterY(charIndex);
+					return multiline.getCharacterY(charIndex) + SUGGESTOR_Y_OFFSET;
 				}
 			}
-			return multiline.getCharacterY(multiline.getText().length());
+			return multiline.getCharacterY(multiline.getText().length()) + SUGGESTOR_Y_OFFSET;
 		} else {
 			return textField.y + textField.getHeight() + 2;
 		}
