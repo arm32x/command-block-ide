@@ -6,7 +6,6 @@ import arm32x.minecraft.commandblockide.client.processor.StringMapping;
 import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggestorExtension;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.suggestion.Suggestions;
-import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -53,10 +52,10 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 				@Nullable Suggestions suggestions = pendingSuggestions.getNow(null);
 				if (suggestions != null && !suggestions.isEmpty()) {
 					int charIndex = StringMapping.mapIndexOrAfter(ide$mapping, false, suggestions.getRange().getStart());
-					return multiline.getCharacterY(charIndex) + SUGGESTOR_Y_OFFSET;
+					return multiline.getCharacterRealY(charIndex) + SUGGESTOR_Y_OFFSET;
 				}
 			}
-			return multiline.getCharacterY(multiline.getText().length()) + SUGGESTOR_Y_OFFSET;
+			return multiline.getCharacterRealY(multiline.getText().length()) + SUGGESTOR_Y_OFFSET;
 		} else {
 			return textField.y + textField.getHeight() + 2;
 		}

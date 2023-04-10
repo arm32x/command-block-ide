@@ -15,6 +15,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.EditBox;
+import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.input.CursorMovement;
@@ -201,13 +202,17 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
 		if (this.isMouseOver(mouseX, mouseY)) {
+			boolean changed = false;
 			if (Screen.hasShiftDown() && isHorizontalScrollEnabled()) {
-				return setHorizontalScroll(getHorizontalScroll() - (int)Math.round(amount * SCROLL_SENSITIVITY));
+				changed = setHorizontalScroll(getHorizontalScroll() - (int)Math.round(amount * SCROLL_SENSITIVITY));
 			} else if (isVerticalScrollEnabled()) {
-				return setVerticalScroll(getVerticalScroll() - (int)Math.round(amount * SCROLL_SENSITIVITY));
-			} else {
-				return false;
+				changed = setVerticalScroll(getVerticalScroll() - (int)Math.round(amount * SCROLL_SENSITIVITY));
 			}
+			// This updates the position of the suggestions window.
+			if (cursorChangeListener != null) {
+				cursorChangeListener.run();
+			}
+			return changed;
 		} else {
 			return super.mouseScrolled(mouseX, mouseY, amount);
 		}
@@ -430,16 +435,11 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	protected void scrollToEnsureCursorVisible() {
-		int effectiveX = this.x + (self.getDrawsBackground() ? 4 : 0);
-		int effectiveY = this.y + (self.getDrawsBackground() ? 3 : 0);
-		int internalWidth = this.width - 8;
-		int internalHeight = this.height - 6;
+		int virtualX = getCharacterVirtualX(getCursor());
+		int virtualY = getCharacterVirtualY(getCursor());
 
-		int virtualX = getCharacterX(getCursor()) - effectiveX;
-		int virtualY = getCharacterY(getCursor()) - effectiveY;
-
-		horizontalScroll = MathHelper.clamp(horizontalScroll, virtualX - internalWidth, virtualX);
-		verticalScroll = MathHelper.clamp(verticalScroll, virtualY - internalHeight, virtualY);
+		setHorizontalScroll(MathHelper.clamp(horizontalScroll, virtualX - getInnerWidth(), virtualX));
+		setVerticalScroll(MathHelper.clamp(verticalScroll, virtualY - getInnerHeight(), virtualY));
 	}
 
 	public int getLineHeight() {
@@ -454,12 +454,9 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		this.height = height;
 	}
 
-	@Override
-	public int getCharacterX(int charIndex) {
-		int effectiveX = this.x + (self.getDrawsBackground() ? 4 : 0);
-
+	public int getCharacterVirtualX(int charIndex) {
 		if (charIndex > getText().length()) {
-			return effectiveX;
+			return 0;
 		}
 		String line = getLine(getLineIndex(charIndex));
 
@@ -468,18 +465,60 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			indexInLine = line.length();
 		}
 
-		return effectiveX + self.getTextRenderer().getWidth(line.substring(0, indexInLine));
+		return self.getTextRenderer().getWidth(line.substring(0, indexInLine));
 	}
 
-	public int getCharacterY(int charIndex) {
-		int effectiveY = this.y + (self.getDrawsBackground() ? 3 : 0);
+	public int getCharacterRealX(int charIndex) {
+		return getInnerX() - horizontalScroll + getCharacterVirtualX(charIndex);
+	}
 
+	/**
+	 * Gets the desired X position of the {@link ChatInputSuggestor} window.
+	 *
+	 * <p>This function is marked as deprecated because it <i>does not do what
+	 * the method name says</i> and is only here to be called by
+	 * {@code ChatInputSuggestor}.</p>
+	 *
+	 * @param charIndex The index of the character to place the suggestion
+	 *                  window at.
+	 * @return The desired X position of the suggestion window.
+	 */
+	@Deprecated
+	@Override
+	public int getCharacterX(int charIndex) {
+		// Since getInnerX isn't a method in the original TextFieldWidget,
+		// ChatInputSuggestor calls getCharacterX(0) instead.
+		if (charIndex == 0) {
+			return getInnerX();
+		}
+		// Enforce a lower bound on position. ChatInputSuggestor will enforce
+		// the upper bound using getInnerWidth().
+		return Math.max(getCharacterRealX(charIndex), getInnerX());
+	}
+
+	public int getCharacterVirtualY(int charIndex) {
 		if (charIndex > getText().length()) {
 			charIndex = getText().length();
 		}
 		int lineIndex = getLineIndex(charIndex);
 
-		return effectiveY + lineIndex * getLineHeight();
+		return lineIndex * getLineHeight();
+	}
+
+	public int getCharacterRealY(int charIndex) {
+		return getInnerY() - verticalScroll + getCharacterVirtualY(charIndex);
+	}
+
+	private int getInnerX() {
+		return this.x + (self.getDrawsBackground() ? 4 : 0);
+	}
+
+	private int getInnerY() {
+		return this.y + (self.getDrawsBackground() ? 3 : 0);
+	}
+
+	private int getInnerHeight() {
+		return self.getDrawsBackground() ? this.height - 6 : this.height;
 	}
 
     private static final Logger logger = LogManager.getLogger();
