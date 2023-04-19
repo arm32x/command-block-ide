@@ -1,4 +1,4 @@
-# Command Block IDE <img align="right" src="src/main/resources/assets/commandblockide/icon.png" />
+# **Command Block IDE** <img align="right" src="src/main/resources/assets/commandblockide/icon.png" />
 
 [![License](https://img.shields.io/github/license/arm32x/command-block-ide?label=license&style=flat-square)](https://github.com/arm32x/command-block-ide/blob/mc-release/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/arm32x/command-block-ide?logo=github&style=flat-square)](https://github.com/arm32x/command-block-ide/issues)
@@ -9,7 +9,7 @@
 
 Replaces the command block GUI to allow editing multiple command blocks at once.
 
-<img alt="Requires Fabric API" src="https://i.imgur.com/HabVZJR.png" height="60" />
+<img alt="Requires Fabric API" src="https://i.imgur.com/HabVZJR.png" width="179" height="60" />
 
 ## Features <small>(in the latest version)</small>
 
