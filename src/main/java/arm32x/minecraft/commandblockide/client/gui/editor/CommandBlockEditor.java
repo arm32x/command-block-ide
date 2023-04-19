@@ -177,6 +177,6 @@ public final class CommandBlockEditor extends CommandEditor {
 
 		lastOutputField.setWidth(commandField.getWidth());
 
-		trackOutputButton.setX(getX() + width - 20);
+		trackOutputButton.setX(getX() + width - 16);
 	}
 }
