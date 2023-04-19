@@ -129,9 +129,25 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
     }
 
     private void moveCursor(double mouseX, double mouseY) {
-        double relativeX = mouseX - getX() + getHorizontalScroll();
-        double relativeY = mouseY - getY() + getVerticalScroll();
-        editBox.moveCursor(relativeX, relativeY);
+        double virtualX = mouseX - getInnerX() + getHorizontalScroll();
+        double virtualY = mouseY - getInnerY() + getVerticalScroll();
+
+		int lineIndex = MathHelper.floor(virtualY / getLineHeight());
+
+		// Get a rough estimate of where the cursor should be.
+		EditBox.Substring lineSubstring = editBox.getLine(lineIndex);
+		String line = getText().substring(lineSubstring.beginIndex(), lineSubstring.endIndex());
+		int charIndexInLine = self.getTextRenderer().trimToWidth(line, MathHelper.floor(virtualX)).length();
+		int charIndex = lineSubstring.beginIndex() + charIndexInLine;
+
+		// Refine the estimate by determining the nearest character boundary.
+		double leftCharacterXDistance = Math.abs(getCharacterVirtualX(charIndex) - virtualX);
+		double rightCharacterXDistance = Math.abs(getCharacterVirtualX(charIndex + 1) - virtualX);
+		if (rightCharacterXDistance < leftCharacterXDistance) {
+			charIndex++;
+		}
+
+		setCursor(charIndex);
     }
 
     @Override
