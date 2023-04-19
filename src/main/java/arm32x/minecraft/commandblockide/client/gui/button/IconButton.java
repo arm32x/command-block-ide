@@ -1,7 +1,9 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.List;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
@@ -49,8 +51,8 @@ public abstract class IconButton extends PressableWidget {
 
 		RenderSystem.setShaderTexture(0, getTexture());
 
-		int iconX = x + (width - iconWidth) / 2;
-		int iconY = y + (height - iconHeight) / 2;
+		int iconX = getX() + (width - iconWidth) / 2;
+		int iconY = getY() + (height - iconHeight) / 2;
 
 		if (drawsBackground) {
 			float brightness = active ? 1.0f : (float)0xA0 / 0xFF;
@@ -69,14 +71,10 @@ public abstract class IconButton extends PressableWidget {
 			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, active ? alpha : 0.5f * alpha);
 			drawTexture(matrices, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
 		}
-
-		if (isHovered()) {
-			renderTooltip(matrices, mouseX, mouseY);
-		}
 	}
 
 	@Override
-	public void appendNarrations(NarrationMessageBuilder builder) {
+	public void appendClickableNarrations(NarrationMessageBuilder builder) {
 		appendDefaultNarrations(builder);
 	}
 }

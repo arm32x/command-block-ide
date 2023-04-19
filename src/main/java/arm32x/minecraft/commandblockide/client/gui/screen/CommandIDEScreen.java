@@ -7,11 +7,13 @@ import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -48,18 +50,21 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 
 	@Override
 	protected void init() {
-		assert client != null;
-		client.keyboard.setRepeatEvents(true);
-
 		statusTextX = addToolbarWidgets(List.of(
-			saveButton = new SimpleIconButton(0, 0, "save", this, List.of(Text.translatable("commandBlockIDE.save")), b -> save()),
+			saveButton = new SimpleIconButton(0, 0, "save", Tooltip.of(Text.translatable("commandBlockIDE.save")), b -> save()),
 			new ToolbarSeparator()
 		));
 
 		// Done button
-		addDrawableChild(new ButtonWidget(width - 216, height - 28, 100, 20, ScreenTexts.DONE, b -> { save(); close(); }));
+		addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, b -> { save(); close(); })
+			.position(width - 216, height - 28)
+			.size(100, 20)
+			.build());
 		// Cancel button
-		addDrawableChild(new ButtonWidget(width - 108, height - 28, 100, 20, ScreenTexts.CANCEL, b -> close()));
+		addDrawableChild(ButtonWidget.builder(ScreenTexts.CANCEL, b -> close())
+			.position(width - 108, height - 28)
+			.size(100, 20)
+			.build());
 
 		if (!initialized) {
 			firstInit();
@@ -109,8 +114,6 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 
 	@Override
 	public void close() {
-		assert client != null;
-		client.keyboard.setRepeatEvents(false);
 		super.close();
 	}
 
@@ -164,9 +167,11 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			}
 			return false;
 		} else if (keyCode == GLFW.GLFW_KEY_UP && Screen.hasControlDown() || keyCode == GLFW.GLFW_KEY_TAB && Screen.hasControlDown() && Screen.hasShiftDown()) {
-			return changeFocus(false);
+			changeFocus(false);
+			return true;
 		} else if (keyCode == GLFW.GLFW_KEY_DOWN && Screen.hasControlDown() || keyCode == GLFW.GLFW_KEY_TAB && Screen.hasControlDown() && !Screen.hasShiftDown()) {
-			return changeFocus(true);
+			changeFocus(true);
+			return true;
 		} else if (keyCode == GLFW.GLFW_KEY_S && Screen.hasControlDown()) {
 			saveButton.playDownSound(MinecraftClient.getInstance().getSoundManager());
 			save();
@@ -276,39 +281,38 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	private int addToolbarWidgets(List<ClickableWidget> widgets) {
 		int x = 8;
 		for (ClickableWidget widget : widgets) {
-			widget.x = x;
-			widget.y = height - 28;
+			widget.setX(x);
+			widget.setY(height - 28);
 			x += widget.getWidth() + 4;
 			addDrawableChild(widget);
 		}
 		return x;
 	}
 
-	@Override
-	public boolean changeFocus(boolean lookForwards) {
+	private void changeFocus(boolean lookForwards) {
 		Element element = getFocused();
-		if (element != null) {
-			for (int index = 0; index < editors.size(); index++) {
-				if (element instanceof CommandEditor && element.equals(editors.get(index))) {
-					CommandEditor editor;
-					do {
-						index = index + (lookForwards ? 1 : -1);
-						if (index < 0) {
-							index = editors.size() - 1;
-						} else if (index >= editors.size()) {
-							index = 0;
-						}
-						editor = editors.get(index);
-					} while (!editor.isLoaded());
-					((CommandEditor)element).setFocused(false);
-					setFocusedEditor(editor);
-					return true;
-				}
+		if (element == null) {
+			CommandEditor editor = editors.get(0);
+			setFocusedEditor(editor);
+			return;
+		}
+		for (int index = 0; index < editors.size(); index++) {
+			if (element instanceof CommandEditor && element.equals(editors.get(index))) {
+				CommandEditor editor;
+				do {
+					index = index + (lookForwards ? 1 : -1);
+					if (index < 0) {
+						index = editors.size() - 1;
+					} else if (index >= editors.size()) {
+						index = 0;
+					}
+					editor = editors.get(index);
+				} while (!editor.isLoaded());
+				element.setFocused(false);
+				setFocusedEditor(editor);
+				return;
 			}
 		}
-		CommandEditor editor = editors.get(0);
-		setFocusedEditor(editor);
-		return true;
 	}
 
 	public void setFocusedEditor(CommandEditor editor) {

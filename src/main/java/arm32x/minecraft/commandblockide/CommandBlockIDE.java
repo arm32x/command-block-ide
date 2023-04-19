@@ -1,13 +1,15 @@
 package arm32x.minecraft.commandblockide;
 
-import arm32x.minecraft.commandblockide.mixin.server.AbstractFileResourcePackInvoker;
-import arm32x.minecraft.commandblockide.mixin.server.DirectoryResourcePackInvoker;
+import arm32x.minecraft.commandblockide.mixin.server.DirectoryResourcePackAccessor;
+import arm32x.minecraft.commandblockide.mixin.server.FunctionLoaderAccessor;
 import arm32x.minecraft.commandblockide.mixinextensions.server.CommandFunctionExtension;
 import arm32x.minecraft.commandblockide.server.command.EditFunctionCommand;
 import arm32x.minecraft.commandblockide.util.PacketMerger;
+import com.mojang.serialization.DataResult;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +24,7 @@ import net.minecraft.server.function.CommandFunction;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.PathUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -60,32 +63,74 @@ public final class CommandBlockIDE implements ModInitializer {
 	private static Text saveFunction(MinecraftServer server, Identifier functionId, List<String> lines) {
 		// TODO: Make saving functions use a CompletableFuture so errors can be
 		//       properly shown to the user.
-		Identifier functionResourceId = new Identifier(functionId.getNamespace(), String.format("functions/%s.mcfunction", functionId.getPath()));
 
-		ResourceManager resourceManager = server.getResourceManager();
+		// Convert the function ID ('some_datapack:some_function') to a resource
+		// path ('some_datapack:functions/some_function.mcfunction').
+		var resourceFinder = FunctionLoaderAccessor.getResourceFinder();
+		var functionResourcePath = resourceFinder.toResourcePath(functionId);
 
-		Optional<ResourcePack> maybePack = resourceManager.streamResourcePacks().filter(p -> p.contains(ResourceType.SERVER_DATA, functionResourceId)).findFirst();
-		if (maybePack.isEmpty()) {
-			return Text.translatable("commandBlockIDE.saveFunction.failed.noResourcePack", functionId).formatted(Formatting.RED);
+		// Figure out which resource pack the function is in.
+		var resourceManager = server.getResourceManager();
+		var functionResource = resourceManager.getResource(functionResourcePath);
+		if (functionResource.isEmpty()) {
+			// Error saving function '...': Not found in any datapack.
+			return Text.translatable("commandBlockIDE.saveFunction.failed.noResourcePack", functionId);
 		}
+		var pack = functionResource.get().getPack();
 
-		ResourcePack pack = maybePack.get();
-
-		if (pack instanceof DirectoryResourcePack directoryPack) {
-			File file = ((DirectoryResourcePackInvoker)directoryPack).invokeGetFile(AbstractFileResourcePackInvoker.invokeGetFilename(ResourceType.SERVER_DATA, functionResourceId));
-			try {
-				Files.write(file.toPath(), lines, StandardOpenOption.TRUNCATE_EXISTING);
-			} catch (IOException e) {
-				LOGGER.error("IO exception occurred while saving function '" + functionId.toString() + "':", e);
-				return Text.translatable("commandBlockIDE.saveFunction.failed.ioException", functionId).formatted(Formatting.RED);
-			}
-			updateFunctionLines(server, functionId, lines);
-			return Text.translatable("commandBlockIDE.saveFunction.success.file", functionId);
-		} else if (pack instanceof ZipResourcePack) {
+		// Only directory-based resource packs are supported.
+		if (pack instanceof ZipResourcePack) {
 			return Text.translatable("commandBlockIDE.saveFunction.failed.zipNotSupported", functionId).formatted(Formatting.RED);
-		} else {
+		} else if (!(pack instanceof DirectoryResourcePack)) {
 			return Text.translatable("commandBlockIDE.saveFunction.failed.packClassNotSupported", functionId, pack.getClass().getSimpleName()).formatted(Formatting.RED);
 		}
+		var directoryPack = (DirectoryResourcePack)pack;
+
+		// Get the path to the function resource in the filesystem.
+		DataResult<Path> pathResult = getFilesystemPathOfResource(directoryPack, ResourceType.SERVER_DATA, functionResourcePath);
+		if (pathResult.result().isEmpty()) {
+			String errorMessage = pathResult.error().get().message();
+			// Error saving function '...': Invalid path '...': ...
+			return Text.translatable("commandBlockIDE.saveFunction.failed.invalidPath", functionId, functionResourcePath, errorMessage);
+		}
+		Path path = pathResult.result().get();
+
+		// Replace the content of the mcfunction file.
+		try {
+			Files.write(path, lines, StandardOpenOption.TRUNCATE_EXISTING);
+		} catch (IOException e) {
+			LOGGER.error("IO exception occurred while saving function '" + functionId.toString() + "':", e);
+			return Text.translatable("commandBlockIDE.saveFunction.failed.ioException", functionId).formatted(Formatting.RED);
+		}
+
+		updateFunctionLines(server, functionId, lines);
+		return Text.translatable("commandBlockIDE.saveFunction.success.file", functionId);
+	}
+
+	/**
+	 * Determines the filesystem path to a resource in a directory-based
+	 * resource pack.
+	 *
+	 * <p>This code implements the same logic as DirectoryResourcePack.open,
+	 * except without opening the file at the end. If an error occurs, it is
+	 * returned as a {@link DataResult}.</p>
+	 *
+	 * <p>Since {@code DataResult} is a part of the open-source DataFixerUpper,
+	 * it should be more stable between updates than other Minecraft code.</p>
+	 *
+	 * @param pack The resource pack containing the resource.
+	 * @param resourceType Whether the resource is from a client-side resource
+	 *                     pack or server-side datapack.
+	 * @param resourcePath The path to the resource inside the resource pack.
+	 * @return A filesystem path to the same resource as {@code resourcePath}.
+	 */
+	@SuppressWarnings("SameParameterValue")
+	private static DataResult<Path> getFilesystemPathOfResource(DirectoryResourcePack pack, ResourceType resourceType, Identifier resourcePath) {
+		Path root = ((DirectoryResourcePackAccessor)pack).getRoot();
+		Path namespaceDir = root.resolve(resourceType.getDirectory()).resolve(resourcePath.getNamespace());
+
+		return PathUtil.split(resourcePath.getPath())
+			.map(segments -> PathUtil.getPath(namespaceDir, segments));
 	}
 
 	private static void updateFunctionLines(MinecraftServer server, Identifier functionId, List<String> lines) {

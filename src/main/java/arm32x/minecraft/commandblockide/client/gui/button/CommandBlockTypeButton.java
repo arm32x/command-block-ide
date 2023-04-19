@@ -2,27 +2,25 @@ package arm32x.minecraft.commandblockide.client.gui.button;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import com.mojang.blaze3d.systems.RenderSystem;
-import java.util.Collections;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Matrix4f;
+import org.joml.Matrix4f;
 
 public final class CommandBlockTypeButton extends IconButton implements Dirtyable {
-	public CommandBlockBlockEntity.Type type = CommandBlockBlockEntity.Type.REDSTONE;
-	public boolean conditional = false;
-
-	private final Screen screen;
+	private CommandBlockBlockEntity.Type type = CommandBlockBlockEntity.Type.REDSTONE;
+	private boolean conditional = false;
 
 	private boolean dirty = false;
 
-	public CommandBlockTypeButton(Screen screen, int x, int y) {
+	public CommandBlockTypeButton(int x, int y) {
 		super(x, y, 16, 16);
-		this.screen = screen;
+		updateTooltip();
 	}
 
 	@Override
@@ -37,14 +35,15 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 			}
 		}
 		dirty = true;
+		updateTooltip();
 	}
 
 	@Override
 	public MutableText getNarrationMessage() {
-		return getNarrationMessage(getTooltip());
+		return getNarrationMessage(getTooltipText());
 	}
 
-	private Text getTooltip() {
+	private Text getTooltipText() {
 		StringBuilder keyBuilder = new StringBuilder("commandBlockIDE.type.");
 		keyBuilder.append(type.name().toLowerCase());
 		if (conditional) {
@@ -85,13 +84,13 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 		RenderSystem.enableDepthTest();
 		if (active) {
 			RenderSystem.setShaderColor(0.0f, 0.0f, 0.0f, 0.25f);
-			drawTexture(matrices, x + 1, y + 1, 0.0f, 0.0f, width, height, 16, 64);
+			drawTexture(matrices, getX() + 1, getY() + 1, 0.0f, 0.0f, width, height, 16, 64);
 		}
 		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, active ? 1.0f : 0.5f);
 
 		// Drawing must be done manually in order to flip the texture upside-down.
 		Matrix4f matrix = matrices.peek().getPositionMatrix();
-		float x0 = (float)x, x1 = x0 + 16, y0 = (float)y, y1 = y0 + 16, z = getZOffset();
+		float x0 = (float)getX(), x1 = x0 + 16, y0 = (float)getY(), y1 = y0 + 16, z = 0;
 		float u0 = 0.0f, u1 = 1.0f, v0 = 0.0f, v1 = 0.25f;
 		BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
 		bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
@@ -100,18 +99,31 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 		bufferBuilder.vertex(matrix, x1, y0, z).texture(u0, v1).next();
 		bufferBuilder.vertex(matrix, x0, y0, z).texture(u1, v1).next();
 		var builtBuffer = bufferBuilder.end();
-		BufferRenderer.drawWithShader(builtBuffer);
-
-		if (isHovered()) {
-			renderTooltip(matrices, mouseX, mouseY);
-		}
-	}
-
-	@Override
-	public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY) {
-		screen.renderOrderedTooltip(matrices, Collections.singletonList(getTooltip().asOrderedText()), mouseX, mouseY);
+		BufferRenderer.drawWithGlobalProgram(builtBuffer);
 	}
 
 	@Override
 	public boolean isDirty() { return dirty; }
+
+	private void updateTooltip() {
+		setTooltip(Tooltip.of(getTooltipText()));
+	}
+
+	public CommandBlockBlockEntity.Type getBlockType() {
+		return type;
+	}
+
+	public void setBlockType(CommandBlockBlockEntity.Type type) {
+		this.type = type;
+		updateTooltip();
+	}
+
+	public boolean isConditional() {
+		return conditional;
+	}
+
+	public void setConditional(boolean conditional) {
+		this.conditional = conditional;
+		updateTooltip();
+	}
 }

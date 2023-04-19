@@ -95,7 +95,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 		commandField.setCursorChangeListener(suggestor::refresh);
 		commandField.setRenderTextProvider((original, firstCharacterIndex) -> {
 			assert firstCharacterIndex == 0;
-			var parse = suggestor.getParse();
+			var parse = ((ChatInputSuggestorAccessor)suggestor).getParse();
 			if (parse != null) {
 				return highlight(parse, original, processor.processCommand(original).getRight());
 			} else {
@@ -173,9 +173,10 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 			|| super.mouseScrolled(mouseX, mouseY, amount);
 	}
 
+	@Override
 	public void setFocused(boolean focused) {
 		setFocused(commandField);
-		commandField.setTextFieldFocused(focused);
+		commandField.setFocused(focused);
 		suggestor.setWindowActive(false);
 	}
 
@@ -185,7 +186,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 		if (isLoaded()) {
 			renderCommandField(matrices, mouseX, mouseY, delta);
 		} else {
-			textRenderer.draw(matrices, Text.translatable("commandBlockIDE.unloaded"), commandField.x, y + 5, 0x7FFFFFFF);
+			textRenderer.draw(matrices, Text.translatable("commandBlockIDE.unloaded"), commandField.getX(), y + 5, 0x7FFFFFFF);
 		}
 		super.render(matrices, mouseX, mouseY, delta);
 	}
@@ -236,7 +237,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 	public void setY(int y) {
  		this.y = y;
 
- 		commandField.y = y + 1;
+ 		commandField.setY(y + 1);
 		suggestor.refresh();
 
 	}

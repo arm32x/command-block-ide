@@ -18,7 +18,7 @@ public final class ToolbarSeparator extends ClickableWidget implements Drawable,
 
 	@Override
 	public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		fill(matrices, x, y + 1, x + 1, y + 1 + height, COLOR);
+		fill(matrices, getX(), getY() + 1, getX() + 1, getY() + 1 + height, COLOR);
 	}
 
 	@Override
@@ -37,5 +37,5 @@ public final class ToolbarSeparator extends ClickableWidget implements Drawable,
 	}
 
 	@Override
-	public void appendNarrations(NarrationMessageBuilder builder) { }
+	public void appendClickableNarrations(NarrationMessageBuilder builder) { }
 }

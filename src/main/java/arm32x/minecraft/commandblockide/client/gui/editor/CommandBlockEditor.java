@@ -1,10 +1,10 @@
 package arm32x.minecraft.commandblockide.client.gui.editor;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
-import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockAutoButton;
 import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockTrackOutputButton;
 import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockTypeButton;
+import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import arm32x.minecraft.commandblockide.client.update.DataCommandUpdateRequester;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -40,7 +40,7 @@ public final class CommandBlockEditor extends CommandEditor {
 
 		lastOutputField = new TextFieldWidget(
 			textRenderer,
-			commandField.x, commandField.y,
+			commandField.getX(), commandField.getY(),
 			commandField.getWidth(), commandField.getHeight(),
 			Text.translatable("advMode.previousOutput")
 				.append(Text.translatable("commandBlockIDE.narrator.editorIndex", index + 1))
@@ -50,16 +50,16 @@ public final class CommandBlockEditor extends CommandEditor {
 		lastOutputField.setText(Text.translatable("commandBlockIDE.unloaded").getString());
 		lastOutputField.visible = false;
 
-		typeButton = addDrawableChild(new CommandBlockTypeButton(screen, x + 20, y));
-		typeButton.type = blockEntity.getCommandBlockType();
+		typeButton = addDrawableChild(new CommandBlockTypeButton(x + 20, y));
+		typeButton.setBlockType(blockEntity.getCommandBlockType());
 		typeButton.active = false;
 
-		autoButton = addDrawableChild(new CommandBlockAutoButton(screen, x + 40, y));
-		autoButton.auto = typeButton.type == CommandBlockBlockEntity.Type.SEQUENCE;
+		autoButton = addDrawableChild(new CommandBlockAutoButton(x + 40, y));
+		autoButton.setAuto(typeButton.getBlockType() == CommandBlockBlockEntity.Type.SEQUENCE);
 		autoButton.active = false;
 
-		trackOutputButton = addDrawableChild(new CommandBlockTrackOutputButton(screen, x + width - 16, y));
-		trackOutputButton.trackingOutput = true;
+		trackOutputButton = addDrawableChild(new CommandBlockTrackOutputButton(x + width - 16, y));
+		trackOutputButton.setTrackingOutput(true);
 		trackOutputButton.active = false;
 	}
 
@@ -67,15 +67,15 @@ public final class CommandBlockEditor extends CommandEditor {
 		if (isLoaded() && isDirty()) {
 			CommandBlockExecutor executor = blockEntity.getCommandExecutor();
 			networkHandler.sendPacket(new UpdateCommandBlockC2SPacket(
-				new BlockPos(executor.getPos()),
+				BlockPos.ofFloored(executor.getPos()),
 				getSingleLineCommand(),
-				typeButton.type,
-				trackOutputButton.trackingOutput,
-				typeButton.conditional,
-				autoButton.auto
+				typeButton.getBlockType(),
+				trackOutputButton.isTrackingOutput(),
+				typeButton.isConditional(),
+				autoButton.isAuto()
 			));
-			executor.setTrackOutput(trackOutputButton.trackingOutput);
-			if (!trackOutputButton.trackingOutput) {
+			executor.setTrackOutput(trackOutputButton.isTrackingOutput());
+			if (!trackOutputButton.isTrackingOutput()) {
 				executor.setLastOutput(null);
 			}
 			saveMultilineCommand();
@@ -101,12 +101,12 @@ public final class CommandBlockEditor extends CommandEditor {
 			client.isInSingleplayer()
 				? Objects.requireNonNull(client.getServer()).getSaveProperties().getLevelName()
 				: Objects.requireNonNull(client.getCurrentServerEntry()).name,
-			new BlockPos(executor.getPos())
+			BlockPos.ofFloored(executor.getPos())
 		));
-		typeButton.type = blockEntity.getCommandBlockType();
-		typeButton.conditional = blockEntity.isConditionalCommandBlock();
-		autoButton.auto = blockEntity.isAuto();
-		trackOutputButton.trackingOutput = executor.isTrackingOutput();
+		typeButton.setBlockType(blockEntity.getCommandBlockType());
+		typeButton.setConditional(blockEntity.isConditionalCommandBlock());
+		autoButton.setAuto(blockEntity.isAuto());
+		trackOutputButton.setTrackingOutput(executor.isTrackingOutput());
 
 		String lastOutput = executor.getLastOutput().getString();
 		if (lastOutput.equals("")) {
@@ -164,11 +164,11 @@ public final class CommandBlockEditor extends CommandEditor {
 	public void setY(int y) {
 		super.setY(y);
 
-		lastOutputField.y = commandField.y;
+		lastOutputField.setY(commandField.getY());
 
-		typeButton.y = y;
-		autoButton.y = y;
-		trackOutputButton.y = y;
+		typeButton.setY(y);
+		autoButton.setY(y);
+		trackOutputButton.setY(y);
 	}
 
 	@Override
@@ -177,6 +177,6 @@ public final class CommandBlockEditor extends CommandEditor {
 
 		lastOutputField.setWidth(commandField.getWidth());
 
-		trackOutputButton.x = getX() + width - 20;
+		trackOutputButton.setX(getX() + width - 20);
 	}
 }

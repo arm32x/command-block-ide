@@ -57,7 +57,7 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 			}
 			return multiline.getCharacterRealY(multiline.getText().length()) + SUGGESTOR_Y_OFFSET;
 		} else {
-			return textField.y + textField.getHeight() + 2;
+			return textField.getY() + textField.getHeight() + 2;
 		}
 	}
 

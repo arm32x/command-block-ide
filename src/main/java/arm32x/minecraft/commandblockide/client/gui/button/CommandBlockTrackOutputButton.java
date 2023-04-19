@@ -1,23 +1,19 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
-import java.util.Collections;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public final class CommandBlockTrackOutputButton extends IconButton implements Dirtyable {
-	public boolean trackingOutput = false;
-
-	private final Screen screen;
+	private boolean trackingOutput = false;
 
 	private boolean dirty = false;
 
-	public CommandBlockTrackOutputButton(Screen screen, int x, int y) {
+	public CommandBlockTrackOutputButton(int x, int y) {
 		super(x, y, 16, 16);
-		this.screen = screen;
+		updateTooltip();
 	}
 
 	@Override
@@ -29,10 +25,10 @@ public final class CommandBlockTrackOutputButton extends IconButton implements D
 
 	@Override
 	public MutableText getNarrationMessage() {
-		return getNarrationMessage(getTooltip());
+		return getNarrationMessage(getTooltipText());
 	}
 
-	private Text getTooltip() {
+	private Text getTooltipText() {
 		return trackingOutput
 			? Text.translatable("commandBlockIDE.lastOutput.on")
 			: Text.translatable("commandBlockIDE.lastOutput.off");
@@ -42,13 +38,22 @@ public final class CommandBlockTrackOutputButton extends IconButton implements D
 	public void onPress() {
 		trackingOutput = !trackingOutput;
 		dirty = true;
-	}
-
-	@Override
-	public void renderTooltip(MatrixStack matrices, int mouseX, int mouseY) {
-		screen.renderOrderedTooltip(matrices, Collections.singletonList(getTooltip().asOrderedText()), mouseX, mouseY);
+		updateTooltip();
 	}
 
 	@Override
 	public boolean isDirty() { return dirty; }
+
+	private void updateTooltip() {
+		setTooltip(Tooltip.of(getTooltipText()));
+	}
+
+	public boolean isTrackingOutput() {
+		return trackingOutput;
+	}
+
+	public void setTrackingOutput(boolean trackingOutput) {
+		this.trackingOutput = trackingOutput;
+		updateTooltip();
+	}
 }

@@ -38,7 +38,7 @@ public final class DataCommandUpdateRequester {
 		blocksToUpdate.put(position, blockEntity);
 
 		String command = String.format("data get block %d %d %d", position.getX(), position.getY(), position.getZ());
-		player.sendCommand(command);
+		player.networkHandler.sendCommand(command);
 	}
 
 	public boolean handleFeedback(MinecraftClient client, TranslatableTextContent message) {

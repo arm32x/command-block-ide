@@ -25,10 +25,10 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Matrix4f;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
@@ -129,8 +129,8 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
     }
 
     private void moveCursor(double mouseX, double mouseY) {
-        double relativeX = mouseX - x + getHorizontalScroll();
-        double relativeY = mouseY - y + getVerticalScroll();
+        double relativeX = mouseX - getX() + getHorizontalScroll();
+        double relativeY = mouseY - getY() + getVerticalScroll();
         editBox.moveCursor(relativeX, relativeY);
     }
 
@@ -172,7 +172,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
             return false;
         }
         if (self.isFocusUnlocked()) {
-            setTextFieldFocused(isMouseOver(mouseX, mouseY));
+            setFocused(isMouseOver(mouseX, mouseY));
         }
         if (isFocused() && isMouseOver(mouseX, mouseY) && button == 0) {
             editBox.setSelecting(Screen.hasShiftDown());
@@ -188,7 +188,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
             return false;
         }
         if (self.isFocusUnlocked()) {
-            setTextFieldFocused(isMouseOver(mouseX, mouseY));
+            setFocused(isMouseOver(mouseX, mouseY));
         }
         if (isFocused() && isMouseOver(mouseX, mouseY) && button == 0) {
             editBox.setSelecting(true);
@@ -226,23 +226,23 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 		if (self.getDrawsBackground()) {
 			int borderColor = this.isFocused() ? 0xFFFFFFFF : 0xFFA0A0A0;
-			fill(matrices, this.x - 1, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, borderColor);
-			fill(matrices, this.x, this.y, this.x + this.width, this.y + this.height, 0xFF000000);
+			fill(matrices, this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, borderColor);
+			fill(matrices, this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, 0xFF000000);
 		}
 
 		Window window = MinecraftClient.getInstance().getWindow();
 		double scaleFactor = window.getScaleFactor();
 		RenderSystem.enableScissor(
-			(int)Math.round(this.x * scaleFactor),
+			(int)Math.round(this.getX() * scaleFactor),
 			// OpenGL coordinates start from the bottom left.
-			window.getHeight() - (int)Math.round(this.y * scaleFactor + this.height * scaleFactor),
+			window.getHeight() - (int)Math.round(this.getY() * scaleFactor + this.height * scaleFactor),
 			(int)Math.round(this.width * scaleFactor),
 			(int)Math.round(this.height * scaleFactor)
 		);
 
 		int textColor = self.isEditable() ? self.getEditableColor() : self.getUneditableColor();
-		int x = this.x + (self.getDrawsBackground() ? 4 : 0) - horizontalScroll;
-		int y = this.y + (self.getDrawsBackground() ? 3 : 0) - verticalScroll;
+		int x = this.getX() + (self.getDrawsBackground() ? 4 : 0) - horizontalScroll;
+		int y = this.getY() + (self.getDrawsBackground() ? 3 : 0) - verticalScroll;
 
 		boolean showCursor = isFocused() && self.getFocusedTicks() / 6 % 2 == 0;
 		boolean lineCursor = getCursor() < getText().length() || getText().length() >= self.invokeGetMaxLength();
@@ -296,15 +296,14 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		int endX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionEnd), normalizedSelectionEnd)) - 1;
 		int endY = y + lineHeight * getLineIndex(normalizedSelectionEnd) - 1;
 
-		int leftEdge = this.x + (self.getDrawsBackground() ? 4 : 0);
+		int leftEdge = this.getX() + (self.getDrawsBackground() ? 4 : 0);
 		int rightEdge = leftEdge + this.getInnerWidth();
 
 		Matrix4f matrix = matrices.peek().getPositionMatrix();
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder bufferBuilder = tessellator.getBuffer();
-		RenderSystem.setShader(GameRenderer::getPositionShader);
+		RenderSystem.setShader(GameRenderer::getPositionProgram);
 		RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
-		RenderSystem.disableTexture();
 		RenderSystem.enableColorLogicOp();
 		RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
 		bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
@@ -339,7 +338,6 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		tessellator.draw();
 		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 		RenderSystem.disableColorLogicOp();
-		RenderSystem.enableTexture();
 	}
 
     @Override
@@ -510,11 +508,11 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	private int getInnerX() {
-		return this.x + (self.getDrawsBackground() ? 4 : 0);
+		return this.getX() + (self.getDrawsBackground() ? 4 : 0);
 	}
 
 	private int getInnerY() {
-		return this.y + (self.getDrawsBackground() ? 3 : 0);
+		return this.getY() + (self.getDrawsBackground() ? 3 : 0);
 	}
 
 	private int getInnerHeight() {
