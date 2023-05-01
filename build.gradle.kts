@@ -5,6 +5,7 @@ plugins {
     id("com.gladed.androidgitversion")
     id("fabric-loom")
     `java-library`
+    scala
 }
 
 androidGitVersion {
@@ -44,6 +45,8 @@ dependencies {
 
     val layout_version: String by project
     shadow("io.github.abvadabra:layout-java:$layout_version")
+    val scala3_library_version: String by project
+    shadow("org.scala-lang:scala3-library_3:$scala3_library_version")
 }
 
 java {
