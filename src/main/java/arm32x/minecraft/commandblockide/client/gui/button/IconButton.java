@@ -64,12 +64,17 @@ public abstract class IconButton extends PressableWidget {
 			RenderSystem.enableBlend();
 			RenderSystem.defaultBlendFunc();
 			RenderSystem.enableDepthTest();
+
 			if (active) {
 				RenderSystem.setShaderColor(0.0f, 0.0f, 0.0f, 0.25f * alpha);
 				drawTexture(matrices, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
 			}
 			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, active ? alpha : 0.5f * alpha);
 			drawTexture(matrices, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
+
+			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+			RenderSystem.disableDepthTest();
+			RenderSystem.disableBlend();
 		}
 	}
 

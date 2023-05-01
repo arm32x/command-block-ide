@@ -100,6 +100,10 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 		bufferBuilder.vertex(matrix, x0, y0, z).texture(u1, v1).next();
 		var builtBuffer = bufferBuilder.end();
 		BufferRenderer.drawWithGlobalProgram(builtBuffer);
+
+		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+		RenderSystem.disableDepthTest();
+		RenderSystem.disableBlend();
 	}
 
 	@Override
