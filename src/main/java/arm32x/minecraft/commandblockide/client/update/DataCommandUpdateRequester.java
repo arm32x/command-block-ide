@@ -50,7 +50,7 @@ public final class DataCommandUpdateRequester {
 			position = new BlockPos((int)args[0], (int)args[1], (int)args[2]);
 		} catch (ClassCastException ex1) {
 			try {
-				position = new BlockPos(Integer.parseInt((String)args[0]), Integer.parseInt((String)args[1]), Integer.parseInt((String)args[2]));
+				position = new BlockPos(Integer.parseInt(getStringFromText(args[0])), Integer.parseInt(getStringFromText(args[1])), Integer.parseInt(getStringFromText(args[2])));
 			} catch (ClassCastException | NumberFormatException ex2) {
 				LOGGER.error("Could not get block position from command feedback.");
 				return false;
@@ -94,6 +94,14 @@ public final class DataCommandUpdateRequester {
 		blocksToUpdate.remove(position);
 
 		return true;
+	}
+
+	private static String getStringFromText(Object object) {
+		if (object instanceof Text text) {
+			return text.getString();
+		} else {
+			return object.toString();
+		}
 	}
 
 	private static final Logger LOGGER = LogManager.getLogger();
