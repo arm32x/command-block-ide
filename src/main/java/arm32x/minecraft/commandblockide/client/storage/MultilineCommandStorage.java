@@ -124,11 +124,11 @@ public final class MultilineCommandStorage implements Serializable {
 			for (var entry : instance.blocks.entrySet()) {
 				var location = entry.getKey();
 				packer.packArrayHeader(5);
-				packer.packBoolean(location.isSingleplayer());
-				packer.packString(location.world());
-				packer.packInt(location.pos().getX());
-				packer.packInt(location.pos().getY());
-				packer.packInt(location.pos().getZ());
+				packer.packBoolean(location.isSingleplayer);
+				packer.packString(location.world);
+				packer.packInt(location.pos.getX());
+				packer.packInt(location.pos.getY());
+				packer.packInt(location.pos.getZ());
 
 				byte[] hash = entry.getValue();
 				packer.packBinaryHeader(hash.length);
@@ -139,10 +139,10 @@ public final class MultilineCommandStorage implements Serializable {
 			for (var entry : instance.functions.entrySet()) {
 				var location = entry.getKey();
 				packer.packArrayHeader(4);
-				packer.packBoolean(location.isSingleplayer());
-				packer.packString(location.world());
-				packer.packString(location.function().toString());
-				packer.packInt(location.lineIndex());
+				packer.packBoolean(location.isSingleplayer);
+				packer.packString(location.world);
+				packer.packString(location.function.toString());
+				packer.packInt(location.lineIndex);
 
 				byte[] hash = entry.getValue();
 				packer.packBinaryHeader(hash.length);
@@ -218,6 +218,9 @@ public final class MultilineCommandStorage implements Serializable {
 			throw new RuntimeException(ex);
 		}
 	}
+
+	private record CommandBlockLocation(boolean isSingleplayer, String world, BlockPos pos) { }
+	private record CommandFunctionLocation(boolean isSingleplayer, String world, Identifier function, int lineIndex) { }
 
 	private static final Logger LOGGER = LogManager.getLogger();
 }

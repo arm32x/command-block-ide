@@ -6,6 +6,7 @@ import arm32x.minecraft.commandblockide.mixinextensions.server.CommandFunctionEx
 import arm32x.minecraft.commandblockide.server.command.EditFunctionCommand;
 import arm32x.minecraft.commandblockide.util.PacketMerger;
 import com.mojang.serialization.DataResult;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
