@@ -6,7 +6,6 @@ import arm32x.minecraft.commandblockide.util.OrderedTexts;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -83,9 +82,23 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		this.cursorChangeListener = cursorChangeListener;
 	}
 
+
+	private boolean textDirty = true;
+
+	public boolean getTextDirty() {
+		return this.textDirty;
+	}
+
     @Override
     public void setText(String text) {
         editBox.setText(text);
+
+	maxHorizontalScroll = Math.max(0, Arrays.stream(getText().split("\n"))
+		.mapToInt(self.getTextRenderer()::getWidth)
+		.max()
+		.orElse(0) + 8 - width);
+
+	this.textDirty = true;
     }
 
 	@Override
@@ -168,6 +181,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+	this.textDirty = true;
 		if (keyCode == GLFW.GLFW_KEY_TAB) {
             if (editBox.hasSelection()) {
                 logger.warn("Indenting selected lines is not yet supported");
@@ -178,7 +192,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
             }
             return true;
         } else {
-			return editBox.handleSpecialKey(keyCode);
+		return editBox.handleSpecialKey(keyCode);
 		}
     }
 
@@ -234,6 +248,8 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		}
 	}
 
+	private Iterable<OrderedText> lines;
+
 	@Override
 	public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
 		if (!isVisible()) {
@@ -267,11 +283,15 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		int cursorX = x - 1;
 		int cursorY = y + lineHeight * cursorLine;
 
-		OrderedText text = self.getRenderTextProvider().apply(getText(), 0);
-		List<OrderedText> lines = OrderedTexts.split('\n', text);
-		for (int index = 0; index < lines.size(); index++) {
-			OrderedText line = lines.get(index);
-			if (index == cursorLine) {
+		if (this.getTextDirty()) {
+			OrderedText text = self.getRenderTextProvider().apply(getText(), 0);
+			lines = OrderedTexts.split('\n', text);
+			this.textDirty = false;
+		}
+
+		int row = 0;
+		for (OrderedText line : lines) {
+			if (row == cursorLine) {
 				int indexOfLastNewlineBeforeCursor = getLineStartBefore(getCursor()) - 1;
 				int codePointsBeforeCursor;
 				if (indexOfLastNewlineBeforeCursor != -1) {
@@ -279,12 +299,13 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 				} else {
 					codePointsBeforeCursor = getText().codePointCount(0, getCursor());
 				}
-				int endX = self.getTextRenderer().drawWithShadow(matrices, OrderedTexts.limit(codePointsBeforeCursor, line), x, y + lineHeight * index, textColor) - 1;
-				self.getTextRenderer().drawWithShadow(matrices, OrderedTexts.skip(codePointsBeforeCursor, line), endX, y + lineHeight * index, textColor);
+				int endX = self.getTextRenderer().drawWithShadow(matrices, OrderedTexts.limit(codePointsBeforeCursor, line), x, y + lineHeight * row, textColor) - 1;
+				self.getTextRenderer().drawWithShadow(matrices, OrderedTexts.skip(codePointsBeforeCursor, line), endX, y + lineHeight * row, textColor);
 				cursorX = endX - 1;
 			} else {
-				self.getTextRenderer().drawWithShadow(matrices, line, x, y + lineHeight * index, textColor);
+				self.getTextRenderer().drawWithShadow(matrices, line, x, y + lineHeight * row, textColor);
 			}
+			row++;
 		}
 
 		if (showCursor) {
@@ -403,11 +424,9 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		return horizontalScroll;
 	}
 
+	private int maxHorizontalScroll = 0;
 	protected int getMaxHorizontalScroll() {
-		return Math.max(0, Arrays.stream(getText().split("\n"))
-			.mapToInt(self.getTextRenderer()::getWidth)
-			.max()
-			.orElse(0) + 8 - width);
+		return maxHorizontalScroll;
 	}
 
 	protected boolean setHorizontalScroll(int horizontalScroll) {
