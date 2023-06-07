@@ -383,7 +383,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	private int getLineStartBefore(int charIndex) {
-		return getText().lastIndexOf('\n', Math.max(charIndex - 1, 0)) + 1;
+		return getText().lastIndexOf('\n', Math.max(charIndex, 0) - 1) + 1;
 	}
 
     // Naming things is hard.
