@@ -43,7 +43,7 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 	@Shadow private @Nullable ChatInputSuggestor.SuggestionWindow window;
 
 	@ModifyConstant(
-		method = { "show(Z)V", "renderMessages(Lnet/minecraft/client/util/math/MatrixStack;)V" },
+		method = { "show(Z)V", "renderMessages(Lnet/minecraft/client/gui/DrawContext;)V" },
 		constant = @Constant(intValue = 72)
 	)
 	public int getY(int seventyTwo) {
@@ -64,7 +64,7 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 	@ModifyArg(
 		method = {
 			"show(Z)V",
-			"showUsages(Lnet/minecraft/util/Formatting;)V"
+			"showUsages(Lnet/minecraft/util/Formatting;)Z"
 		},
 		at = @At(
 			value = "INVOKE",
@@ -146,7 +146,7 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 	}
 
 	@ModifyArg(
-		method = "showUsages(Lnet/minecraft/util/Formatting;)V",
+		method = "showUsages(Lnet/minecraft/util/Formatting;)Z",
 		at = @At(
 			value = "INVOKE",
 			target = "Lcom/mojang/brigadier/context/CommandContextBuilder;findSuggestionContext(I)Lcom/mojang/brigadier/context/SuggestionContext;",

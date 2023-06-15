@@ -1,5 +1,6 @@
 package arm32x.minecraft.commandblockide.client.gui;
 
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
@@ -17,8 +18,8 @@ public final class ToolbarSeparator extends ClickableWidget implements Drawable,
 	}
 
 	@Override
-	public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		fill(matrices, getX(), getY() + 1, getX() + 1, getY() + 1 + height, COLOR);
+	public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+		context.fill(getX(), getY() + 1, getX() + 1, getY() + 1 + height, COLOR);
 	}
 
 	@Override

@@ -14,6 +14,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.EditBox;
 import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.screen.Screen;
@@ -235,15 +236,15 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	@Override
-	public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+	public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
 		if (!isVisible()) {
 			return;
 		}
 
 		if (self.getDrawsBackground()) {
 			int borderColor = this.isFocused() ? 0xFFFFFFFF : 0xFFA0A0A0;
-			fill(matrices, this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, borderColor);
-			fill(matrices, this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, 0xFF000000);
+			context.fill(this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, borderColor);
+			context.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, 0xFF000000);
 		}
 
 		Window window = MinecraftClient.getInstance().getWindow();
@@ -279,30 +280,30 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 				} else {
 					codePointsBeforeCursor = getText().codePointCount(0, getCursor());
 				}
-				int endX = self.getTextRenderer().drawWithShadow(matrices, OrderedTexts.limit(codePointsBeforeCursor, line), x, y + lineHeight * index, textColor) - 1;
-				self.getTextRenderer().drawWithShadow(matrices, OrderedTexts.skip(codePointsBeforeCursor, line), endX, y + lineHeight * index, textColor);
+				int endX = context.drawTextWithShadow(self.getTextRenderer(), OrderedTexts.limit(codePointsBeforeCursor, line), x, y + lineHeight * index, textColor) - 1;
+				context.drawTextWithShadow(self.getTextRenderer(), OrderedTexts.skip(codePointsBeforeCursor, line), endX, y + lineHeight * index, textColor);
 				cursorX = endX - 1;
 			} else {
-				self.getTextRenderer().drawWithShadow(matrices, line, x, y + lineHeight * index, textColor);
+				context.drawTextWithShadow(self.getTextRenderer(), line, x, y + lineHeight * index, textColor);
 			}
 		}
 
 		if (showCursor) {
 			if (lineCursor) {
-				fill(matrices, cursorX, cursorY - 1, cursorX + 1, cursorY + 10, 0xFFD0D0D0);
+				context.fill(cursorX, cursorY - 1, cursorX + 1, cursorY + 10, 0xFFD0D0D0);
 			} else {
-				self.getTextRenderer().drawWithShadow(matrices, "_", cursorX + 1, cursorY, textColor);
+				context.drawTextWithShadow(self.getTextRenderer(), "_", cursorX + 1, cursorY, textColor);
 			}
 		}
 
 		if (isFocused() && editBox.hasSelection()) {
-			renderSelection(matrices, x, y);
+			renderSelection(context, x, y);
 		}
 
 		RenderSystem.disableScissor();
 	}
 
-	private void renderSelection(MatrixStack matrices, int x, int y) {
+	private void renderSelection(DrawContext context, int x, int y) {
 		var selection = editBox.getSelection();
 		int normalizedSelectionStart = selection.beginIndex();
 		int normalizedSelectionEnd = selection.endIndex();
@@ -315,7 +316,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		int leftEdge = this.getX() + (self.getDrawsBackground() ? 4 : 0);
 		int rightEdge = leftEdge + this.getInnerWidth();
 
-		Matrix4f matrix = matrices.peek().getPositionMatrix();
+		Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder bufferBuilder = tessellator.getBuffer();
 		RenderSystem.setShader(GameRenderer::getPositionProgram);

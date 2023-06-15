@@ -2,6 +2,7 @@ package arm32x.minecraft.commandblockide.client.gui.button;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.PressableWidget;
@@ -43,13 +44,13 @@ public abstract class IconButton extends PressableWidget {
 	}
 
 	@Override
-	public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+	public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
 		boolean drawsBackground = drawsBackground();
 		if (drawsBackground) {
-			super.renderButton(matrices, mouseX, mouseY, delta);
+			super.renderButton(context, mouseX, mouseY, delta);
 		}
 
-		RenderSystem.setShaderTexture(0, getTexture());
+		var texture = getTexture();
 
 		int iconX = getX() + (width - iconWidth) / 2;
 		int iconY = getY() + (height - iconHeight) / 2;
@@ -57,9 +58,9 @@ public abstract class IconButton extends PressableWidget {
 		if (drawsBackground) {
 			float brightness = active ? 1.0f : (float)0xA0 / 0xFF;
 			RenderSystem.setShaderColor(brightness / 4, brightness / 4, brightness / 4, alpha);
-			drawTexture(matrices, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
+			context.drawTexture(texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
 			RenderSystem.setShaderColor(brightness, brightness, brightness, alpha);
-			drawTexture(matrices, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
+			context.drawTexture(texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
 		} else {
 			RenderSystem.enableBlend();
 			RenderSystem.defaultBlendFunc();
@@ -67,10 +68,10 @@ public abstract class IconButton extends PressableWidget {
 
 			if (active) {
 				RenderSystem.setShaderColor(0.0f, 0.0f, 0.0f, 0.25f * alpha);
-				drawTexture(matrices, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
+				context.drawTexture(texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
 			}
 			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, active ? alpha : 0.5f * alpha);
-			drawTexture(matrices, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
+			context.drawTexture(texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
 
 			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 			RenderSystem.disableDepthTest();

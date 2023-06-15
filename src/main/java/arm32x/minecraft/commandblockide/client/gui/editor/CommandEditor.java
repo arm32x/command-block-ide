@@ -21,6 +21,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.ChatInputSuggestor;
@@ -181,33 +182,34 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 	}
 
 	@Override
-	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		renderLineNumber(matrices);
+	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+		renderLineNumber(context);
 		if (isLoaded()) {
-			renderCommandField(matrices, mouseX, mouseY, delta);
+			renderCommandField(context, mouseX, mouseY, delta);
 		} else {
-			textRenderer.draw(matrices, Text.translatable("commandBlockIDE.unloaded"), commandField.getX(), y + 5, 0x7FFFFFFF);
+			context.drawText(textRenderer, Text.translatable("commandBlockIDE.unloaded"), commandField.getX(), y + 5, 0x7FFFFFFF, false);
 		}
-		super.render(matrices, mouseX, mouseY, delta);
+		super.render(context, mouseX, mouseY, delta);
 	}
 
-	protected void renderLineNumber(MatrixStack matrices) {
+	protected void renderLineNumber(DrawContext context) {
 		String lineNumber = String.valueOf(index + 1);
 		// Manually draw shadow because the existing functions don’t let you set the color.
-		textRenderer.draw(matrices, lineNumber, x + 17 - textRenderer.getWidth(lineNumber), y + 5, 0x3F000000);
-		textRenderer.draw(matrices, lineNumber, x + 16 - textRenderer.getWidth(lineNumber), y + 4, lineNumberHighlighted ? 0xFFFFFFFF : 0x7FFFFFFF);
+		context.drawText(textRenderer, lineNumber, x + 17 - textRenderer.getWidth(lineNumber), y + 5, 0x3F000000, false);
+		context.drawText(textRenderer, lineNumber, x + 16 - textRenderer.getWidth(lineNumber), y + 4, lineNumberHighlighted ? 0xFFFFFFFF : 0x7FFFFFFF, false);
 	}
 
-	protected void renderCommandField(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+	protected void renderCommandField(DrawContext context, int mouseX, int mouseY, float delta) {
 		commandField.visible = true;
-		commandField.render(matrices, mouseX, mouseY, delta);
+		commandField.render(context, mouseX, mouseY, delta);
 	}
 
-	public void renderSuggestions(MatrixStack matrices, int mouseX, int mouseY) {
+	public void renderSuggestions(DrawContext context, int mouseX, int mouseY) {
 		if (commandField.isActive()) {
+			var matrices = context.getMatrices();
 			matrices.push();
 			matrices.translate(0.0, 0.0, 50.0);
-			suggestor.render(matrices, mouseX, mouseY);
+			suggestor.render(context, mouseX, mouseY);
 			matrices.pop();
 		}
 	}

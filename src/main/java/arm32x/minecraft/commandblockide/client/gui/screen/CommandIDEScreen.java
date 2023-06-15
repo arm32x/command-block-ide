@@ -11,9 +11,11 @@ import java.util.Objects;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
+import net.minecraft.client.gui.tooltip.TooltipPositioner;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -24,6 +26,7 @@ import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
@@ -43,6 +46,10 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 
 	protected @Nullable OrderedText statusText = null;
 	private int statusTextX = 0;
+	private static final TooltipPositioner STATUS_TEXT_POSITIONER = (screenWidth, screenHeight, x, y, width, height) -> {
+		// Ignore everything else and just return (x, y).
+		return new Vector2i(x, y);
+	};
 
 	public CommandIDEScreen() {
 		super(Text.empty());
@@ -327,30 +334,31 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	}
 
 	@Override
-	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		renderBackground(matrices);
+	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+		renderBackground(context);
 
 		for (CommandEditor editor : editors) {
-			editor.render(matrices, mouseX, mouseY, delta);
+			editor.render(context, mouseX, mouseY, delta);
 		}
 		for (CommandEditor editor : editors) {
 			// This is done in a separate loop to ensure it's rendered on top.
-			editor.renderSuggestions(matrices, mouseX, mouseY);
+			editor.renderSuggestions(context, mouseX, mouseY);
 		}
 
 		if (maxScrollOffset > 0) {
 			int virtualHeight = maxScrollOffset + height;
 			int scrollbarHeight = Math.round((float)height / virtualHeight * height);
 			int scrollbarPosition = Math.round((float)getScrollOffset() / height * scrollbarHeight);
-			fill(matrices, width - 3, scrollbarPosition + 1, width - 1, scrollbarPosition + scrollbarHeight - 1, 0x3FFFFFFF);
+			context.fill(width - 3, scrollbarPosition + 1, width - 1, scrollbarPosition + scrollbarHeight - 1, 0x3FFFFFFF);
 		}
 
+		var matrices = context.getMatrices();
 		matrices.push();
 		matrices.translate(0.0, 0.0, 10.0);
 
-		super.render(matrices, mouseX, mouseY, delta);
+		super.render(context, mouseX, mouseY, delta);
 		if (statusText != null) {
-			renderOrderedTooltip(matrices, List.of(statusText), statusTextX - 7, height - 10);
+			context.drawTooltip(textRenderer, List.of(statusText), STATUS_TEXT_POSITIONER, statusTextX + 5, height - 22);
 		}
 
 		matrices.pop();

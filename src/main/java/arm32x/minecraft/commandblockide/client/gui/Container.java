@@ -3,10 +3,7 @@ package arm32x.minecraft.commandblockide.client.gui;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import net.minecraft.client.gui.AbstractParentElement;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.util.math.MatrixStack;
 
 public abstract class Container extends AbstractParentElement implements Drawable, Selectable, Element {
@@ -58,9 +55,9 @@ public abstract class Container extends AbstractParentElement implements Drawabl
 	public List<? extends Element> children() { return children; }
 
 	@Override
-	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
 		for (Drawable drawable : drawables) {
-			drawable.render(matrices, mouseX, mouseY, delta);
+			drawable.render(context, mouseX, mouseY, delta);
 		}
 	}
 }

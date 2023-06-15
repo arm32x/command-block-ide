@@ -3,6 +3,7 @@ package arm32x.minecraft.commandblockide.client.gui.button;
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.render.*;
@@ -76,20 +77,21 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 	}
 
 	@Override
-	public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-		RenderSystem.setShaderTexture(0, getTexture());
+	public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+		var texture = getTexture();
 
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.enableDepthTest();
 		if (active) {
 			RenderSystem.setShaderColor(0.0f, 0.0f, 0.0f, 0.25f);
-			drawTexture(matrices, getX() + 1, getY() + 1, 0.0f, 0.0f, width, height, 16, 64);
+			context.drawTexture(texture, getX() + 1, getY() + 1, 0.0f, 0.0f, width, height, 16, 64);
 		}
 		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, active ? 1.0f : 0.5f);
+		RenderSystem.setShaderTexture(0, texture);
 
 		// Drawing must be done manually in order to flip the texture upside-down.
-		Matrix4f matrix = matrices.peek().getPositionMatrix();
+		Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
 		float x0 = (float)getX(), x1 = x0 + 16, y0 = (float)getY(), y1 = y0 + 16, z = 0;
 		float u0 = 0.0f, u1 = 1.0f, v0 = 0.0f, v1 = 0.25f;
 		BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
