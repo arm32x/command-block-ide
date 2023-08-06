@@ -18,10 +18,10 @@
     "commandBlockIDE.lastOutput.none": "Чыгышсыз",
     "commandBlockIDE.narrator.editorIndex": "%s саны",
     "commandBlockIDE.saveFunction.success.file": "«%s» функциясен файлга сакланды.",
-    "commandBlockIDE.saveFunction.failed.missingNamespace": "«%s» функциясен саклау хатасы: Ресурс менеджерга «%s» namespace юк.",
-    "commandBlockIDE.saveFunction.failed.noResourcePack": "«%s» функциясен саклау хатасы: теләсә кайсы мәгълүматлар пакетларында юк.",
-    "commandBlockIDE.saveFunction.failed.ioException": "«%s» функциясен саклау хатасы: кертү-чыгару хатасы булды.",
-    "commandBlockIDE.saveFunction.failed.zipNotSupported": "«%s» функциясен саклау хатасы: «.zip» форматында мәгълүматлар пакетлары хупланмый.",
+    "commandBlockIDE.saveFunction.failed.missingNamespace": "«%s» функциясен саклау хатасы: Ресурс җитәкчесенә «%s» исемнәр киңлеге юк.",
+    "commandBlockIDE.saveFunction.failed.noResourcePack": "«%s» функциясен саклау хатасы: Теләсә кайсы мәгълүмат җыелмаларында юк.",
+    "commandBlockIDE.saveFunction.failed.ioException": "«%s» функциясен саклау хатасы: Кертү-чыгару хатасы булды.",
+    "commandBlockIDE.saveFunction.failed.zipNotSupported": "«%s» функциясен саклау хатасы: «.zip» форматында мәгълүмат җыелмалары хупланмый.",
     "commandBlockIDE.saveFunction.failed.packClassNotSupported": "«%s» функциясен саклау хатасы: «%s» ресурс пакетының класс хупланмый.",
-    "commandBlockIDE.saveFunction.failed.invalidPath": "«%s» функциясен саклау хатасы: Invalid path «%s»: %s"
+    "commandBlockIDE.saveFunction.failed.invalidPath": "«%s» функциясен саклау хатасы: Хаталы «%s» юлы: %s"
 }
