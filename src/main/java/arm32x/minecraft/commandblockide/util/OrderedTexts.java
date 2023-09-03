@@ -1,38 +1,40 @@
 package arm32x.minecraft.commandblockide.util;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
+import net.minecraft.text.CharacterVisitor;
 import net.minecraft.text.OrderedText;
+import net.minecraft.text.Style;
 
 public final class OrderedTexts {
-	public static OrderedText skip(int count, OrderedText text) {
-		return visitor -> {
-			AtomicInteger counter = new AtomicInteger(count);
-			return text.accept((index, style, codePoint) -> {
-				if (counter.getAndDecrement() > 0) {
-					return true;
-				} else {
-					return visitor.accept(index, style, codePoint);
-				}
-			});
-		};
-	}
+    public static OrderedText skip(int count, OrderedText text) {
+        return visitor -> text.accept(new CharacterVisitor() {
+            private int remaining = count;
 
-	public static OrderedText limit(int count, OrderedText text) {
-		return visitor -> {
-			AtomicInteger counter = new AtomicInteger(count);
-			return text.accept((index, style, codePoint) -> {
-				if (counter.getAndDecrement() > 0) {
-					return visitor.accept(index, style, codePoint);
-				} else {
-					return false;
-				}
-			});
-		};
-	}
+            @Override
+            public boolean accept(int index, Style style, int codePoint) {
+                if (remaining-- > 0) {
+                    return true;
+                } else {
+                    return visitor.accept(index, style, codePoint);
+                }
+            }
+        });
+    }
 
-	private OrderedTexts() { }
+    public static OrderedText limit(int count, OrderedText text) {
+        return visitor -> text.accept(new CharacterVisitor() {
+            private int remaining = count;
+
+            @Override
+            public boolean accept(int index, Style style, int codePoint) {
+                if (remaining-- > 0) {
+                    return visitor.accept(index, style, codePoint);
+                } else {
+                    return false;
+                }
+            }
+        });
+    }
+
+    private OrderedTexts() {
+    }
 }
