@@ -8,6 +8,8 @@ import org.jetbrains.annotations.Nullable;
 public final class StringMapping {
 	private final NavigableMap<Integer, Integer> indexMap;
 
+	private @Nullable StringMapping inverted = null;
+
 	public StringMapping(NavigableMap<Integer, Integer> indexMap) {
 		this.indexMap = indexMap;
 	}
@@ -60,10 +62,13 @@ public final class StringMapping {
 	}
 
 	public StringMapping inverted() {
-		NavigableMap<Integer, Integer> map = new TreeMap<>();
-		for (var entry : indexMap.entrySet()) {
-			map.put(entry.getValue(), entry.getKey());
+		if (inverted == null) {
+			NavigableMap<Integer, Integer> map = new TreeMap<>();
+			for (var entry : indexMap.entrySet()) {
+				map.put(entry.getValue(), entry.getKey());
+			}
+			inverted = new StringMapping(map);
 		}
-		return new StringMapping(map);
+		return inverted;
 	}
 }
