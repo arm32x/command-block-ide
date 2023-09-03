@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(TextFieldWidget.class)
 public interface TextFieldWidgetAccessor {
-	@Accessor BiFunction<String, Integer, OrderedText> getRenderTextProvider();
 	@Accessor boolean getDrawsBackground();
 	@Accessor boolean isEditable();
 	@Accessor int getEditableColor();

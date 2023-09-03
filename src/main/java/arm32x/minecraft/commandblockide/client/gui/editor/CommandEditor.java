@@ -11,6 +11,7 @@ import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggesto
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.context.ParsedArgument;
 import com.mojang.brigadier.context.StringRange;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -94,13 +95,14 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 
 		commandField.setChangedListener(this::commandChanged);
 		commandField.setCursorChangeListener(suggestor::refresh);
-		commandField.setRenderTextProvider((original, firstCharacterIndex) -> {
-			assert firstCharacterIndex == 0;
+		commandField.setSyntaxHighlighter((text) -> {
 			var parse = ((ChatInputSuggestorAccessor)suggestor).getParse();
 			if (parse != null) {
-				return highlight(parse, original, processor.processCommand(original).getRight());
+				return highlight(parse, text, processor.processCommand(text).getRight());
 			} else {
-				return ((ChatInputSuggestorAccessor)suggestor).invokeProvideRenderText(original, firstCharacterIndex);
+				// The command hasn't been parsed yet, so we show it without
+				// highlighting. I haven't ever seen this in game, though.
+				return MultilineTextFieldWidget.SyntaxHighlighter.NONE.highlight(text);
 			}
 		});
 	}
@@ -297,42 +299,76 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 		builder.put(NarrationPart.TITLE, Text.translatable("narration.edit_box", commandField.getText()));
 	}
 
-	protected static OrderedText highlight(ParseResults<CommandSource> parse, String multiline, StringMapping mapping) {
-		List<StringRange> ranges = parse.getContext().getLastChild().getArguments().values().stream()
+	protected static List<OrderedText> highlight(ParseResults<CommandSource> parse, String text, StringMapping mapping) {
+        // The ranges of text in the single-line command containing each
+        // argument that should be highlighted.
+		List<StringRange> ranges = parse
+            .getContext()
+            .getLastChild()
+            .getArguments()
+            .values()
+            .stream()
 			.map(ParsedArgument::getRange)
 			.toList();
 
-		return visitor -> {
-			var index = new AtomicInteger();
-			while (index.get() < multiline.length()) {
-				int codePoint = multiline.codePointAt(index.get());
-				Style style = IntStream.range(0, ranges.size())
-					.filter(i -> {
-						StringRange range = ranges.get(i);
-						OptionalInt mappedIndex = mapping.inverted().mapIndex(index.get());
-						return mappedIndex.isPresent()
-							&& range.getStart() <= mappedIndex.getAsInt()
-							&& mappedIndex.getAsInt() < range.getEnd();
-					})
-					.mapToObj(i -> ARGUMENT_STYLES.get(i % ARGUMENT_STYLES.size()))
-					.findFirst()
-					.orElseGet(() -> {
-						OptionalInt endIndex = mapping.mapIndex(parse.getReader().getCursor());
-						if (endIndex.isPresent() && index.get() >= endIndex.getAsInt()) {
-							return ERROR_STYLE;
-						} else if (mapping.inverted().mapIndex(index.get()).isPresent()) {
-							return INFO_STYLE;
-						} else {
-							return COMMENT_STYLE;
-						}
-					});
-				if (!visitor.accept(index.get(), style, codePoint)) {
-					return false;
-				}
-				index.getAndAdd(Character.charCount(codePoint));
+        // This is the index that the command parser stopped at. Everything at
+        // or after this index is a parse error.
+        int mappedParseStopIndex = mapping.mapIndexOrAfter(parse.getReader().getCursor());
+
+		List<OrderedText> highlightedLines = new ArrayList<>();
+
+		int startIndex = 0;
+		while (startIndex <= text.length()) {
+			// Find the end of the current line (exclusive)
+			int endIndex = text.indexOf('\n', startIndex);
+			if (endIndex == -1) {
+				endIndex = text.length();
 			}
-			return true;
-		};
+
+			int start = startIndex;
+			int end = endIndex;
+			highlightedLines.add(visitor -> {
+				charLoop:
+				for (int index = start; index < end; index++) {
+					int codePoint = text.codePointAt(index);
+					// It's possible for codePointAt to return a low surrogate
+					// if we ask for the second byte of a surrogate pair.
+					if (codePoint < Character.MAX_VALUE && Character.isSurrogate((char)codePoint)) {
+						continue;
+					}
+
+					OptionalInt maybeMappedIndex = mapping.inverted().mapIndex(index);
+					if (maybeMappedIndex.isEmpty()) {
+						if (!visitor.accept(index, COMMENT_STYLE, codePoint)) {
+                            return false;
+                        }
+						continue;
+					}
+					int mappedIndex = maybeMappedIndex.getAsInt();
+
+					for (int rangeIndex = 0; rangeIndex < ranges.size(); rangeIndex++) {
+						var range = ranges.get(rangeIndex);
+                        if (range.getStart() <= mappedIndex && mappedIndex < range.getEnd()) {
+                            Style style = ARGUMENT_STYLES.get(rangeIndex % ARGUMENT_STYLES.size());
+                            if (!visitor.accept(index, style, codePoint)) {
+                                return false;
+                            }
+                            continue charLoop;
+                        }
+                    }
+
+                    Style style = index >= mappedParseStopIndex ? ERROR_STYLE : INFO_STYLE;
+                    if (!visitor.accept(index, style, codePoint)) {
+                        return false;
+                    }
+				}
+                return true;
+			});
+
+			startIndex = endIndex + 1;
+		}
+
+		return highlightedLines;
 	}
 
 	private static final List<Style> ARGUMENT_STYLES = Stream.of(

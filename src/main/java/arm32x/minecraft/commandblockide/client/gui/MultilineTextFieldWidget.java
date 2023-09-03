@@ -8,6 +8,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.fabricmc.api.EnvType;
@@ -22,8 +23,8 @@ import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.input.CursorMovement;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.Window;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.OrderedText;
+import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
@@ -53,6 +54,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	public static final double SCROLL_SENSITIVITY = 15.0;
 
 	private int lineHeight = 12;
+	private SyntaxHighlighter syntaxHighlighter = SyntaxHighlighter.NONE;
 
 	private @Nullable Runnable cursorChangeListener = null;
 
@@ -102,6 +104,21 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
     @Override
     public void setTextPredicate(Predicate<String> textPredicate) {
         throw new UnsupportedOperationException();
+    }
+
+	@Override
+    @Deprecated
+	public void setRenderTextProvider(BiFunction<String, Integer, OrderedText> renderTextProvider) {
+		// Do nothing. I would love to throw an UnsupportedOperationException,
+		// but this is called by ChatInputSuggestor.
+	}
+
+    public SyntaxHighlighter getSyntaxHighlighter() {
+        return syntaxHighlighter;
+    }
+
+    public void setSyntaxHighlighter(SyntaxHighlighter syntaxHighlighter) {
+        this.syntaxHighlighter = syntaxHighlighter;
     }
 
 	@Override
@@ -268,8 +285,9 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		int cursorX = x - 1;
 		int cursorY = y + lineHeight * cursorLine;
 
-		OrderedText text = self.getRenderTextProvider().apply(getText(), 0);
-		List<OrderedText> lines = OrderedTexts.split('\n', text);
+		// This assumes that the highlighter returns the same characters as the
+		// original text, which is not enforced by the API.
+		List<OrderedText> lines = getSyntaxHighlighter().highlight(getText());
 		for (int index = 0; index < lines.size(); index++) {
 			OrderedText line = lines.get(index);
 			if (index == cursorLine) {
@@ -537,4 +555,16 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
     private static final Logger logger = LogManager.getLogger();
+
+	@FunctionalInterface
+	public interface SyntaxHighlighter {
+        /**
+         * A syntax highlighter that performs no highlighting.
+         */
+		SyntaxHighlighter NONE = text -> Arrays.stream(text.split("\n"))
+            .map(line -> OrderedText.styledForwardsVisitedString(line, Style.EMPTY))
+            .toList();
+
+		List<OrderedText> highlight(String text);
+	}
 }

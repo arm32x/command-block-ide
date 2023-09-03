@@ -35,6 +35,7 @@ public final class StringMapping {
 	}
 
 	public int mapIndexOrAfter(int index) {
+		// TODO: Optimize this
 		OptionalInt mapped;
 		do {
 			mapped = mapIndex(index++);
