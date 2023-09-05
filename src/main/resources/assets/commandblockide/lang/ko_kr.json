@@ -17,10 +17,10 @@
   "commandBlockIDE.lastOutput.none": "출력 없음",
   "commandBlockIDE.narrator.editorIndex": "%s번",
   "commandBlockIDE.saveFunction.success.file": "'%s'을(를) 파일에 성공적으로 저장했습니다.",
-  "commandBlockIDE.saveFunction.failed.missingNamespace": "'%s' 기능을 저장하는 도중 오류 발생: '%s'라는 네임스페이스가 없습니다.",
-  "commandBlockIDE.saveFunction.failed.noResourcePack": "'%s' 기능을 저장하는 도중 오류 발생: 데이터팩을 찾을 수가 없습니다.",
-  "commandBlockIDE.saveFunction.failed.ioException": "'%s' 기능을 저장하는 도중 오류 발생: I/O 문제가 발생했습니다.",
-  "commandBlockIDE.saveFunction.failed.zipNotSupported": "'%s' 기능을 저장하는 도중 오류 발생: '.zip' 형태의 데이터팩은 아직 지원하지 않습니다.",
-  "commandBlockIDE.saveFunction.failed.packClassNotSupported": "'%s' 기능을 저장하는 도중 오류 발생: '%s' 형태의 데이터팩은 지원하지 않습니다.",
-  "commandBlockIDE.saveFunction.failed.invalidPath": "'%s' 기능을 저장하는 도중 오류 발생: 잘못된 파일 경로 '%s': %s"
+  "commandBlockIDE.saveFunction.failed.missingNamespace": "함수 '%s' 를 저장하는 도중 오류 발생: '%s'라는 네임스페이스가 없습니다.",
+  "commandBlockIDE.saveFunction.failed.noResourcePack": "함수 '%s' 를 저장하는 도중 오류 발생: 데이터팩을 찾을 수가 없습니다.",
+  "commandBlockIDE.saveFunction.failed.ioException": "함수 '%s' 를 저장하는 도중 오류 발생: I/O 문제가 발생했습니다.",
+  "commandBlockIDE.saveFunction.failed.zipNotSupported": "함수 '%s' 를 저장하는 도중 오류 발생: '.zip' 형태의 데이터팩은 아직 지원하지 않습니다.",
+  "commandBlockIDE.saveFunction.failed.packClassNotSupported": "함수 '%s' 를 저장하는 도중 오류 발생: '%s' 형태의 데이터팩은 지원하지 않습니다.",
+  "commandBlockIDE.saveFunction.failed.invalidPath": "함수 '%s' 를 저장하는 도중 오류 발생: 잘못된 파일 경로 '%s': %s"
 }
