@@ -26,6 +26,7 @@ import net.minecraft.client.util.Window;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,6 +45,10 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
     // Note that both the text field renderer and the command processor do not
     // support tabs yet.
 	private static final int INDENT_SIZE = 4;
+
+	// The amount of time the cursor will spend being either visible or
+	// invisible before switching to the other state.
+    private static final long CURSOR_BLINK_INTERVAL_MS = 300;
 
 	private final EditBox editBox;
 
@@ -142,7 +147,8 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
     }
 
     @Override
-    public void moveCursor(int offset) {
+    public void moveCursor(int offset, boolean hasShiftDown) {
+		editBox.setSelecting(hasShiftDown);
         editBox.moveCursor(CursorMovement.RELATIVE, offset);
     }
 
@@ -165,18 +171,18 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			charIndex++;
 		}
 
-		setCursor(charIndex);
+		setCursor(charIndex, false);
     }
 
     @Override
-    public void setCursor(int cursor) {
+    public void setCursor(int cursor, boolean hasShiftDown) {
+		editBox.setSelecting(hasShiftDown);
         editBox.moveCursor(CursorMovement.ABSOLUTE, cursor);
     }
 
     @Override
     public void setSelectionStart(int cursor) {
-        editBox.setSelecting(true);
-        setCursor(cursor);
+		setCursor(cursor, true);
     }
 
 	@Override
@@ -234,21 +240,21 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
     }
 
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
 		if (this.isMouseOver(mouseX, mouseY)) {
-			boolean changed = false;
-			if (Screen.hasShiftDown() && isHorizontalScrollEnabled()) {
-				changed = setHorizontalScroll(getHorizontalScroll() - (int)Math.round(amount * SCROLL_SENSITIVITY));
-			} else if (isVerticalScrollEnabled()) {
-				changed = setVerticalScroll(getVerticalScroll() - (int)Math.round(amount * SCROLL_SENSITIVITY));
-			}
+			horizontalAmount = Screen.hasShiftDown() ? verticalAmount : horizontalAmount;
+			verticalAmount = Screen.hasShiftDown() ? 0 : verticalAmount;
+
+			boolean changed = setHorizontalScroll(getHorizontalScroll() - (int)Math.round(horizontalAmount * SCROLL_SENSITIVITY));
+			changed = changed || setVerticalScroll(getVerticalScroll() - (int)Math.round(verticalAmount * SCROLL_SENSITIVITY));
+
 			// This updates the position of the suggestions window.
 			if (cursorChangeListener != null) {
 				cursorChangeListener.run();
 			}
 			return changed;
 		} else {
-			return super.mouseScrolled(mouseX, mouseY, amount);
+			return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
 		}
 	}
 
@@ -278,7 +284,8 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		int x = this.getX() + (self.getDrawsBackground() ? 4 : 0) - horizontalScroll;
 		int y = this.getY() + (self.getDrawsBackground() ? 3 : 0) - verticalScroll;
 
-		boolean showCursor = isFocused() && self.getFocusedTicks() / 6 % 2 == 0;
+		long timeSinceLastSwitchFocusMs = Util.getMeasuringTimeMs() - self.getLastSwitchFocusTime();
+        boolean showCursor = isFocused() && timeSinceLastSwitchFocusMs / CURSOR_BLINK_INTERVAL_MS % 2 == 0;
 		boolean lineCursor = getCursor() < getText().length() || getText().length() >= self.invokeGetMaxLength();
 
 		int cursorLine = getCurrentLineIndex();

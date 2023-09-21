@@ -12,6 +12,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -247,15 +248,17 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	}
 
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
 		for (CommandEditor editor : editors) {
-			if (editor.mouseScrolled(mouseX, mouseY, amount)) return true;
+			if (editor.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) return true;
 		}
+
+		double amount = Screen.hasShiftDown() ? 0 : verticalAmount;
 		if (maxScrollOffset != 0 && amount != 0 && mouseY < height - 36 && !Screen.hasShiftDown()) {
 			setScrollOffset(getScrollOffset() - (int)Math.round(amount * SCROLL_SENSITIVITY));
 			return true;
 		}
-		return super.mouseScrolled(mouseX, mouseY, amount);
+		return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
 	}
 
 	public int getScrollOffset() {
@@ -335,7 +338,8 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-		renderBackground(context);
+		// Avoid this.renderBackground because it's a no-op (see below).
+		super.renderBackground(context, mouseX, mouseY, delta);
 
 		for (CommandEditor editor : editors) {
 			editor.render(context, mouseX, mouseY, delta);
@@ -362,6 +366,12 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 		}
 
 		matrices.pop();
+	}
+
+	@Override
+	public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+		// No-op. This is a hack to prevent the background from being drawn a
+		// second time from super.render.
 	}
 
 	@Override
