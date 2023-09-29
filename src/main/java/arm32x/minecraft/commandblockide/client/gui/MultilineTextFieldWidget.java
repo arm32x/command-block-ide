@@ -16,6 +16,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.EditBox;
 import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.screen.Screen;
@@ -34,7 +35,7 @@ import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
-public class MultilineTextFieldWidget extends TextFieldWidget {
+public class MultilineTextFieldWidget extends TextFieldWidget implements Drawable {
 	/**
 	 * Allows easy and convenient access to private fields in the superclass.
 	 */
@@ -141,10 +142,10 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public void moveCursor(int offset) {
-        editBox.moveCursor(CursorMovement.RELATIVE, offset);
-    }
+//    @Override
+//    public void moveCursor(int offset) {
+//        editBox.moveCursor(CursorMovement.RELATIVE, offset);
+//    }
 
     private void moveCursor(double mouseX, double mouseY) {
         double virtualX = mouseX - getInnerX() + getHorizontalScroll();
@@ -168,7 +169,6 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		setCursor(charIndex);
     }
 
-    @Override
     public void setCursor(int cursor) {
         editBox.moveCursor(CursorMovement.ABSOLUTE, cursor);
     }
@@ -234,13 +234,13 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
     }
 
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
 		if (this.isMouseOver(mouseX, mouseY)) {
 			boolean changed = false;
 			if (Screen.hasShiftDown() && isHorizontalScrollEnabled()) {
-				changed = setHorizontalScroll(getHorizontalScroll() - (int)Math.round(amount * SCROLL_SENSITIVITY));
+				changed = setHorizontalScroll(getHorizontalScroll() - (int)Math.round(horizontalAmount * SCROLL_SENSITIVITY));
 			} else if (isVerticalScrollEnabled()) {
-				changed = setVerticalScroll(getVerticalScroll() - (int)Math.round(amount * SCROLL_SENSITIVITY));
+				changed = setVerticalScroll(getVerticalScroll() - (int)Math.round(verticalAmount * SCROLL_SENSITIVITY));
 			}
 			// This updates the position of the suggestions window.
 			if (cursorChangeListener != null) {
@@ -248,7 +248,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			}
 			return changed;
 		} else {
-			return super.mouseScrolled(mouseX, mouseY, amount);
+			return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
 		}
 	}
 

@@ -113,7 +113,7 @@ public final class CommandChainTracer {
 					Blocks.REPEATING_COMMAND_BLOCK,
 					Blocks.CHAIN_COMMAND_BLOCK
 				).anyMatch(blockState::isOf)) {
-				List<BlockPos> results = getStream(blockState).collect(Collectors.toList());
+				List<BlockPos> results = getStream(blockState).toList();
 				if (results.size() != 1) {
 					throw new NoSuchElementException();
 				}

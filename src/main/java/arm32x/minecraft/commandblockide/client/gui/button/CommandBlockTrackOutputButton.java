@@ -56,4 +56,9 @@ public final class CommandBlockTrackOutputButton extends IconButton implements D
 		this.trackingOutput = trackingOutput;
 		updateTooltip();
 	}
+
+	@Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+		return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+	}
 }

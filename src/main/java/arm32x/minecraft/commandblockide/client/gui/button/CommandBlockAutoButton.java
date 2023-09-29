@@ -56,4 +56,9 @@ public final class CommandBlockAutoButton extends IconButton implements Dirtyabl
 	private void updateTooltip() {
 		setTooltip(Tooltip.of(getTooltipText()));
 	}
+
+	@Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+		return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+	}
 }

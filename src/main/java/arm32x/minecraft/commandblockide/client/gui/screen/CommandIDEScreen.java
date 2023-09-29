@@ -7,7 +7,7 @@ import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -18,7 +18,6 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.tooltip.TooltipPositioner;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
@@ -247,15 +246,15 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	}
 
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
 		for (CommandEditor editor : editors) {
-			if (editor.mouseScrolled(mouseX, mouseY, amount)) return true;
+			if (editor.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) return true;
 		}
-		if (maxScrollOffset != 0 && amount != 0 && mouseY < height - 36 && !Screen.hasShiftDown()) {
-			setScrollOffset(getScrollOffset() - (int)Math.round(amount * SCROLL_SENSITIVITY));
+		if (maxScrollOffset != 0 && horizontalAmount != 0 && mouseY < height - 36 && !Screen.hasShiftDown()) {
+			setScrollOffset(getScrollOffset() - (int)Math.round(horizontalAmount * SCROLL_SENSITIVITY));
 			return true;
 		}
-		return super.mouseScrolled(mouseX, mouseY, amount);
+		return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
 	}
 
 	public int getScrollOffset() {
@@ -335,7 +334,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-		renderBackground(context);
+		renderBackground(context, mouseX, mouseY, delta);
 
 		for (CommandEditor editor : editors) {
 			editor.render(context, mouseX, mouseY, delta);

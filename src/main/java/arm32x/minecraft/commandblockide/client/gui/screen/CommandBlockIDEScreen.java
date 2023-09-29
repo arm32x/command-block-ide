@@ -4,17 +4,17 @@ import arm32x.minecraft.commandblockide.client.CommandChainTracer;
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.client.gui.editor.CommandBlockEditor;
 import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEditor> implements Dirtyable {
 	private final Map<BlockPos, CommandEditor> positionIndex = new HashMap<>();

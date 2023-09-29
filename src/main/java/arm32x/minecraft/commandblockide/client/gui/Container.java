@@ -1,10 +1,10 @@
 package arm32x.minecraft.commandblockide.client.gui;
 
+import net.minecraft.client.gui.*;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import net.minecraft.client.gui.*;
-import net.minecraft.client.util.math.MatrixStack;
 
 public abstract class Container extends AbstractParentElement implements Drawable, Selectable, Element {
 	protected final List<Element> children = new ArrayList<>();

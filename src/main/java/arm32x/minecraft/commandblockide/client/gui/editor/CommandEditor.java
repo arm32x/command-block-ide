@@ -11,13 +11,6 @@ import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggesto
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.context.ParsedArgument;
 import com.mojang.brigadier.context.StringRange;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.OptionalInt;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.IntConsumer;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -29,7 +22,6 @@ import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.command.CommandSource;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.OrderedText;
@@ -38,6 +30,12 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalInt;
+import java.util.function.IntConsumer;
+import java.util.stream.Stream;
 
 @Environment(EnvType.CLIENT)
 public abstract class CommandEditor extends Container implements Dirtyable, Drawable, Element {
@@ -171,9 +169,8 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 	}
 
 	@Override
-	public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-		return suggestor.mouseScrolled(amount)
-			|| super.mouseScrolled(mouseX, mouseY, amount);
+	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+		return suggestor.mouseScrolled(verticalAmount);
 	}
 
 	@Override

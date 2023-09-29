@@ -62,9 +62,7 @@ public final class MultilineCommandProcessorTest {
 		for (int index = 0; index < string.length(); index++) {
 			char outputChar = string.charAt(index);
 			assertThat(input.charAt(mapping.mapIndex(index).orElse(-1))).satisfiesAnyOf(
-				inputChar -> {
-                    assertThat(inputChar).isEqualTo(outputChar);
-                },
+				inputChar -> assertThat(inputChar).isEqualTo(outputChar),
                 inputChar -> {
                     // Newlines can be replaced by spaces in the output; that's
                     // the whole point of the processor.

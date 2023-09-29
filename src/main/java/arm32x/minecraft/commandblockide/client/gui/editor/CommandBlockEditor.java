@@ -6,8 +6,6 @@ import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockTrackOutpu
 import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockTypeButton;
 import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import arm32x.minecraft.commandblockide.client.update.DataCommandUpdateRequester;
-import java.util.Objects;
-import java.util.stream.Stream;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -16,11 +14,13 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.packet.c2s.play.UpdateCommandBlockC2SPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.CommandBlockExecutor;
+
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public final class CommandBlockEditor extends CommandEditor {
 	private final CommandBlockBlockEntity blockEntity;
@@ -110,7 +110,7 @@ public final class CommandBlockEditor extends CommandEditor {
 		trackOutputButton.setTrackingOutput(executor.isTrackingOutput());
 
 		String lastOutput = executor.getLastOutput().getString();
-		if (lastOutput.equals("")) {
+		if (lastOutput.isEmpty()) {
 			lastOutput = Text.translatable("commandBlockIDE.lastOutput.none").getString();
 		}
 		lastOutputField.setText(lastOutput);

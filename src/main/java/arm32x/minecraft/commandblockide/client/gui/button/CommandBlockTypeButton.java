@@ -7,7 +7,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.render.*;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -56,16 +55,12 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 	@Override
 	protected Identifier getTexture() {
 		StringBuilder idBuilder = new StringBuilder("textures/block/");
-		switch (type) {
-			case REDSTONE:
-				break;
-			case AUTO:
-				idBuilder.append("repeating_");
-				break;
-			case SEQUENCE:
-				idBuilder.append("chain_");
-				break;
-		}
+        switch (type) {
+            case REDSTONE -> {
+            }
+            case AUTO -> idBuilder.append("repeating_");
+            case SEQUENCE -> idBuilder.append("chain_");
+        }
 		idBuilder.append("command_block_");
 		if (conditional) {
 			idBuilder.append("conditional");
@@ -131,5 +126,10 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 	public void setConditional(boolean conditional) {
 		this.conditional = conditional;
 		updateTooltip();
+	}
+
+	@Override
+	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+		return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
 	}
 }
