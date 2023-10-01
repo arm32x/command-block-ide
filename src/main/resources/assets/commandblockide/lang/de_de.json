@@ -1,0 +1,23 @@
+{
+    "arguments.editfunction.tag.unsupported": "Kann keine Funktions Tags bearbeiten",
+    "commands.editfunction.failed.modNotInstalled": "Die Command Block IDE muss installiert sein",
+    "commandBlockIDE.close": "Schließen",
+    "commandBlockIDE.save": "Speichern",
+    "commandBlockIDE.type.redstone": "Impuls",
+    "commandBlockIDE.type.redstoneKonditional": "Impuls, Konditional",
+    "commandBlockIDE.type.auto": "Wiederhohlen",
+    "commandBlockIDE.type.autoKonditional": "Wiederhohlen, Konditional",
+    "commandBlockIDE.type.sequence": "Verketten",
+    "commandBlockIDE.type.sequenceKonditional": "Verketten, Konditional",
+    "commandBlockIDE.unloaded": "Ungeladen",
+    "commandBlockIDE.lastOutput.on": "Sichere Ausgabe",
+    "commandBlockIDE.lastOutput.off": "Keine Ausgabe",
+    "commandBlockIDE.lastOutput.none": "Keine Ausgabe",
+    "commandBlockIDE.narrator.editorIndex": "Nummer %s",
+    "commandBlockIDE.saveFunction.success.file": "Funktion '%s' wurde gespeichert.",
+    "commandBlockIDE.saveFunction.failed.missingNamespace": "Fehler beim Speichern der Funktion '%s': Resource manager hat kein Namespace '%s'.",
+    "commandBlockIDE.saveFunction.failed.noResourcePack": "Fehler beim Speichern der Funktion '%s': Wurde in keinem Datapack gefunden.",
+    "commandBlockIDE.saveFunction.failed.ioException": "Fehler beim Speichern der Funktion '%s': Ein IO Fehler.",
+    "commandBlockIDE.saveFunction.failed.zipNotSupported": "Fehler beim Speichern der Funktion '%s': Datapacks in '.zip' Dateien sind nicht unterstützt",
+    "commandBlockIDE.saveFunction.failed.packClassNotSupported": "Fehler beim Speichern der Funktion '%s': Resourcepacks '%s' sind nicht unterstützt."
+}
