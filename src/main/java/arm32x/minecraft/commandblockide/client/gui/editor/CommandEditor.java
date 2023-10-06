@@ -76,8 +76,8 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 
 		commandField = addSelectableChild(new MultilineTextFieldWidget(
 			textRenderer,
-			x + leftPadding + 20 + 1, y + 1,
-			width - leftPadding - rightPadding - 20 - 2, height - 2,
+			x + leftPadding + 20, y,
+			width - leftPadding - rightPadding - 20, height,
 			Text.translatable("advMode.command")
 				.append(Text.translatable("commandBlockIDE.narrator.editorIndex", index + 1))
 		) {
@@ -241,7 +241,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 	public void setY(int y) {
  		this.y = y;
 
- 		commandField.setY(y + 1);
+ 		commandField.setY(y);
 		suggestor.refresh();
 
 	}
@@ -253,7 +253,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 	public void setWidth(int width) {
 		this.width = width;
 
-		commandField.setWidth(width - leftPadding - rightPadding - 20 - 2);
+		commandField.setWidth(width - leftPadding - rightPadding - 20);
 
 		suggestor.refresh();
 	}
@@ -266,7 +266,7 @@ public abstract class CommandEditor extends Container implements Dirtyable, Draw
 		boolean changed = height != this.height;
 		this.height = height;
 
-		commandField.setHeight(height - 2);
+		commandField.setHeight(height);
 
 		suggestor.refresh();
 

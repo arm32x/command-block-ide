@@ -281,7 +281,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 		int textColor = self.isEditable() ? self.getEditableColor() : self.getUneditableColor();
 		int x = this.getX() + (self.getDrawsBackground() ? 4 : 0) - horizontalScroll;
-		int y = this.getY() + (self.getDrawsBackground() ? 3 : 0) - verticalScroll;
+		int y = this.getY() + (self.getDrawsBackground() ? 4 : 0) - verticalScroll;
 
 		long timeSinceLastSwitchFocusMs = Util.getMeasuringTimeMs() - self.getLastSwitchFocusTime();
         boolean showCursor = isFocused() && timeSinceLastSwitchFocusMs / CURSOR_BLINK_INTERVAL_MS % 2 == 0;
