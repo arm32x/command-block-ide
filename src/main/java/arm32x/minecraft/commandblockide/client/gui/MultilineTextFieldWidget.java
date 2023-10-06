@@ -265,9 +265,8 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		}
 
 		if (self.getDrawsBackground()) {
-			int borderColor = this.isFocused() ? 0xFFFFFFFF : 0xFFA0A0A0;
-			context.fill(this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, borderColor);
-			context.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, 0xFF000000);
+			var textureId = TextFieldWidgetAccessor.getTextures().get(isNarratable(), isFocused());
+			context.drawGuiTexture(textureId, getX(), getY(), getWidth(), getHeight());
 		}
 
 		Window window = MinecraftClient.getInstance().getWindow();

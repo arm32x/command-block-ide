@@ -2,6 +2,7 @@ package arm32x.minecraft.commandblockide.mixin.client;
 
 import java.util.function.BiFunction;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.OrderedText;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,4 +20,6 @@ public interface TextFieldWidgetAccessor {
 	@Accessor boolean isFocusUnlocked();
 
 	@Invoker int invokeGetMaxLength();
+
+	@Accessor("TEXTURES") static ButtonTextures getTextures() { throw new AssertionError(); };
 }
