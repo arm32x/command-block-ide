@@ -27,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Environment(EnvType.CLIENT)
 @Mixin(ChatInputSuggestor.class)
 public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtension {
-	private static final int SUGGESTOR_Y_OFFSET = 9;
+	@Unique private static final int ide$SUGGESTOR_Y_OFFSET = 9;
 
 	@Unique public boolean ide$allowComments = false;
 	@Unique public boolean ide$slashForbidden = false;
@@ -52,10 +52,10 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 				@Nullable Suggestions suggestions = pendingSuggestions.getNow(null);
 				if (suggestions != null && !suggestions.isEmpty()) {
 					int charIndex = StringMapping.mapIndexOrAfter(ide$mapping, false, suggestions.getRange().getStart());
-					return multiline.getCharacterRealY(charIndex) + SUGGESTOR_Y_OFFSET;
+					return multiline.getCharacterRealY(charIndex) + ide$SUGGESTOR_Y_OFFSET;
 				}
 			}
-			return multiline.getCharacterRealY(multiline.getText().length()) + SUGGESTOR_Y_OFFSET;
+			return multiline.getCharacterRealY(multiline.getText().length()) + ide$SUGGESTOR_Y_OFFSET;
 		} else {
 			return textField.getY() + textField.getHeight() + 2;
 		}
@@ -126,7 +126,6 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 	}
 
 	// See above.
-	@SuppressWarnings("InvalidInjectorMethodSignature")
 	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	public String onGetCommand(String command) {
 		if (ide$commandProcessor != null) {

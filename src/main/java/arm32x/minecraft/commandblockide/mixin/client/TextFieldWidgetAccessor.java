@@ -11,8 +11,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(TextFieldWidget.class)
 public interface TextFieldWidgetAccessor {
-	@Accessor boolean getDrawsBackground();
-	@Accessor boolean isEditable();
 	@Accessor int getEditableColor();
 	@Accessor int getUneditableColor();
 	@Accessor TextRenderer getTextRenderer();
@@ -20,6 +18,7 @@ public interface TextFieldWidgetAccessor {
 	@Accessor boolean isFocusUnlocked();
 
 	@Invoker int invokeGetMaxLength();
+	@Invoker boolean invokeIsEditable();
 
 	@Accessor("TEXTURES") static ButtonTextures getTextures() { throw new AssertionError(); };
 }

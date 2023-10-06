@@ -1,10 +1,12 @@
 package arm32x.minecraft.commandblockide.mixin.client;
 
+import arm32x.minecraft.commandblockide.client.gui.MultilineTextFieldWidget;
 import arm32x.minecraft.commandblockide.client.processor.StringMapping;
 import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggestorExtension;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
 import net.minecraft.client.gui.screen.ChatInputSuggestor;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -53,5 +55,17 @@ public abstract class SuggestionWindowMixin {
     private int getMappedStart(StringRange instance) {
         StringMapping mapping = ((ChatInputSuggestorExtension)this$0).ide$getMapping();
         return StringMapping.mapIndexOrAfter(mapping, false, instance.getStart());
+    }
+
+    @Redirect(
+        method = "<init>",
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;drawsBackground()Z"
+        )
+    )
+    public boolean getTextFieldDrawsBackground(TextFieldWidget textField) {
+        // This will result in the suggestor moving left 1 pixel.
+        return !(textField instanceof MultilineTextFieldWidget) && textField.drawsBackground();
     }
 }

@@ -264,7 +264,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			return;
 		}
 
-		if (self.getDrawsBackground()) {
+		if (drawsBackground()) {
 			var textureId = TextFieldWidgetAccessor.getTextures().get(isNarratable(), isFocused());
 			context.drawGuiTexture(textureId, getX(), getY(), getWidth(), getHeight());
 		}
@@ -272,23 +272,23 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		Window window = MinecraftClient.getInstance().getWindow();
 		double scaleFactor = window.getScaleFactor();
 		RenderSystem.enableScissor(
-			(int)Math.round(this.getX() * scaleFactor),
+			(int)Math.round((this.getX() + 1) * scaleFactor),
 			// OpenGL coordinates start from the bottom left.
-			window.getHeight() - (int)Math.round(this.getY() * scaleFactor + this.height * scaleFactor),
-			(int)Math.round(this.width * scaleFactor),
-			(int)Math.round(this.height * scaleFactor)
+			window.getHeight() - (int)Math.round((this.getY() + 1) * scaleFactor + this.height * scaleFactor),
+			(int)Math.round((this.width - 2) * scaleFactor),
+			(int)Math.round((this.height - 2) * scaleFactor)
 		);
 
-		int textColor = self.isEditable() ? self.getEditableColor() : self.getUneditableColor();
-		int x = this.getX() + (self.getDrawsBackground() ? 4 : 0) - horizontalScroll;
-		int y = this.getY() + (self.getDrawsBackground() ? 4 : 0) - verticalScroll;
+		int textColor = self.invokeIsEditable() ? self.getEditableColor() : self.getUneditableColor();
+		int x = getInnerX() - horizontalScroll;
+		int y = getInnerY() - verticalScroll;
 
 		long timeSinceLastSwitchFocusMs = Util.getMeasuringTimeMs() - self.getLastSwitchFocusTime();
         boolean showCursor = isFocused() && timeSinceLastSwitchFocusMs / CURSOR_BLINK_INTERVAL_MS % 2 == 0;
 		boolean lineCursor = getCursor() < getText().length() || getText().length() >= self.invokeGetMaxLength();
 
 		int cursorLine = getCurrentLineIndex();
-		int cursorX = x - 1;
+		int cursorX = x;
 		int cursorY = y + lineHeight * cursorLine;
 
 		// This assumes that the highlighter returns the same characters as the
@@ -314,9 +314,9 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 		if (showCursor) {
 			if (lineCursor) {
-				context.fill(cursorX, cursorY - 1, cursorX + 1, cursorY + 10, 0xFFD0D0D0);
+				context.fill(RenderLayer.getGuiOverlay(), cursorX, cursorY - 1, cursorX + 1, cursorY + 10, 0xFFD0D0D0);
 			} else {
-				context.drawTextWithShadow(self.getTextRenderer(), "_", cursorX + 1, cursorY, textColor);
+				context.drawTextWithShadow(self.getTextRenderer(), "_", cursorX, cursorY, textColor);
 			}
 		}
 
@@ -337,7 +337,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		int endX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionEnd), normalizedSelectionEnd)) - 1;
 		int endY = y + lineHeight * getLineIndex(normalizedSelectionEnd) - 1;
 
-		int leftEdge = this.getX() + (self.getDrawsBackground() ? 4 : 0);
+		int leftEdge = getInnerX();
 		int rightEdge = leftEdge + this.getInnerWidth();
 
 		Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
@@ -483,11 +483,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		this.lineHeight = lineHeight;
 	}
 
-	public void setHeight(int height) {
-		this.height = height;
-	}
-
-	public int getCharacterVirtualX(int charIndex) {
+    public int getCharacterVirtualX(int charIndex) {
 		if (charIndex > getText().length()) {
 			return 0;
 		}
@@ -543,15 +539,15 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	private int getInnerX() {
-		return this.getX() + (self.getDrawsBackground() ? 4 : 0);
+		return this.getX() + (drawsBackground() ? 4 : 0);
 	}
 
 	private int getInnerY() {
-		return this.getY() + (self.getDrawsBackground() ? 3 : 0);
+		return this.getY() + (drawsBackground() ? 4 : 0);
 	}
 
 	private int getInnerHeight() {
-		return self.getDrawsBackground() ? this.height - 6 : this.height;
+		return drawsBackground() ? this.height - 6 : this.height;
 	}
 
     private static final Logger logger = LogManager.getLogger();
