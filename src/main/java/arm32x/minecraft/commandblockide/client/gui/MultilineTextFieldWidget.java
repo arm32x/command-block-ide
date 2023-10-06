@@ -341,44 +341,38 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		int rightEdge = leftEdge + this.getInnerWidth();
 
 		Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferBuilder = tessellator.getBuffer();
-		RenderSystem.setShader(GameRenderer::getPositionProgram);
-		RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
-		RenderSystem.enableColorLogicOp();
-		RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-		bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION);
+		VertexConsumer vertexConsumer = context.getVertexConsumers().getBuffer(RenderLayer.getGuiTextHighlight());
+
+		float r = 0.0f, g = 0.0f, b = 1.0f, a = 1.0f;
 
 		if (startY == endY) {
 			// Selection spans one line
-			bufferBuilder.vertex(matrix, endX, startY, 0.0f).next();
-			bufferBuilder.vertex(matrix, startX, startY, 0.0f).next();
-			bufferBuilder.vertex(matrix, startX, endY + lineHeight - 1, 0.0f).next();
-			bufferBuilder.vertex(matrix, endX, endY + lineHeight - 1, 0.0f).next();
+			vertexConsumer.vertex(matrix, endX, startY, 0.0f).color(r, g, b, a).next();
+			vertexConsumer.vertex(matrix, startX, startY, 0.0f).color(r, g, b, a).next();
+			vertexConsumer.vertex(matrix, startX, endY + lineHeight - 1, 0.0f).color(r, g, b, a).next();
+			vertexConsumer.vertex(matrix, endX, endY + lineHeight - 1, 0.0f).color(r, g, b, a).next();
 		} else {
 			// Selection spans two or more lines
-			bufferBuilder.vertex(matrix, rightEdge, startY, 0.0f).next();
-			bufferBuilder.vertex(matrix, startX, startY, 0.0f).next();
-			bufferBuilder.vertex(matrix, startX, startY + lineHeight, 0.0f).next();
-			bufferBuilder.vertex(matrix, rightEdge, startY + lineHeight, 0.0f).next();
+			vertexConsumer.vertex(matrix, rightEdge, startY, 0.0f).color(r, g, b, a).next();
+			vertexConsumer.vertex(matrix, startX, startY, 0.0f).color(r, g, b, a).next();
+			vertexConsumer.vertex(matrix, startX, startY + lineHeight, 0.0f).color(r, g, b, a).next();
+			vertexConsumer.vertex(matrix, rightEdge, startY + lineHeight, 0.0f).color(r, g, b, a).next();
 
 			if (!(startY - lineHeight == endY || endY - lineHeight == startY)) {
 				// Selection spans three or more lines
-				bufferBuilder.vertex(matrix, rightEdge, startY + lineHeight, 0.0f).next();
-				bufferBuilder.vertex(matrix, leftEdge, startY + lineHeight, 0.0f).next();
-				bufferBuilder.vertex(matrix, leftEdge, endY, 0.0f).next();
-				bufferBuilder.vertex(matrix, rightEdge, endY, 0.0f).next();
+				vertexConsumer.vertex(matrix, rightEdge, startY + lineHeight, 0.0f).color(r, g, b, a).next();
+				vertexConsumer.vertex(matrix, leftEdge, startY + lineHeight, 0.0f).color(r, g, b, a).next();
+				vertexConsumer.vertex(matrix, leftEdge, endY, 0.0f).color(r, g, b, a).next();
+				vertexConsumer.vertex(matrix, rightEdge, endY, 0.0f).color(r, g, b, a).next();
 			}
 
-			bufferBuilder.vertex(matrix, endX, endY, 0.0f).next();
-			bufferBuilder.vertex(matrix, leftEdge, endY, 0.0f).next();
-			bufferBuilder.vertex(matrix, leftEdge, endY + lineHeight - 1, 0.0f).next();
-			bufferBuilder.vertex(matrix, endX, endY + lineHeight - 1, 0.0f).next();
+			vertexConsumer.vertex(matrix, endX, endY, 0.0f).color(r, g, b, a).next();
+			vertexConsumer.vertex(matrix, leftEdge, endY, 0.0f).color(r, g, b, a).next();
+			vertexConsumer.vertex(matrix, leftEdge, endY + lineHeight - 1, 0.0f).color(r, g, b, a).next();
+			vertexConsumer.vertex(matrix, endX, endY + lineHeight - 1, 0.0f).color(r, g, b, a).next();
 		}
 
-		tessellator.draw();
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderSystem.disableColorLogicOp();
+		context.draw();
 	}
 
     @Override
