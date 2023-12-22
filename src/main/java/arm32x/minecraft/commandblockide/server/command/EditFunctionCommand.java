@@ -42,7 +42,7 @@ public final class EditFunctionCommand {
 			.then(argument("name", commandFunction())
 				.suggests(SUGGESTION_PROVIDER)
 				.executes(ctx -> {
-					Optional<CommandFunction> function = CommandFunctionArgumentType.getFunctionOrTag(ctx, "name").getSecond().left();
+					Optional<CommandFunction<ServerCommandSource>> function = CommandFunctionArgumentType.getFunctionOrTag(ctx, "name").getSecond().left();
 					if (function.isPresent()) {
 						return execute(ctx.getSource(), function.get());
 					} else {
@@ -62,7 +62,7 @@ public final class EditFunctionCommand {
 		List<String> lines = ((CommandFunctionExtension)function).ide$getOriginalLines();
 
 		PacketByteBuf headerBuf = PacketByteBufs.create();
-		headerBuf.writeIdentifier(function.getId());
+		headerBuf.writeIdentifier(function.id());
 		headerBuf.writeVarInt(lines.size());
 		ServerPlayNetworking.send(player, Packets.EDIT_FUNCTION, headerBuf);
 

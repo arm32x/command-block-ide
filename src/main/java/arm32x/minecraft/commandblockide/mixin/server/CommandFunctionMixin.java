@@ -3,7 +3,8 @@ package arm32x.minecraft.commandblockide.mixin.server;
 import arm32x.minecraft.commandblockide.mixinextensions.server.CommandFunctionExtension;
 import com.mojang.brigadier.CommandDispatcher;
 import java.util.List;
-import net.minecraft.server.command.ServerCommandSource;
+
+import net.minecraft.server.command.AbstractServerCommandSource;
 import net.minecraft.server.function.CommandFunction;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,9 +28,16 @@ public final class CommandFunctionMixin implements CommandFunctionExtension {
 		ide$originalLines = lines;
 	}
 
-	@Inject(method = "create(Lnet/minecraft/util/Identifier;Lcom/mojang/brigadier/CommandDispatcher;Lnet/minecraft/server/command/ServerCommandSource;Ljava/util/List;)Lnet/minecraft/server/function/CommandFunction;", at = @At("RETURN"))
-	private static void create(Identifier id, CommandDispatcher<ServerCommandSource> commandDispatcher, ServerCommandSource serverCommandSource, List<String> list, CallbackInfoReturnable<CommandFunction> cir) {
-		CommandFunction function = cir.getReturnValue();
-		((CommandFunctionExtension)function).ide$setOriginalLines(list);
+	// TODO - This function still produces a MixinException. Anyone need to look into this
+	@Inject(
+		method = "create",
+		at = @At(
+			value = "RETURN",
+			remap = false
+		)
+	)
+	private static <T extends AbstractServerCommandSource<T>> void create(Identifier id, CommandDispatcher<T> dispatcher, T source, List<String> lines, CallbackInfoReturnable<CommandFunction<T>> cir) {
+		CommandFunction<T> function = cir.getReturnValue();
+		((CommandFunctionExtension)function).ide$setOriginalLines(lines);
 	}
 }

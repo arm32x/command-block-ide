@@ -20,6 +20,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.*;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.function.CommandFunction;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -134,7 +135,7 @@ public final class CommandBlockIDE implements ModInitializer {
 	}
 
 	private static void updateFunctionLines(MinecraftServer server, Identifier functionId, List<String> lines) {
-		Optional<CommandFunction> maybeFunction = server.getCommandFunctionManager().getFunction(functionId);
+		Optional<CommandFunction<ServerCommandSource>> maybeFunction = server.getCommandFunctionManager().getFunction(functionId);
 		maybeFunction.ifPresent(function -> ((CommandFunctionExtension)function).ide$setOriginalLines(lines));
 	}
 
