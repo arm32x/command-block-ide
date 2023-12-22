@@ -77,7 +77,7 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 	}
 
 	@Override
-	public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+	public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
 		var texture = getTexture();
 
 		RenderSystem.enableBlend();
