@@ -28,7 +28,6 @@ public final class CommandFunctionMixin implements CommandFunctionExtension {
 		ide$originalLines = lines;
 	}
 
-	// TODO - This function still produces a MixinException. Anyone need to look into this
 	@Inject(
 		method = "create",
 		at = @At(
@@ -38,6 +37,6 @@ public final class CommandFunctionMixin implements CommandFunctionExtension {
 	)
 	private static <T extends AbstractServerCommandSource<T>> void create(Identifier id, CommandDispatcher<T> dispatcher, T source, List<String> lines, CallbackInfoReturnable<CommandFunction<T>> cir) {
 		CommandFunction<T> function = cir.getReturnValue();
-		((CommandFunctionExtension)function).ide$setOriginalLines(lines);
+		((CommandFunctionExtension) function).ide$setOriginalLines(lines);
 	}
 }

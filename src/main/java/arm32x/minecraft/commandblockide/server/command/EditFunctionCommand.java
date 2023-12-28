@@ -53,7 +53,7 @@ public final class EditFunctionCommand {
 		);
 	}
 
-	private static int execute(ServerCommandSource source, CommandFunction function) throws CommandSyntaxException {
+	private static int execute(ServerCommandSource source, CommandFunction<ServerCommandSource> function) throws CommandSyntaxException {
 		ServerPlayerEntity player = source.getPlayer();
 		if (!ServerPlayNetworking.canSend(player, Packets.EDIT_FUNCTION)) {
 			throw MOD_NOT_INSTALLED_EXCEPTION.create();
