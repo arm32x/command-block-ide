@@ -1,15 +1,10 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
-import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.Nullable;
 
 public final class SimpleIconButton extends IconButton {
 	private boolean drawsBackground;

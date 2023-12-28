@@ -16,7 +16,6 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.network.packet.c2s.play.UpdateCommandBlockC2SPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
