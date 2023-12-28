@@ -28,7 +28,6 @@ public final class CommandFunctionMixin implements CommandFunctionExtension {
 		ide$originalLines = lines;
 	}
 
-	// TODO - This function still produces a MixinException. Anyone need to look into this
 	@Inject(
 		method = "create",
 		at = @At(
