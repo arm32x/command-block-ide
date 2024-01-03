@@ -3,7 +3,7 @@
     "minVersion": "0.8",
     "package": "arm32x.minecraft.commandblockide.mixin",
     "compatibilityLevel": "JAVA_8",
-    "server": [
+    "mixins": [
         "server.CommandFunctionMixin",
         "server.DirectoryResourcePackAccessor",
         "server.FunctionLoaderAccessor"
