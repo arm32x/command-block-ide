@@ -2,10 +2,14 @@ package arm32x.minecraft.commandblockide.server.command;
 
 import arm32x.minecraft.commandblockide.Packets;
 import arm32x.minecraft.commandblockide.mixinextensions.server.CommandFunctionExtension;
+import arm32x.minecraft.commandblockide.server.function.FunctionIO;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.Message;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.datafixers.util.Either;
 import java.util.List;
 import java.util.Optional;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -35,6 +39,8 @@ public final class EditFunctionCommand {
 
 	private static final SimpleCommandExceptionType EDIT_TAG_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("arguments.editfunction.tag.unsupported"));
 	private static final SimpleCommandExceptionType MOD_NOT_INSTALLED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.editfunction.failed.modNotInstalled"));
+	// loadFunction returns a Text on failure, so we use that.
+	private static final DynamicCommandExceptionType FUNCTION_LOAD_FAILED_EXCEPTION = new DynamicCommandExceptionType(text -> (Message)text);
 
 	public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literal("editfunction")
@@ -55,11 +61,15 @@ public final class EditFunctionCommand {
 
 	private static int execute(ServerCommandSource source, CommandFunction<ServerCommandSource> function) throws CommandSyntaxException {
 		ServerPlayerEntity player = source.getPlayer();
-		if (!ServerPlayNetworking.canSend(player, Packets.EDIT_FUNCTION)) {
+		if (player == null || !ServerPlayNetworking.canSend(player, Packets.EDIT_FUNCTION)) {
 			throw MOD_NOT_INSTALLED_EXCEPTION.create();
 		}
 
-		List<String> lines = ((CommandFunctionExtension)function).ide$getOriginalLines();
+        Either<List<String>, Text> loadResult = FunctionIO.loadFunction(source.getServer(), function.id());
+		if (loadResult.right().isPresent()) {
+			throw FUNCTION_LOAD_FAILED_EXCEPTION.create(loadResult.right().get());
+		}
+		var lines = loadResult.left().orElseThrow(); // Should be present
 
 		PacketByteBuf headerBuf = PacketByteBufs.create();
 		headerBuf.writeIdentifier(function.id());

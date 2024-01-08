@@ -22,5 +22,11 @@
     "commandBlockIDE.saveFunction.failed.ioException": "Error saving function '%s': An IO error occurred.",
     "commandBlockIDE.saveFunction.failed.zipNotSupported": "Error saving function '%s': Datapacks in '.zip' files are not supported yet.",
     "commandBlockIDE.saveFunction.failed.packClassNotSupported": "Error saving function '%s': Resource pack class '%s' not supported.",
-    "commandBlockIDE.saveFunction.failed.invalidPath": "Error saving function '%s': Invalid path '%s': %s"
+    "commandBlockIDE.saveFunction.failed.invalidPath": "Error saving function '%s': Invalid path '%s': %s",
+    "commandBlockIDE.loadFunction.failed.missingNamespace": "Error loading function '%s': Resource manager has no namespace '%s'.",
+    "commandBlockIDE.loadFunction.failed.noResourcePack": "Error loading function '%s': Not found in any datapack.",
+    "commandBlockIDE.loadFunction.failed.ioException": "Error loading function '%s': An IO error occurred.",
+    "commandBlockIDE.loadFunction.failed.zipNotSupported": "Error loading function '%s': Datapacks in '.zip' files are not supported yet.",
+    "commandBlockIDE.loadFunction.failed.packClassNotSupported": "Error loading function '%s': Resource pack class '%s' not supported.",
+    "commandBlockIDE.loadFunction.failed.invalidPath": "Error loading function '%s': Invalid path '%s': %s"
 }
