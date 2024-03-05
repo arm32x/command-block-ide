@@ -269,14 +269,11 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			context.drawGuiTexture(textureId, getX(), getY(), getWidth(), getHeight());
 		}
 
-		Window window = MinecraftClient.getInstance().getWindow();
-		double scaleFactor = window.getScaleFactor();
-		RenderSystem.enableScissor(
-			(int)Math.round((this.getX() + 1) * scaleFactor),
-			// OpenGL coordinates start from the bottom left.
-			window.getHeight() - (int)Math.round((this.getY() + 1) * scaleFactor + this.height * scaleFactor),
-			(int)Math.round((this.width - 2) * scaleFactor),
-			(int)Math.round((this.height - 2) * scaleFactor)
+		context.enableScissor(
+			this.getX() + 1,
+			this.getY() + 1,
+			this.getX() + this.getWidth() - 1,
+			this.getY() + this.getHeight() - 1
 		);
 
 		int textColor = self.invokeIsEditable() ? self.getEditableColor() : self.getUneditableColor();
@@ -324,7 +321,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			renderSelection(context, x, y);
 		}
 
-		RenderSystem.disableScissor();
+		context.disableScissor();
 	}
 
 	private void renderSelection(DrawContext context, int x, int y) {
