@@ -313,7 +313,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			if (lineCursor) {
 				context.fill(RenderLayer.getGuiOverlay(), cursorX, cursorY - 1, cursorX + 1, cursorY + 10, 0xFFD0D0D0);
 			} else {
-				context.drawTextWithShadow(self.getTextRenderer(), "_", cursorX, cursorY, textColor);
+				context.drawTextWithShadow(self.getTextRenderer(), "_", cursorX + 1, cursorY, textColor);
 			}
 		}
 
