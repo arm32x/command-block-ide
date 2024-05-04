@@ -20,13 +20,13 @@
     "commandBlockIDE.saveFunction.failed.missingNamespace": "保存函数“%s”时发生错误：文件资源管理器中没有名为“%s”的命名空间。",
     "commandBlockIDE.saveFunction.failed.noResourcePack": "保存函数“%s”时发生错误：未在任何数据包中找到该函数。",
     "commandBlockIDE.saveFunction.failed.ioException": "保存函数“%s”时发生错误：发生了文件读写（IO）错误。",
-    "commandBlockIDE.saveFunction.failed.zipNotSupported": "保存函数“%s”时发生错误：暂不支持以“.zip”文件格式的数据包。",
+    "commandBlockIDE.saveFunction.failed.zipNotSupported": "保存函数“%s”时发生错误：暂不支持以“.zip”为文件格式的数据包。",
     "commandBlockIDE.saveFunction.failed.packClassNotSupported": "保存函数“%s”时发生错误：资源包类“%s”不受支持。",
     "commandBlockIDE.saveFunction.failed.invalidPath": "保存函数“%s”时发生错误：错误的路径“%s”：%s",
     "commandBlockIDE.loadFunction.failed.missingNamespace": "加载函数“%s”时发生错误：文件资源管理器中没有名为“%s”的命名空间。",
     "commandBlockIDE.loadFunction.failed.noResourcePack": "加载函数“%s”时发生错误：未在任何数据包中找到该函数。",
     "commandBlockIDE.loadFunction.failed.ioException": "加载函数“%s”时发生错误：发生了文件读写（IO）错误。",
-    "commandBlockIDE.loadFunction.failed.zipNotSupported": "加载函数“%s”时发生错误：暂不支持以“.zip”文件格式的数据包。",
+    "commandBlockIDE.loadFunction.failed.zipNotSupported": "加载函数“%s”时发生错误：暂不支持以“.zip”为文件格式的数据包。",
     "commandBlockIDE.loadFunction.failed.packClassNotSupported": "加载函数“%s”时发生错误：资源包类“%s”不受支持。",
     "commandBlockIDE.loadFunction.failed.invalidPath": "加载函数“%s”时发生错误：错误的路径“%s”：%s"
 }
