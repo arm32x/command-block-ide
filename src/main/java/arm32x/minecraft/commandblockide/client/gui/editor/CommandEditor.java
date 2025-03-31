@@ -3,6 +3,7 @@ package arm32x.minecraft.commandblockide.client.gui.editor;
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.client.gui.Container;
 import arm32x.minecraft.commandblockide.client.gui.MultilineTextFieldWidget;
+import arm32x.minecraft.commandblockide.util.CommandAutoFormatter.CommandAutoFormatter;
 import arm32x.minecraft.commandblockide.client.processor.CommandProcessor;
 import arm32x.minecraft.commandblockide.client.processor.MultilineCommandProcessor;
 import arm32x.minecraft.commandblockide.client.processor.StringMapping;
@@ -213,6 +214,14 @@ public abstract class CommandEditor extends Container implements Dirtyable {
 
 	public String getSingleLineCommand() {
 		return processor.processCommand(commandField.getText()).getLeft();
+	}
+
+	public void autoFormat(){
+		String newCmd = CommandAutoFormatter.format(getSingleLineCommand());
+		if (newCmd != null) {
+			commandField.setText(newCmd);
+			commandChanged(newCmd);
+		}
 	}
 
 	public boolean isLoaded() {

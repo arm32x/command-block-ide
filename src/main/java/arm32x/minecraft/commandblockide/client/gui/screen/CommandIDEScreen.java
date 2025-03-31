@@ -161,7 +161,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 				close();
 				return true;
 			}
-			if (Screen.hasControlDown() && focused instanceof CommandEditor editor) {
+			if (Screen.hasControlDown() && !Screen.hasAltDown() && focused instanceof CommandEditor editor) {
 				if (editor.isSuggestorActive()) {
 					editor.setSuggestorActive(false);
 					return true;
@@ -169,6 +169,10 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 					editor.setFocused(false);
 				}
 				setFocused(null);
+				return true;
+			} else if (Screen.hasControlDown() && Screen.hasAltDown() && focused instanceof CommandEditor editor) {
+				//this should probably have a GUI button
+				editor.autoFormat();
 				return true;
 			}
 			return false;
