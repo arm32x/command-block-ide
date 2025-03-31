@@ -75,7 +75,7 @@ public final class DataCommandUpdateRequester {
 		String stringifiedTag = ((Text)args[3]).getString();
 		@Nullable NbtCompound tag;
 		try {
-			tag = StringNbtReader.parse(stringifiedTag);
+			tag = StringNbtReader.readCompound(stringifiedTag);
 		} catch (CommandSyntaxException ex) {
 			LOGGER.error("Error parsing feedback from data command.", ex);
 			return false;

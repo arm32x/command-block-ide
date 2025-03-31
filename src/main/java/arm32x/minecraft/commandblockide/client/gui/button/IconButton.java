@@ -1,6 +1,5 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.PressableWidget;
@@ -63,10 +62,6 @@ public abstract class IconButton extends PressableWidget {
 			context.drawTexture(RenderLayer::getGuiTextured, texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, shadowColor);
 			context.drawTexture(RenderLayer::getGuiTextured, texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, color);
 		} else {
-			RenderSystem.enableBlend();
-			RenderSystem.defaultBlendFunc();
-			RenderSystem.enableDepthTest();
-
 			int color = active ? 0xFFFFFFFF : 0x7FFFFFFF;
 			int shadowColor = 0x3F000000;
 
@@ -74,9 +69,6 @@ public abstract class IconButton extends PressableWidget {
 				context.drawTexture(RenderLayer::getGuiTextured, texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, shadowColor);
 			}
 			context.drawTexture(RenderLayer::getGuiTextured, texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, color);
-
-			RenderSystem.disableDepthTest();
-			RenderSystem.disableBlend();
 		}
 	}
 
