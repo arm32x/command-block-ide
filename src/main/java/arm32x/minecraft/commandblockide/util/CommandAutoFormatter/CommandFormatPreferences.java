@@ -1,6 +1,5 @@
 package arm32x.minecraft.commandblockide.util.CommandAutoFormatter;
 
-import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
@@ -16,14 +15,14 @@ public class CommandFormatPreferences {
 	public int longWrapLen = 128;
 	public int shortNbtElementLen = 64; //must be nonnegative
 	public int nbtLineWrapLen = 96;
-	public String indendationStage = "  ";		//when indenting nested items, use this string
-	public String parensKeepLineAfter = "{[:"; //after one of these characters, a [ or { will not get its own line
+	public String indendationStage = "  ";        //when indenting nested items, use this string
+	public String parensKeepLineAfter = "{[:";    //after one of these characters, a [ or { will not get its own line
 
 	public boolean shortWrapPreemptively = false; //wrap if a line isn't past the threshold, but would be if not wrapped
 	public boolean wrapAfterBigNbtElements = true;
-	public boolean formatTargetSelectors = false;	//formats selectors like @e[tag=testTag,nbt={data:{someValue:1}}]
-	public boolean formatNbt = true;				//formats NBT
-	public boolean formatItemComponents = true;		//formats item components like stick[minecraft:custom_data={someValue:{someQuantity:1}}]
+	public boolean formatTargetSelectors = false;    //formats selectors like @e[tag=testTag,nbt={data:{someValue:1}}]
+	public boolean formatNbt = true;                 //formats NBT
+	public boolean formatItemComponents = true;      //formats item components like stick[minecraft:custom_data={someValue:{someQuantity:1}}]
 
 	private Map<String, LineBreakType> executeKeywordMap;
 
@@ -51,16 +50,9 @@ public class CommandFormatPreferences {
 
 
 	public LineBreakType getBreakType(CommandNode<?> node, boolean firstInClause) {
-		if (firstInClause) {
-			if (node instanceof LiteralCommandNode<?> literalNode) {
-				return executeKeywordMap.getOrDefault(literalNode.getLiteral(), LineBreakType.SoftBreakLong);
-			} else if (node instanceof ArgumentCommandNode<?, ?> argNode) {
-				return LineBreakType.NoBreak; //TODO
-			} else {
-				return LineBreakType.NoBreak; //TODO
-			}
-		} else {
-			return LineBreakType.NoBreak;
+		if (firstInClause && node instanceof LiteralCommandNode<?> literalNode) {
+			return executeKeywordMap.getOrDefault(literalNode.getLiteral(), LineBreakType.SoftBreakLong);
 		}
+		return LineBreakType.NoBreak;
 	}
 }

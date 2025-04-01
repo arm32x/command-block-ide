@@ -16,13 +16,15 @@ public class CommandAutoFormatter {
 			if(cmd.charAt(0)=='/')
 				cmd=cmd.substring(1);
 		var parse = CommandParser.parse(cmd);
-		var nodes = parse.results.getContext().getNodes();
-		if(nodes.isEmpty())
-			return null;
-		if (nodes.getFirst().getNode() instanceof LiteralCommandNode<CommandSource> literalNode) {
-			switch (literalNode.getLiteral()) {
-				case "execute":
-					return new ExecuteFormatter(cmd, preferences).format();
+		if(parse!=null) {
+			var nodes = parse.results.getContext().getNodes();
+			if (nodes.isEmpty())
+				return null;
+			if (nodes.getFirst().getNode() instanceof LiteralCommandNode<CommandSource> literalNode) {
+				switch (literalNode.getLiteral()) {
+					case "execute":
+						return new ExecuteFormatter(cmd, preferences).format();
+				}
 			}
 		}
 		return new UniversalCommandTextFormatter(cmd,preferences).format();
