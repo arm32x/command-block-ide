@@ -7,6 +7,8 @@ import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import java.util.ArrayList;
 import java.util.List;
+
+import arm32x.minecraft.commandblockide.util.CommandAutoFormatter.CommandAutoFormatter;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -172,7 +174,14 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 				return true;
 			} else if (Screen.hasControlDown() && Screen.hasAltDown() && focused instanceof CommandEditor editor) {
 				//this should probably have a GUI button
-				editor.autoFormat();
+
+				String command = editor.getSingleLineCommand();
+
+				if(Screen.hasShiftDown()){
+					editor.setCommand(command);
+				}else{
+					editor.setCommand(CommandAutoFormatter.format(command));
+				}
 				return true;
 			}
 			return false;

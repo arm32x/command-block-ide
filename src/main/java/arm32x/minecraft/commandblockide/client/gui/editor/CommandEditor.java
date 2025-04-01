@@ -216,8 +216,7 @@ public abstract class CommandEditor extends Container implements Dirtyable {
 		return processor.processCommand(commandField.getText()).getLeft();
 	}
 
-	public void autoFormat(){
-		String newCmd = CommandAutoFormatter.format(getSingleLineCommand());
+	public void setCommand(String newCmd){
 		if (newCmd != null) {
 			commandField.setText(newCmd);
 			commandChanged(newCmd);
