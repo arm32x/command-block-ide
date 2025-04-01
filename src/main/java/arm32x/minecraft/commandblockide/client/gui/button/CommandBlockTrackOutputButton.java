@@ -60,6 +60,7 @@ public final class CommandBlockTrackOutputButton extends IconButton implements D
 
 	public void setTrackingOutput(boolean trackingOutput) {
 		this.trackingOutput = trackingOutput;
+		dirty=true;
 		updateTooltip();
 	}
 }
