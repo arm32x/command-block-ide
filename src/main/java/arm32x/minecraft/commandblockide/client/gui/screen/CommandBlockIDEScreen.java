@@ -92,8 +92,9 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 	public static void setAllTrackingOutput(boolean trackingOutput){
 		for(CommandEditor commandEditor : latestCommandBlockIDEScreen.positionIndex.values()){
 			for (Element element : commandEditor.children()){
-				if(element instanceof CommandBlockTrackOutputButton){
-					((CommandBlockTrackOutputButton) element).setTrackingOutput(trackingOutput);
+				if(element instanceof CommandBlockTrackOutputButton trackButton){
+					trackButton.setTrackingOutput(trackingOutput);
+					trackButton.dirty();
 				}
 			}
 		}
