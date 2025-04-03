@@ -94,9 +94,17 @@ public abstract class ParsedCommandFormatter extends TextFormatter {
 			if (isBracesTypeNode(node.getNode()) && nodeStr.length() > preferences.shortNbtElementLen) {
 				BracesFormatter b = new BracesFormatter(nodeStr, preferences);
 				String formattedNode = b.format();
-				sb.append('\n');
-				sb.append(formattedNode);
+
+				if(preferences.preventLoneOpenBrace && formattedNode.indexOf('\n')==1){
+					sb.append(' ');
+				}else{
+					sb.append('\n');
+					lastWrap = range.getStart();
+				}
+
 				lastWrap = b.lastWrap+range.getStart();
+
+				sb.append(formattedNode);
 			} else {
 				//most nodes
 				if (range.getStart() > (1 + lastWrap)) {

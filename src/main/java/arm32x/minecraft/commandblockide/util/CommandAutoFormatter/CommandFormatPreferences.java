@@ -12,17 +12,17 @@ public class CommandFormatPreferences {
 	private static final String[] defaultShortSoftBreakKeywords = {"as", "on", "if", "unless"};
 
 	public int shortWrapLen = 20;
-	public int longWrapLen = 128;
+	public int longWrapLen = 100;
 	public int shortNbtElementLen = 64; //must be nonnegative
-	public int nbtLineWrapLen = 96;
-	public String indendationStage = "  ";        //when indenting nested items, use this string
-	public String parensKeepLineAfter = "{[:";    //after one of these characters, a [ or { will not get its own line
+	public int nbtLineWrapLen = longWrapLen;
+	public String indentationStage = "  ";        //when indenting nested items, use this string
 
 	public boolean shortWrapPreemptively = false; //wrap if a line isn't past the threshold, but would be if not wrapped
 	public boolean wrapAfterBigNbtElements = true;
-	public boolean formatTargetSelectors = false;    //formats selectors like @e[tag=testTag,nbt={data:{someValue:1}}]
+	public boolean formatTargetSelectors = true;    //formats selectors like @e[tag=testTag,nbt={data:{someValue:1}}]
 	public boolean formatNbt = true;                 //formats NBT
 	public boolean formatItemComponents = true;      //formats item components like stick[minecraft:custom_data={someValue:{someQuantity:1}}]
+	public boolean preventLoneOpenBrace = true;      //prevents lone opening braces from having their own line
 
 	private Map<String, LineBreakType> executeKeywordMap;
 
