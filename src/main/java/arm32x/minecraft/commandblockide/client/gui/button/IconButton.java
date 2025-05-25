@@ -4,9 +4,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.PressableWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ColorHelper;
 
 public abstract class IconButton extends PressableWidget {
 	protected final int iconWidth;
@@ -54,23 +56,25 @@ public abstract class IconButton extends PressableWidget {
 
 		if (drawsBackground) {
 			float brightness = active ? 1.0f : (float)0xA0 / 0xFF;
-			RenderSystem.setShaderColor(brightness / 4, brightness / 4, brightness / 4, alpha);
-			context.drawTexture(texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
-			RenderSystem.setShaderColor(brightness, brightness, brightness, alpha);
-			context.drawTexture(texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
+
+			int color = ColorHelper.fromFloats(1.0f, brightness, brightness, brightness);
+			int shadowColor = ColorHelper.fromFloats(1.0f, brightness / 4, brightness / 4, brightness / 4);
+
+			context.drawTexture(RenderLayer::getGuiTextured, texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, shadowColor);
+			context.drawTexture(RenderLayer::getGuiTextured, texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, color);
 		} else {
 			RenderSystem.enableBlend();
 			RenderSystem.defaultBlendFunc();
 			RenderSystem.enableDepthTest();
 
-			if (active) {
-				RenderSystem.setShaderColor(0.0f, 0.0f, 0.0f, 0.25f * alpha);
-				context.drawTexture(texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
-			}
-			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, active ? alpha : 0.5f * alpha);
-			context.drawTexture(texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight);
+			int color = active ? 0xFFFFFFFF : 0x7FFFFFFF;
+			int shadowColor = 0x3F000000;
 
-			RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+			if (active) {
+				context.drawTexture(RenderLayer::getGuiTextured, texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, shadowColor);
+			}
+			context.drawTexture(RenderLayer::getGuiTextured, texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, color);
+
 			RenderSystem.disableDepthTest();
 			RenderSystem.disableBlend();
 		}

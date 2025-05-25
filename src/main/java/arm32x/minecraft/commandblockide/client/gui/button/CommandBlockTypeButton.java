@@ -1,6 +1,7 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
+import arm32x.minecraft.commandblockide.mixin.client.DrawContextAccessor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.gui.DrawContext;
@@ -82,26 +83,21 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.enableDepthTest();
+
+		int color = active ? 0xFFFFFFFF : 0x7FFFFFFF;
+		int shadowColor = 0x3F000000;
+
 		if (active) {
-			RenderSystem.setShaderColor(0.0f, 0.0f, 0.0f, 0.25f);
-			context.drawTexture(texture, getX() + 1, getY() + 1, 0.0f, 0.0f, width, height, 16, 64);
+			context.drawTexture(RenderLayer::getGuiTextured, texture, getX() + 1, getY() + 1, 0, 0, iconWidth, iconHeight, 16, 64, shadowColor);
 		}
-		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, active ? 1.0f : 0.5f);
-		RenderSystem.setShaderTexture(0, texture);
 
-		// Drawing must be done manually in order to flip the texture upside-down.
-		Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
-		float x0 = (float)getX(), x1 = x0 + 16, y0 = (float)getY(), y1 = y0 + 16, z = 0;
-		float u0 = 0.0f, u1 = 1.0f, v0 = 0.0f, v1 = 0.25f;
-		BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-		bufferBuilder.vertex(matrix, x0, y1, z).texture(u1, v0);
-		bufferBuilder.vertex(matrix, x1, y1, z).texture(u0, v0);
-		bufferBuilder.vertex(matrix, x1, y0, z).texture(u0, v1);
-		bufferBuilder.vertex(matrix, x0, y0, z).texture(u1, v1);
-		var builtBuffer = bufferBuilder.end();
-		BufferRenderer.drawWithGlobalProgram(builtBuffer);
+		// To flip the texture, we pass u2, u1, v2, v1 instead of the usual
+		// u1, u2, v1, v2. This is why we have to use context.drawTexturedQuad
+		// instead of going through context.drawTexture.
+		int x1 = getX(), x2 = x1 + 16, y1 = getY(), y2 = y1 + 16;
+		float u1 = 0.0f, u2 = 1.0f, v1 = 0.0f, v2 = 0.25f;
+		((DrawContextAccessor)context).invokeDrawTexturedQuad(RenderLayer::getGuiTextured, texture, x1, x2, y1, y2, u2, u1, v2, v1, color);
 
-		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 		RenderSystem.disableDepthTest();
 		RenderSystem.disableBlend();
 	}

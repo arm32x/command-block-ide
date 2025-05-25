@@ -263,7 +263,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 		if (drawsBackground()) {
 			var textureId = TextFieldWidgetAccessor.getTextures().get(isNarratable(), isFocused());
-			context.drawGuiTexture(textureId, getX(), getY(), getWidth(), getHeight());
+			context.drawGuiTexture(RenderLayer::getGuiTextured, textureId, getX(), getY(), getWidth(), getHeight());
 		}
 
 		context.enableScissor(
@@ -322,51 +322,51 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	private void renderSelection(DrawContext context, int x, int y) {
-		var selection = editBox.getSelection();
-		int normalizedSelectionStart = selection.beginIndex();
-		int normalizedSelectionEnd = selection.endIndex();
+		context.draw(vertexConsumers -> {
+			var selection = editBox.getSelection();
+			int normalizedSelectionStart = selection.beginIndex();
+			int normalizedSelectionEnd = selection.endIndex();
 
-		int startX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionStart), normalizedSelectionStart)) - 1;
-		int startY = y + lineHeight * getLineIndex(normalizedSelectionStart) - 1;
-		int endX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionEnd), normalizedSelectionEnd)) - 1;
-		int endY = y + lineHeight * getLineIndex(normalizedSelectionEnd) - 1;
+			int startX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionStart), normalizedSelectionStart)) - 1;
+			int startY = y + lineHeight * getLineIndex(normalizedSelectionStart) - 1;
+			int endX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionEnd), normalizedSelectionEnd)) - 1;
+			int endY = y + lineHeight * getLineIndex(normalizedSelectionEnd) - 1;
 
-		int leftEdge = getInnerX();
-		int rightEdge = leftEdge + this.getInnerWidth();
+			int leftEdge = getInnerX();
+			int rightEdge = leftEdge + this.getInnerWidth();
 
-		Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
-		VertexConsumer vertexConsumer = context.getVertexConsumers().getBuffer(RenderLayer.getGuiTextHighlight());
+			Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
+			VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getGuiTextHighlight());
 
-		float r = 0.0f, g = 0.0f, b = 1.0f, a = 1.0f;
+			float r = 0.0f, g = 0.0f, b = 1.0f, a = 1.0f;
 
-		if (startY == endY) {
-			// Selection spans one line
-			vertexConsumer.vertex(matrix, endX, startY, 0.0f).color(r, g, b, a);
-			vertexConsumer.vertex(matrix, startX, startY, 0.0f).color(r, g, b, a);
-			vertexConsumer.vertex(matrix, startX, endY + lineHeight - 1, 0.0f).color(r, g, b, a);
-			vertexConsumer.vertex(matrix, endX, endY + lineHeight - 1, 0.0f).color(r, g, b, a);
-		} else {
-			// Selection spans two or more lines
-			vertexConsumer.vertex(matrix, rightEdge, startY, 0.0f).color(r, g, b, a);
-			vertexConsumer.vertex(matrix, startX, startY, 0.0f).color(r, g, b, a);
-			vertexConsumer.vertex(matrix, startX, startY + lineHeight, 0.0f).color(r, g, b, a);
-			vertexConsumer.vertex(matrix, rightEdge, startY + lineHeight, 0.0f).color(r, g, b, a);
-
-			if (!(startY - lineHeight == endY || endY - lineHeight == startY)) {
-				// Selection spans three or more lines
+			if (startY == endY) {
+				// Selection spans one line
+				vertexConsumer.vertex(matrix, endX, startY, 0.0f).color(r, g, b, a);
+				vertexConsumer.vertex(matrix, startX, startY, 0.0f).color(r, g, b, a);
+				vertexConsumer.vertex(matrix, startX, endY + lineHeight - 1, 0.0f).color(r, g, b, a);
+				vertexConsumer.vertex(matrix, endX, endY + lineHeight - 1, 0.0f).color(r, g, b, a);
+			} else {
+				// Selection spans two or more lines
+				vertexConsumer.vertex(matrix, rightEdge, startY, 0.0f).color(r, g, b, a);
+				vertexConsumer.vertex(matrix, startX, startY, 0.0f).color(r, g, b, a);
+				vertexConsumer.vertex(matrix, startX, startY + lineHeight, 0.0f).color(r, g, b, a);
 				vertexConsumer.vertex(matrix, rightEdge, startY + lineHeight, 0.0f).color(r, g, b, a);
-				vertexConsumer.vertex(matrix, leftEdge, startY + lineHeight, 0.0f).color(r, g, b, a);
+
+				if (!(startY - lineHeight == endY || endY - lineHeight == startY)) {
+					// Selection spans three or more lines
+					vertexConsumer.vertex(matrix, rightEdge, startY + lineHeight, 0.0f).color(r, g, b, a);
+					vertexConsumer.vertex(matrix, leftEdge, startY + lineHeight, 0.0f).color(r, g, b, a);
+					vertexConsumer.vertex(matrix, leftEdge, endY, 0.0f).color(r, g, b, a);
+					vertexConsumer.vertex(matrix, rightEdge, endY, 0.0f).color(r, g, b, a);
+				}
+
+				vertexConsumer.vertex(matrix, endX, endY, 0.0f).color(r, g, b, a);
 				vertexConsumer.vertex(matrix, leftEdge, endY, 0.0f).color(r, g, b, a);
-				vertexConsumer.vertex(matrix, rightEdge, endY, 0.0f).color(r, g, b, a);
+				vertexConsumer.vertex(matrix, leftEdge, endY + lineHeight - 1, 0.0f).color(r, g, b, a);
+				vertexConsumer.vertex(matrix, endX, endY + lineHeight - 1, 0.0f).color(r, g, b, a);
 			}
-
-			vertexConsumer.vertex(matrix, endX, endY, 0.0f).color(r, g, b, a);
-			vertexConsumer.vertex(matrix, leftEdge, endY, 0.0f).color(r, g, b, a);
-			vertexConsumer.vertex(matrix, leftEdge, endY + lineHeight - 1, 0.0f).color(r, g, b, a);
-			vertexConsumer.vertex(matrix, endX, endY + lineHeight - 1, 0.0f).color(r, g, b, a);
-		}
-
-		context.draw();
+		});
 	}
 
     @Override
