@@ -1,109 +1,120 @@
 package arm32x.minecraft.commandblockide.client.update;
 
 import static arm32x.minecraft.commandblockide.client.CommandChainTracer.isCommandBlock;
+
+import arm32x.minecraft.commandblockide.CommandBlockIDE;
+import arm32x.minecraft.commandblockide.client.CommandBlockIDEClient;
 import arm32x.minecraft.commandblockide.client.gui.screen.CommandBlockIDEScreen;
 import arm32x.minecraft.commandblockide.mixin.client.CommandBlockBlockEntityAccessor;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import com.mojang.logging.LogUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.storage.NbtReadView;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.math.BlockPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 public final class DataCommandUpdateRequester {
-	private static @Nullable DataCommandUpdateRequester INSTANCE = null;
+    private static @Nullable DataCommandUpdateRequester INSTANCE = null;
 
-	private final Map<BlockPos, CommandBlockBlockEntity> blocksToUpdate = new HashMap<>();
+    private final Map<BlockPos, CommandBlockBlockEntity> blocksToUpdate = new HashMap<>();
 
-	private DataCommandUpdateRequester() { }
+    private DataCommandUpdateRequester() {
+    }
 
-	public static DataCommandUpdateRequester getInstance() {
-		if (INSTANCE == null) {
-			return INSTANCE = new DataCommandUpdateRequester();
-		} else {
-			return INSTANCE;
-		}
-	}
+    public static DataCommandUpdateRequester getInstance() {
+        if (INSTANCE == null) {
+            return INSTANCE = new DataCommandUpdateRequester();
+        } else {
+            return INSTANCE;
+        }
+    }
 
-	public void requestUpdate(ClientPlayerEntity player, CommandBlockBlockEntity blockEntity) {
-		BlockPos position = blockEntity.getPos();
-		blocksToUpdate.put(position, blockEntity);
+    public void requestUpdate(ClientPlayerEntity player, CommandBlockBlockEntity blockEntity) {
+        BlockPos position = blockEntity.getPos();
+        blocksToUpdate.put(position, blockEntity);
 
-		String command = String.format("data get block %d %d %d", position.getX(), position.getY(), position.getZ());
-		player.networkHandler.sendCommand(command);
-	}
+        String command = String.format("data get block %d %d %d", position.getX(), position.getY(), position.getZ());
+        player.networkHandler.sendChatCommand(command);
+    }
 
-	public boolean handleFeedback(MinecraftClient client, TranslatableTextContent message) {
-		Object[] args = message.getArgs();
-		LOGGER.trace("Handling feedback for message {} with args {}.", message, args);
+    public boolean handleFeedback(MinecraftClient client, TranslatableTextContent message) {
+        Object[] args = message.getArgs();
+        LOGGER.trace("Handling feedback for message {} with args {}.", message, args);
 
-		@Nullable BlockPos position;
-		try {
-			position = new BlockPos((int)args[0], (int)args[1], (int)args[2]);
-		} catch (ClassCastException ex1) {
-			try {
-				position = new BlockPos(Integer.parseInt(getStringFromText(args[0])), Integer.parseInt(getStringFromText(args[1])), Integer.parseInt(getStringFromText(args[2])));
-			} catch (ClassCastException | NumberFormatException ex2) {
-				LOGGER.error("Could not get block position from command feedback.");
-				return false;
-			}
-		}
-		if (!blocksToUpdate.containsKey(position)) {
-			LOGGER.debug("Block {} not queued for update.", position);
-			return false;
-		}
+        @Nullable BlockPos position;
+        try {
+            position = new BlockPos((int) args[0], (int) args[1], (int) args[2]);
+        } catch (ClassCastException ex1) {
+            try {
+                position = new BlockPos(Integer.parseInt(getStringFromText(args[0])), Integer.parseInt(getStringFromText(args[1])), Integer.parseInt(getStringFromText(args[2])));
+            } catch (ClassCastException | NumberFormatException ex2) {
+                LOGGER.error("Could not get block position from command feedback.");
+                return false;
+            }
+        }
+        if (!blocksToUpdate.containsKey(position)) {
+            LOGGER.debug("Block {} not queued for update.", position);
+            return false;
+        }
 
-		if (client.world == null) {
-			LOGGER.warn("Client is outside of a world.");
-			return false;
-		}
-		BlockState blockState = client.world.getBlockState(position);
-		if (!isCommandBlock(blockState)) {
-			LOGGER.debug("Block {} is not a command block.", position);
-			return false;
-		}
+        if (client.world == null) {
+            LOGGER.warn("Client is outside of a world.");
+            return false;
+        }
+        BlockState blockState = client.world.getBlockState(position);
+        if (!isCommandBlock(blockState)) {
+            LOGGER.debug("Block {} is not a command block.", position);
+            return false;
+        }
 
-		String stringifiedTag = ((Text)args[3]).getString();
-		@Nullable NbtCompound tag;
-		try {
-			tag = StringNbtReader.readCompound(stringifiedTag);
-		} catch (CommandSyntaxException ex) {
-			LOGGER.error("Error parsing feedback from data command.", ex);
-			return false;
-		}
+        String stringifiedTag = ((Text) args[3]).getString();
+        @Nullable NbtCompound tag;
+        try {
+            tag = StringNbtReader.readCompound(stringifiedTag);
+        } catch (CommandSyntaxException ex) {
+            LOGGER.error("Error parsing feedback from data command.", ex);
+            return false;
+        }
 
-		@Nullable CommandBlockBlockEntity blockEntity = blocksToUpdate.get(position);
-		if (blockEntity == null) {
-			LOGGER.debug("Block entity {} not queued for update.", position);
-			return false;
-		}
+        @Nullable CommandBlockBlockEntity blockEntity = blocksToUpdate.get(position);
+        if (blockEntity == null) {
+            LOGGER.debug("Block entity {} not queued for update.", position);
+            return false;
+        }
 
-		((CommandBlockBlockEntityAccessor)blockEntity).invokeReadNbt(tag, client.world.getRegistryManager());
-//		blockEntity.setNeedsUpdatePacket(false);
-		if (client.currentScreen instanceof CommandBlockIDEScreen) {
-			((CommandBlockIDEScreen)client.currentScreen).update(position);
-		}
-		blocksToUpdate.remove(position);
+        try (ErrorReporter.Logging logging = new ErrorReporter.Logging(blockEntity.getReporterContext(), LogUtils.getLogger())) {
+            ((CommandBlockBlockEntityAccessor) blockEntity).invokeReadData(NbtReadView.create(logging, client.world.getRegistryManager(), tag));
+        }
 
-		return true;
-	}
+        if (client.currentScreen instanceof CommandBlockIDEScreen) {
+            ((CommandBlockIDEScreen) client.currentScreen).update(position);
+        }
+        blocksToUpdate.remove(position);
 
-	private static String getStringFromText(Object object) {
-		if (object instanceof Text text) {
-			return text.getString();
-		} else {
-			return object.toString();
-		}
-	}
+        return true;
+    }
 
-	private static final Logger LOGGER = LogManager.getLogger();
+    private static String getStringFromText(Object object) {
+        if (object instanceof Text text) {
+            return text.getString();
+        } else {
+            return object.toString();
+        }
+    }
+
+    private static final Logger LOGGER = LogManager.getLogger();
 }
