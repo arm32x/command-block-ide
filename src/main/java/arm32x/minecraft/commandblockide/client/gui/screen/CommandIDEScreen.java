@@ -22,6 +22,7 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2f;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFW;
 
@@ -358,15 +359,15 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 		}
 
 		var matrices = context.getMatrices();
-		matrices.push();
-		matrices.translate(0.0, 0.0, 10.0);
+		matrices.pushMatrix();
+		matrices.translate(0.0f, 0.0f, new Matrix3x2f());
 
 		super.render(context, mouseX, mouseY, delta);
 		if (statusText != null) {
-			context.drawTooltip(textRenderer, List.of(statusText), STATUS_TEXT_POSITIONER, statusTextX + 5, height - 22);
+			context.drawTooltip(List.of(statusText), statusTextX + 5, height - 22);
 		}
 
-		matrices.pop();
+		matrices.popMatrix();
 	}
 
 	@Override
