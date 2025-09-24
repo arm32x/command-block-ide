@@ -69,7 +69,7 @@ public abstract class ParsedCommandFormatter extends TextFormatter {
 
 
 
-	public boolean isBracesTypeNode(CommandNode<?> node) {
+	public boolean isBracesTypeNode(CommandNode<?> node, String nodeStr) {
 		if (node instanceof ArgumentCommandNode<?, ?> argNode) {
 			switch (argNode.getName()){
 				case "nbt" -> {
@@ -80,6 +80,13 @@ public abstract class ParsedCommandFormatter extends TextFormatter {
 				}
 				case "item" ->{
 					return preferences.formatItemComponents;
+				}
+				case "value" ->{
+					if(nodeStr.isEmpty())
+						return false;
+					if(nodeStr.charAt(0)!='{')
+						return false;
+					return preferences.formatNbt;
 				}
 			}
 		}
@@ -92,7 +99,7 @@ public abstract class ParsedCommandFormatter extends TextFormatter {
 			StringRange range = node.getRange();
 			String nodeStr = range.get(txt);
 
-			if (isBracesTypeNode(node.getNode()) && nodeStr.length() > preferences.shortNbtElementLen) {
+			if (isBracesTypeNode(node.getNode(),nodeStr) && nodeStr.length() > preferences.shortNbtElementLen) {
 				BracesFormatter b = new BracesFormatter(nodeStr, preferences);
 				String formattedNode = b.format();
 
