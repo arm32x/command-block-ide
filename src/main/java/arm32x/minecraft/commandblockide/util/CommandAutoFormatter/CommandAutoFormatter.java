@@ -3,6 +3,7 @@ package arm32x.minecraft.commandblockide.util.CommandAutoFormatter;
 import arm32x.minecraft.commandblockide.util.CommandAutoFormatter.Formatters.ExecuteFormatter;
 import arm32x.minecraft.commandblockide.util.CommandAutoFormatter.Formatters.UniversalCommandTextFormatter;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.command.CommandSource;
 
 public class CommandAutoFormatter {
@@ -20,7 +21,7 @@ public class CommandAutoFormatter {
 			var nodes = parse.results.getContext().getNodes();
 			if (nodes.isEmpty())
 				return null;
-			if (nodes.getFirst().getNode() instanceof LiteralCommandNode<CommandSource> literalNode) {
+			if (nodes.getFirst().getNode() instanceof LiteralCommandNode<ClientCommandSource> literalNode) {
 				switch (literalNode.getLiteral()) {
 					case "execute":
 						return new ExecuteFormatter(cmd, preferences).format();

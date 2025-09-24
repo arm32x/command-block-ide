@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.command.CommandSource;
 
 import java.util.HashMap;
@@ -43,10 +44,10 @@ public class CommandParser {
 
 	public static ParsedCommand rawParse(String str){
 		MinecraftClient client = MinecraftClient.getInstance();
-		ParseResults<CommandSource> results = null;
+		ParseResults<ClientCommandSource> results = null;
 		if(client.player != null){
-			CommandDispatcher<CommandSource> commandDispatcher = client.player.networkHandler.getCommandDispatcher();
-			results = commandDispatcher.parse(new StringReader(str), client.player.networkHandler.getCommandSource());
+			var commandDispatcher = client.player.networkHandler.getCommandDispatcher();
+			results = commandDispatcher.parse(str, client.player.networkHandler.getCommandSource());
 		}
 		if(results==null)
 			return null;

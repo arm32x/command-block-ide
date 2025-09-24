@@ -8,6 +8,7 @@ import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
+import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.command.CommandSource;
 
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ public abstract class ParsedCommandFormatter extends TextFormatter {
 	public abstract String formatParsed();
 
 
-	public static List<List<ParsedCommandNode<?>>> getAllNodeLists(ParseResults<CommandSource> parse) {
+	public static List<List<ParsedCommandNode<?>>> getAllNodeLists(ParseResults<ClientCommandSource> parse) {
 		List<List<ParsedCommandNode<?>>> childList = new ArrayList<>();
 		var context = parse.getContext();
 
@@ -49,7 +50,7 @@ public abstract class ParsedCommandFormatter extends TextFormatter {
 		return childList;
 	}
 
-	public static List<ParsedCommandNode<?>> getAllNodes(ParseResults<CommandSource> parse){
+	public static List<ParsedCommandNode<?>> getAllNodes(ParseResults<ClientCommandSource> parse){
 		List<ParsedCommandNode<?>> nodeList = new ArrayList<>();
 		for(var list: getAllNodeLists(parse)){
 			nodeList.addAll(list);
