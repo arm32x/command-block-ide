@@ -80,10 +80,6 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 	public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
 		var texture = getTexture();
 
-		RenderSystem.enableBlend();
-		RenderSystem.defaultBlendFunc();
-		RenderSystem.enableDepthTest();
-
 		int color = active ? 0xFFFFFFFF : 0x7FFFFFFF;
 		int shadowColor = 0x3F000000;
 

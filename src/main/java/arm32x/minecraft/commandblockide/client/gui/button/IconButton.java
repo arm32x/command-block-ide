@@ -60,8 +60,9 @@ public abstract class IconButton extends PressableWidget {
 			int color = ColorHelper.fromFloats(1.0f, brightness, brightness, brightness);
 			int shadowColor = ColorHelper.fromFloats(1.0f, brightness / 4, brightness / 4, brightness / 4);
 
-			context.drawTexture(RenderLayer::getGuiTextured, texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, shadowColor);
-			context.drawTexture(RenderLayer::getGuiTextured, texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, color);
+
+			context.drawTexture(RenderPipelines.GUI_TEXTURED, texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, shadowColor);
+			context.drawTexture(RenderPipelines.GUI_TEXTURED, texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, color);
 		} else {
 			int color = active ? 0xFFFFFFFF : 0x7FFFFFFF;
 			int shadowColor = 0x3F000000;
