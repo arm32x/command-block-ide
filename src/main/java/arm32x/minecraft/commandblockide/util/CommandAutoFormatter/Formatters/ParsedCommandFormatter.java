@@ -9,7 +9,6 @@ import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.command.CommandSource;
 
 import java.util.ArrayList;
 import java.util.List;

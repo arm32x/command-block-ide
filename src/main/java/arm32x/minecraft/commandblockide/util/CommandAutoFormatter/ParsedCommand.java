@@ -2,7 +2,6 @@ package arm32x.minecraft.commandblockide.util.CommandAutoFormatter;
 
 import com.mojang.brigadier.ParseResults;
 import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.command.CommandSource;
 
 public class ParsedCommand {
 	public final String srcCommand;

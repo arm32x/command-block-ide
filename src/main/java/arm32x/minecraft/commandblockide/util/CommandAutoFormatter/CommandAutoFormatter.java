@@ -4,7 +4,6 @@ import arm32x.minecraft.commandblockide.util.CommandAutoFormatter.Formatters.Exe
 import arm32x.minecraft.commandblockide.util.CommandAutoFormatter.Formatters.UniversalCommandTextFormatter;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.command.CommandSource;
 
 public class CommandAutoFormatter {
 	public static String format(String cmd) {

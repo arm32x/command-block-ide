@@ -1,11 +1,8 @@
 package arm32x.minecraft.commandblockide.util.CommandAutoFormatter;
 
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
-import com.mojang.brigadier.StringReader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.command.CommandSource;
 
 import java.util.HashMap;
 
