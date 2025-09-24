@@ -2,7 +2,9 @@ package arm32x.minecraft.commandblockide.client.gui.button;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.mixin.client.DrawContextAccessor;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -78,11 +80,15 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 	public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
 		var texture = getTexture();
 
+		RenderSystem.enableBlend();
+		RenderSystem.defaultBlendFunc();
+		RenderSystem.enableDepthTest();
+
 		int color = active ? 0xFFFFFFFF : 0x7FFFFFFF;
 		int shadowColor = 0x3F000000;
 
 		if (active) {
-			context.drawTexture(RenderLayer::getGuiTextured, texture, getX() + 1, getY() + 1, 0, 0, iconWidth, iconHeight, 16, 64, shadowColor);
+			context.drawTexture(RenderPipelines.GUI_TEXTURED, texture, getX() + 1, getY() + 1, 0, 0, iconWidth, iconHeight, 16, 64, shadowColor);
 		}
 
 		// To flip the texture, we pass u2, u1, v2, v1 instead of the usual
@@ -90,7 +96,7 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 		// instead of going through context.drawTexture.
 		int x1 = getX(), x2 = x1 + 16, y1 = getY(), y2 = y1 + 16;
 		float u1 = 0.0f, u2 = 1.0f, v1 = 0.0f, v2 = 0.25f;
-		((DrawContextAccessor)context).invokeDrawTexturedQuad(RenderLayer::getGuiTextured, texture, x1, x2, y1, y2, u2, u1, v2, v1, color);
+		((DrawContextAccessor)context).invokeDrawTexturedQuad(RenderPipelines.GUI_TEXTURED, texture, x1, x2, y1, y2, u2, u1, v2, v1, color);
 	}
 
 	@Override

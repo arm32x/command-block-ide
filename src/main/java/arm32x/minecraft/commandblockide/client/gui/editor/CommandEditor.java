@@ -204,10 +204,10 @@ public abstract class CommandEditor extends Container implements Dirtyable {
 	public void renderSuggestions(DrawContext context, int mouseX, int mouseY) {
 		if (commandField.isActive()) {
 			var matrices = context.getMatrices();
-			matrices.push();
-			matrices.translate(0.0, 0.0, 50.0);
+			matrices.pushMatrix();
+			matrices.translate(0.0f, 0.0f);
 			suggestor.render(context, mouseX, mouseY);
-			matrices.pop();
+			matrices.popMatrix();
 		}
 	}
 
