@@ -1,6 +1,8 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
+import arm32x.minecraft.commandblockide.client.gui.screen.CommandBlockIDEScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -36,9 +38,13 @@ public final class CommandBlockTrackOutputButton extends IconButton implements D
 
 	@Override
 	public void onPress() {
-		trackingOutput = !trackingOutput;
-		dirty = true;
-		updateTooltip();
+		if (Screen.hasShiftDown()) {
+			CommandBlockIDEScreen.setAllTrackingOutput(!trackingOutput);
+		} else {
+			trackingOutput = !trackingOutput;
+			dirty = true;
+			updateTooltip();
+		}
 	}
 
 	@Override
@@ -55,5 +61,9 @@ public final class CommandBlockTrackOutputButton extends IconButton implements D
 	public void setTrackingOutput(boolean trackingOutput) {
 		this.trackingOutput = trackingOutput;
 		updateTooltip();
+	}
+
+	public void dirty(){
+		dirty=true;
 	}
 }

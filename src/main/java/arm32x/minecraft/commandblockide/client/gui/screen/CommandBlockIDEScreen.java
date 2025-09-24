@@ -1,6 +1,7 @@
 package arm32x.minecraft.commandblockide.client.gui.screen;
 
 import arm32x.minecraft.commandblockide.client.CommandChainTracer;
+import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockTrackOutputButton;
 import arm32x.minecraft.commandblockide.client.gui.editor.CommandBlockEditor;
 import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import java.util.HashMap;
@@ -9,12 +10,15 @@ import java.util.Map;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
 public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEditor> {
+	private static CommandBlockIDEScreen latestCommandBlockIDEScreen;
+
 	private final Map<BlockPos, CommandEditor> positionIndex = new HashMap<>();
 
 	private final CommandBlockBlockEntity startingBlockEntity;
@@ -47,6 +51,8 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 			.asOrderedText();
 
 		super.firstInit();
+
+		latestCommandBlockIDEScreen = this;
 	}
 
 	private void addEditor(CommandBlockBlockEntity blockEntity) {
@@ -83,6 +89,17 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 		}
 	}
 
+	public static void setAllTrackingOutput(boolean trackingOutput){
+		for(CommandEditor commandEditor : latestCommandBlockIDEScreen.positionIndex.values()){
+			for (Element element : commandEditor.children()){
+				if(element instanceof CommandBlockTrackOutputButton trackButton){
+					trackButton.setTrackingOutput(trackingOutput);
+					trackButton.dirty();
+				}
+			}
+		}
+	}
+
 	@Override
 	public void save() {
 		assert client != null;
@@ -98,5 +115,11 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 			editor.lineNumberHighlighted = editor.index == startingIndex;
 		}
 		super.render(context, mouseX, mouseY, delta);
+	}
+
+	@Override
+	public void close(){
+		latestCommandBlockIDEScreen=null;
+		super.close();
 	}
 }
