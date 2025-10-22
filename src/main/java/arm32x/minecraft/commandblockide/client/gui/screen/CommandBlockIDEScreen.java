@@ -43,8 +43,7 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 
 		BlockPos pos = startingBlockEntity.getPos();
 		statusText = Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())
-			.formatted(Formatting.GRAY)
-			.asOrderedText();
+			.formatted(Formatting.GRAY);
 
 		super.firstInit();
 	}

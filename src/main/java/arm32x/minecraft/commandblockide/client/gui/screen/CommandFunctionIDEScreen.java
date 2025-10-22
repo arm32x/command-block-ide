@@ -31,7 +31,7 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen<CommandFunc
 			addEditor(editor);
 		}
 
-		statusText = Text.literal(functionId.toString()).formatted(Formatting.GRAY).asOrderedText();
+		statusText = Text.literal(functionId.toString()).formatted(Formatting.GRAY);
 
 		super.firstInit();
 	}

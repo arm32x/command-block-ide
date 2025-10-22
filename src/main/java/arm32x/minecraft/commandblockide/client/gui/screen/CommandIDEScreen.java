@@ -22,6 +22,7 @@ import net.minecraft.client.input.KeyInput;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
@@ -42,12 +43,8 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	private double mouseYAtScrollbarDragStart = 0;
 	private int scrollOffsetAtScrollbarDragStart = 0;
 
-	protected @Nullable OrderedText statusText = null;
+	protected @Nullable Text statusText = null;
 	private int statusTextX = 0;
-	private static final TooltipPositioner STATUS_TEXT_POSITIONER = (screenWidth, screenHeight, x, y, width, height) -> {
-		// Ignore everything else and just return (x, y).
-		return new Vector2i(x, y);
-	};
 
 	public CommandIDEScreen() {
 		super(Text.empty());
@@ -365,7 +362,11 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 
 		super.render(context, mouseX, mouseY, delta);
 		if (statusText != null) {
-			context.drawTooltip(textRenderer, List.of(statusText), STATUS_TEXT_POSITIONER, statusTextX + 5, height - 22, false);
+            int x = statusTextX + 5;
+            int y = height - 22;
+            int statusTextWidth = textRenderer.getWidth(statusText);
+            context.fill(x - 2, y - 2, x + statusTextWidth + 2, y + 9 + 2, 0x7F000000);
+            context.drawTextWithShadow(textRenderer, statusText, statusTextX + 5, height - 22, 0xFFFFFFFF);
 		}
 
 		// matrices.popMatrix();
