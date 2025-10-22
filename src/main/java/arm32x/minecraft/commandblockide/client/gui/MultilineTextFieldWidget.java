@@ -12,12 +12,15 @@ import java.util.function.Predicate;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.EditBox;
 import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.input.CursorMovement;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.text.OrderedText;
@@ -110,9 +113,10 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 	@Override
     @Deprecated
-	public void setRenderTextProvider(BiFunction<String, Integer, OrderedText> renderTextProvider) {
-		// Do nothing. I would love to throw an UnsupportedOperationException,
-		// but this is called by ChatInputSuggestor.
+	public void addFormatter(TextFieldWidget.Formatter formatter) {
+		// Do nothing, since we use our own syntax highlighting system. I would
+        // love to throw an UnsupportedOperationException, but this is called by
+        // ChatInputSuggestor.
 	}
 
     public SyntaxHighlighter getSyntaxHighlighter() {
@@ -188,8 +192,8 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	@Override
-	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (keyCode == GLFW.GLFW_KEY_TAB) {
+	public boolean keyPressed(KeyInput input) {
+		if (input.key() == GLFW.GLFW_KEY_TAB) {
             if (editBox.hasSelection()) {
                 logger.warn("Indenting selected lines is not yet supported");
             } else {
@@ -199,38 +203,38 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
             }
             return true;
         } else {
-			return editBox.handleSpecialKey(keyCode);
+			return editBox.handleSpecialKey(input);
 		}
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean doubled) {
         if (!this.isVisible()) {
             return false;
         }
         if (self.isFocusUnlocked()) {
-            setFocused(isMouseOver(mouseX, mouseY));
+            setFocused(isMouseOver(click.x(), click.y()));
         }
-        if (isFocused() && isMouseOver(mouseX, mouseY) && button == 0) {
-            editBox.setSelecting(Screen.hasShiftDown());
-            moveCursor(mouseX, mouseY);
+        if (isFocused() && isMouseOver(click.x(), click.y()) && click.button() == 0) {
+            editBox.setSelecting(click.hasShift());
+            moveCursor(click.x(), click.y());
             return true;
         }
         return false;
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+    public boolean mouseDragged(Click click, double offsetX, double offsetY) {
         if (!this.isVisible()) {
             return false;
         }
         if (self.isFocusUnlocked()) {
-            setFocused(isMouseOver(mouseX, mouseY));
+            setFocused(isMouseOver(click.x(), click.y()));
         }
-        if (isFocused() && isMouseOver(mouseX, mouseY) && button == 0) {
+        if (isFocused() && isMouseOver(click.x(), click.y()) && click.button() == 0) {
             editBox.setSelecting(true);
-            moveCursor(mouseX, mouseY);
-            editBox.setSelecting(Screen.hasShiftDown());
+            moveCursor(click.x(), click.y());
+            editBox.setSelecting(click.hasShift());
             return true;
         }
         return false;
@@ -239,8 +243,9 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
 		if (this.isMouseOver(mouseX, mouseY)) {
-			horizontalAmount = Screen.hasShiftDown() ? verticalAmount : horizontalAmount;
-			verticalAmount = Screen.hasShiftDown() ? 0 : verticalAmount;
+            // TODO: Add back shift-scroll for horizontal scrolling
+			// horizontalAmount = Screen.hasShiftDown() ? verticalAmount : horizontalAmount;
+			// verticalAmount = Screen.hasShiftDown() ? 0 : verticalAmount;
 
 			boolean changed = setHorizontalScroll(getHorizontalScroll() - (int)Math.round(horizontalAmount * SCROLL_SENSITIVITY));
 			changed = changed || setVerticalScroll(getVerticalScroll() - (int)Math.round(verticalAmount * SCROLL_SENSITIVITY));
@@ -262,8 +267,8 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		}
 
 		if (drawsBackground()) {
-			var textureId = TextFieldWidgetAccessor.getTextures().get(isNarratable(), isFocused());
-			context.drawGuiTexture(RenderLayer::getGuiTextured, textureId, getX(), getY(), getWidth(), getHeight());
+			var textureId = TextFieldWidgetAccessor.getTextures().get(isInteractable(), isFocused());
+			context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, textureId, getX(), getY(), getWidth(), getHeight());
 		}
 
 		context.enableScissor(
@@ -282,33 +287,30 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		boolean lineCursor = getCursor() < getText().length() || getText().length() >= self.invokeGetMaxLength();
 
 		int cursorLine = getCurrentLineIndex();
-		int cursorX = x;
 		int cursorY = y + lineHeight * cursorLine;
 
-		// This assumes that the highlighter returns the same characters as the
-		// original text, which is not enforced by the API.
 		List<OrderedText> lines = getSyntaxHighlighter().highlight(getText());
 		for (int index = 0; index < lines.size(); index++) {
 			OrderedText line = lines.get(index);
-			if (index == cursorLine) {
-				int indexOfLastNewlineBeforeCursor = getLineStartBefore(getCursor()) - 1;
-				int codePointsBeforeCursor;
-				if (indexOfLastNewlineBeforeCursor != -1) {
-					codePointsBeforeCursor = getText().codePointCount(indexOfLastNewlineBeforeCursor, Math.max(getCursor() - 1, 0));
-				} else {
-					codePointsBeforeCursor = getText().codePointCount(0, getCursor());
-				}
-				int endX = context.drawTextWithShadow(self.getTextRenderer(), OrderedTexts.limit(codePointsBeforeCursor, line), x, y + lineHeight * index, textColor) - 1;
-				context.drawTextWithShadow(self.getTextRenderer(), OrderedTexts.skip(codePointsBeforeCursor, line), endX, y + lineHeight * index, textColor);
-				cursorX = endX - 1;
-			} else {
-				context.drawTextWithShadow(self.getTextRenderer(), line, x, y + lineHeight * index, textColor);
-			}
+            context.drawTextWithShadow(self.getTextRenderer(), line, x, y + lineHeight * index, textColor);
 		}
 
 		if (showCursor) {
+            // Figure out the cursor X position by measuring the text before it.
+            // This assumes that the highlighter returns the same characters as
+            // the original text, which is not enforced by the API.
+            int indexOfLastNewlineBeforeCursor = getLineStartBefore(getCursor()) - 1;
+            int codePointsBeforeCursor;
+            if (indexOfLastNewlineBeforeCursor != -1) {
+                codePointsBeforeCursor = getText().codePointCount(indexOfLastNewlineBeforeCursor, Math.max(getCursor() - 1, 0));
+            } else {
+                codePointsBeforeCursor = getText().codePointCount(0, getCursor());
+            }
+            OrderedText textBeforeCursor = OrderedTexts.limit(codePointsBeforeCursor, lines.get(cursorLine));
+            int cursorX = x + self.getTextRenderer().getWidth(textBeforeCursor) - 1;
+
 			if (lineCursor) {
-				context.fill(RenderLayer.getGuiOverlay(), cursorX, cursorY - 1, cursorX + 1, cursorY + 10, 0xFFD0D0D0);
+				context.fill(cursorX, cursorY - 1, cursorX + 1, cursorY + 10, 0xFFD0D0D0);
 			} else {
 				context.drawTextWithShadow(self.getTextRenderer(), "_", cursorX + 1, cursorY, textColor);
 			}
@@ -322,51 +324,30 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	private void renderSelection(DrawContext context, int x, int y) {
-		context.draw(vertexConsumers -> {
-			var selection = editBox.getSelection();
-			int normalizedSelectionStart = selection.beginIndex();
-			int normalizedSelectionEnd = selection.endIndex();
+        var selection = editBox.getSelection();
+        int normalizedSelectionStart = selection.beginIndex();
+        int normalizedSelectionEnd = selection.endIndex();
 
-			int startX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionStart), normalizedSelectionStart)) - 1;
-			int startY = y + lineHeight * getLineIndex(normalizedSelectionStart) - 1;
-			int endX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionEnd), normalizedSelectionEnd)) - 1;
-			int endY = y + lineHeight * getLineIndex(normalizedSelectionEnd) - 1;
+        int startX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionStart), normalizedSelectionStart)) - 1;
+        int startY = y + lineHeight * getLineIndex(normalizedSelectionStart) - 1;
+        int endX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionEnd), normalizedSelectionEnd)) - 1;
+        int endY = y + lineHeight * getLineIndex(normalizedSelectionEnd) - 1;
 
-			int leftEdge = getInnerX();
-			int rightEdge = leftEdge + this.getInnerWidth();
+        int leftEdge = getInnerX() - 1;
+        int rightEdge = getInnerX() + this.getInnerWidth() + 1;
 
-			Matrix4f matrix = context.getMatrices().peek().getPositionMatrix();
-			VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getGuiTextHighlight());
-
-			float r = 0.0f, g = 0.0f, b = 1.0f, a = 1.0f;
-
-			if (startY == endY) {
-				// Selection spans one line
-				vertexConsumer.vertex(matrix, endX, startY, 0.0f).color(r, g, b, a);
-				vertexConsumer.vertex(matrix, startX, startY, 0.0f).color(r, g, b, a);
-				vertexConsumer.vertex(matrix, startX, endY + lineHeight - 1, 0.0f).color(r, g, b, a);
-				vertexConsumer.vertex(matrix, endX, endY + lineHeight - 1, 0.0f).color(r, g, b, a);
-			} else {
-				// Selection spans two or more lines
-				vertexConsumer.vertex(matrix, rightEdge, startY, 0.0f).color(r, g, b, a);
-				vertexConsumer.vertex(matrix, startX, startY, 0.0f).color(r, g, b, a);
-				vertexConsumer.vertex(matrix, startX, startY + lineHeight, 0.0f).color(r, g, b, a);
-				vertexConsumer.vertex(matrix, rightEdge, startY + lineHeight, 0.0f).color(r, g, b, a);
-
-				if (!(startY - lineHeight == endY || endY - lineHeight == startY)) {
-					// Selection spans three or more lines
-					vertexConsumer.vertex(matrix, rightEdge, startY + lineHeight, 0.0f).color(r, g, b, a);
-					vertexConsumer.vertex(matrix, leftEdge, startY + lineHeight, 0.0f).color(r, g, b, a);
-					vertexConsumer.vertex(matrix, leftEdge, endY, 0.0f).color(r, g, b, a);
-					vertexConsumer.vertex(matrix, rightEdge, endY, 0.0f).color(r, g, b, a);
-				}
-
-				vertexConsumer.vertex(matrix, endX, endY, 0.0f).color(r, g, b, a);
-				vertexConsumer.vertex(matrix, leftEdge, endY, 0.0f).color(r, g, b, a);
-				vertexConsumer.vertex(matrix, leftEdge, endY + lineHeight - 1, 0.0f).color(r, g, b, a);
-				vertexConsumer.vertex(matrix, endX, endY + lineHeight - 1, 0.0f).color(r, g, b, a);
-			}
-		});
+        if (startY == endY) {
+            // Selection spans one line
+            context.drawSelection(startX, startY, endX, endY + lineHeight - 1);
+        } else {
+            // Selection spans two or more lines
+            context.drawSelection(startX, startY, rightEdge, startY + lineHeight);
+            if (!(startY - lineHeight == endY || endY - lineHeight == startY)) {
+                // Selection spans three or more lines
+                context.drawSelection(leftEdge, startY + lineHeight, rightEdge, endY);
+            }
+            context.drawSelection(leftEdge, endY, endX, endY + lineHeight - 1);
+        }
 	}
 
     @Override

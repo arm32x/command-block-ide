@@ -22,11 +22,10 @@ public class ClientPlayerEntityMixin {
 
 	@Inject(method = "openCommandBlockScreen(Lnet/minecraft/block/entity/CommandBlockBlockEntity;)V", at = @At("HEAD"), cancellable = true)
 	public void openCommandBlockScreen(CommandBlockBlockEntity commandBlock, CallbackInfo ci) {
-		if (!Screen.hasAltDown()) {
-			if (!(client.currentScreen instanceof CommandIDEScreen)) {
-				client.setScreen(new CommandBlockIDEScreen(commandBlock));
-			}
-			ci.cancel();
-		}
+        // TODO: Add back support for holding Alt to open vanilla UI
+        if (!(client.currentScreen instanceof CommandIDEScreen)) {
+            client.setScreen(new CommandBlockIDEScreen(commandBlock));
+        }
+        ci.cancel();
 	}
 }

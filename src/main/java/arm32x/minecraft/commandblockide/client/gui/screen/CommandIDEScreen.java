@@ -10,6 +10,7 @@ import java.util.List;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
@@ -17,6 +18,7 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.tooltip.TooltipPositioner;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
@@ -124,11 +126,11 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	}
 
 	@Override
-	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (handleSpecialKey(keyCode)) {
+	public boolean keyPressed(KeyInput input) {
+		if (handleSpecialKey(input)) {
 			return true;
 		} else if (getFocused() != null) {
-			return getFocused().keyPressed(keyCode, scanCode, modifiers);
+			return getFocused().keyPressed(input);
 		} else {
 			// Bypass the special cases for Escape and Tab added in the Screen
 			// class to maintain full control over keyboard shortcuts.
@@ -136,8 +138,8 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 		}
 	}
 
-	private boolean handleSpecialKey(int keyCode) {
-		if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+	private boolean handleSpecialKey(KeyInput input) {
+		if (input.key() == GLFW.GLFW_KEY_ESCAPE) {
 			Element focused = getFocused();
 			if (focused == null) {
 				// TODO: Warn about unsaved changes.
@@ -154,14 +156,14 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			}
 			setFocused(null);
 			return true;
-		} else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+		} else if (input.key() == GLFW.GLFW_KEY_ENTER || input.key() == GLFW.GLFW_KEY_KP_ENTER) {
 			Element focused = getFocused();
 			if (focused == null) {
 				save();
 				close();
 				return true;
 			}
-			if (Screen.hasControlDown() && focused instanceof CommandEditor editor) {
+			if (input.hasCtrl() && focused instanceof CommandEditor editor) {
 				if (editor.isSuggestorActive()) {
 					editor.setSuggestorActive(false);
 					return true;
@@ -172,13 +174,13 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 				return true;
 			}
 			return false;
-		} else if (keyCode == GLFW.GLFW_KEY_UP && Screen.hasControlDown() || keyCode == GLFW.GLFW_KEY_TAB && Screen.hasControlDown() && Screen.hasShiftDown()) {
+		} else if (input.key() == GLFW.GLFW_KEY_UP && input.hasCtrl() || input.key() == GLFW.GLFW_KEY_TAB && input.hasCtrl() && input.hasShift()) {
 			changeFocus(false);
 			return true;
-		} else if (keyCode == GLFW.GLFW_KEY_DOWN && Screen.hasControlDown() || keyCode == GLFW.GLFW_KEY_TAB && Screen.hasControlDown() && !Screen.hasShiftDown()) {
+		} else if (input.key() == GLFW.GLFW_KEY_DOWN && input.hasCtrl() || input.key() == GLFW.GLFW_KEY_TAB && input.hasCtrl() && !input.hasShift()) {
 			changeFocus(true);
 			return true;
-		} else if (keyCode == GLFW.GLFW_KEY_S && Screen.hasControlDown()) {
+		} else if (input.key() == GLFW.GLFW_KEY_S && input.hasCtrl()) {
 			saveButton.playDownSound(MinecraftClient.getInstance().getSoundManager());
 			save();
 			return true;
@@ -190,20 +192,20 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	// This must be overridden because the superclass' implementation
 	// short-circuits on success, which breaks text field focus.
 	@Override
-	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		if (mouseX > width - 4 && button == 0) {
+	public boolean mouseClicked(Click click, boolean doubled) {
+		if (click.x() > width - 4 && click.button() == 0) {
 			int virtualHeight = maxScrollOffset + height;
 			int scrollbarHeight = Math.round((float)height / virtualHeight * height);
 			int scrollbarPosition = Math.round((float)getScrollOffset() / height * scrollbarHeight);
 
-			if (mouseY >= scrollbarPosition && mouseY <= scrollbarPosition + scrollbarHeight) {
+			if (click.y() >= scrollbarPosition && click.y() <= scrollbarPosition + scrollbarHeight) {
 				setDragging(true);
 				draggingScrollbar = true;
-				mouseYAtScrollbarDragStart = mouseY;
+				mouseYAtScrollbarDragStart = click.y();
 				scrollOffsetAtScrollbarDragStart = getScrollOffset();
-			} else if (mouseY < scrollbarPosition) {
+			} else if (click.y() < scrollbarPosition) {
 				setScrollOffset((int)Math.round(getScrollOffset() - SCROLL_SENSITIVITY * 5));
-			} else if (mouseY > scrollbarPosition + scrollbarHeight) {
+			} else if (click.y() > scrollbarPosition + scrollbarHeight) {
 				setScrollOffset((int)Math.round(getScrollOffset() + SCROLL_SENSITIVITY * 5));
 			}
 			return true;
@@ -211,37 +213,37 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 
 		Element focusedChild = null;
 		for (Element child : children()) {
-			if (child.mouseClicked(mouseX, mouseY, button) && focusedChild == null) {
+			if (child.mouseClicked(click, doubled) && focusedChild == null) {
 				focusedChild = child;
 			}
 		}
 		setFocused(focusedChild);
-		if (button == 0) {
+		if (click.button() == 0) {
 			setDragging(true);
 		}
 		return true;
 	}
 
 	@Override
-	public boolean mouseReleased(double mouseX, double mouseY, int button) {
-		if (button == 0 && draggingScrollbar) {
+	public boolean mouseReleased(Click click) {
+		if (click.button() == 0 && draggingScrollbar) {
 			draggingScrollbar = false;
 			return true;
 		} else {
-			return super.mouseReleased(mouseX, mouseY, button);
+			return super.mouseReleased(click);
 		}
 	}
 
 	@Override
-	public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-		if (button == 0 && draggingScrollbar) {
+	public boolean mouseDragged(Click click, double offsetX, double offsetY) {
+		if (click.button() == 0 && draggingScrollbar) {
 			int virtualHeight = maxScrollOffset + height;
 			int scrollbarHeight = Math.round((float)height / virtualHeight * height);
-			int scrollOffsetDelta = (int)Math.round((mouseY - mouseYAtScrollbarDragStart) / scrollbarHeight * height);
+			int scrollOffsetDelta = (int)Math.round((click.y() - mouseYAtScrollbarDragStart) / scrollbarHeight * height);
 			setScrollOffset(scrollOffsetAtScrollbarDragStart + scrollOffsetDelta);
 			return true;
 		} else {
-			return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+			return super.mouseDragged(click, offsetX, offsetY);
 		}
 	}
 
@@ -251,9 +253,9 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			if (editor.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) return true;
 		}
 
-		double amount = Screen.hasShiftDown() ? 0 : verticalAmount;
-		if (amount != 0 && mouseY < height - 36 && !Screen.hasShiftDown()) {
-			setScrollOffset(getScrollOffset() - (int)Math.round(amount * SCROLL_SENSITIVITY));
+        // TODO: Add back shift-scroll for horizontal scrolling
+		if (verticalAmount != 0 && mouseY < height - 36) {
+			setScrollOffset(getScrollOffset() - (int)Math.round(verticalAmount * SCROLL_SENSITIVITY));
 			return true;
 		}
 		return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
@@ -357,16 +359,17 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			context.fill(width - 3, scrollbarPosition + 1, width - 1, scrollbarPosition + scrollbarHeight - 1, 0x3FFFFFFF);
 		}
 
-		var matrices = context.getMatrices();
-		matrices.push();
-		matrices.translate(0.0, 0.0, 10.0);
+        // TODO: Put this layering change back if it's needed
+		// var matrices = context.getMatrices();
+		// matrices.pushMatrix();
+		// matrices.translate(0.0, 0.0, 10.0);
 
 		super.render(context, mouseX, mouseY, delta);
 		if (statusText != null) {
-			context.drawTooltip(textRenderer, List.of(statusText), STATUS_TEXT_POSITIONER, statusTextX + 5, height - 22);
+			context.drawTooltip(textRenderer, List.of(statusText), STATUS_TEXT_POSITIONER, statusTextX + 5, height - 22, false);
 		}
 
-		matrices.pop();
+		// matrices.popMatrix();
 	}
 
 	@Override

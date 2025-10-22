@@ -2,6 +2,7 @@ package arm32x.minecraft.commandblockide.client.gui.button;
 
 import java.util.function.Consumer;
 import net.minecraft.client.gui.tooltip.Tooltip;
+import net.minecraft.client.input.AbstractInput;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -23,7 +24,7 @@ public final class SimpleIconButton extends IconButton {
 	}
 
 	@Override
-	public void onPress() {
+	public void onPress(AbstractInput input) {
 		pressAction.accept(this);
 	}
 

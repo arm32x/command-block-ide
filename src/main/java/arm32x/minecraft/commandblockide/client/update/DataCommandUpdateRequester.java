@@ -2,7 +2,6 @@ package arm32x.minecraft.commandblockide.client.update;
 
 import static arm32x.minecraft.commandblockide.client.CommandChainTracer.isCommandBlock;
 import arm32x.minecraft.commandblockide.client.gui.screen.CommandBlockIDEScreen;
-import arm32x.minecraft.commandblockide.mixin.client.CommandBlockBlockEntityAccessor;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,12 +11,14 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.storage.NbtReadView;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.math.BlockPos;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class DataCommandUpdateRequester {
 	private static @Nullable DataCommandUpdateRequester INSTANCE = null;
@@ -39,7 +40,7 @@ public final class DataCommandUpdateRequester {
 		blocksToUpdate.put(position, blockEntity);
 
 		String command = String.format("data get block %d %d %d", position.getX(), position.getY(), position.getZ());
-		player.networkHandler.sendCommand(command);
+		player.networkHandler.sendChatCommand(command);
 	}
 
 	public boolean handleFeedback(MinecraftClient client, TranslatableTextContent message) {
@@ -75,7 +76,7 @@ public final class DataCommandUpdateRequester {
 		String stringifiedTag = ((Text)args[3]).getString();
 		@Nullable NbtCompound tag;
 		try {
-			tag = StringNbtReader.parse(stringifiedTag);
+			tag = StringNbtReader.readCompound(stringifiedTag);
 		} catch (CommandSyntaxException ex) {
 			LOGGER.error("Error parsing feedback from data command.", ex);
 			return false;
@@ -87,7 +88,9 @@ public final class DataCommandUpdateRequester {
 			return false;
 		}
 
-		((CommandBlockBlockEntityAccessor)blockEntity).invokeReadNbt(tag, client.world.getRegistryManager());
+        try (var errorReporter = new ErrorReporter.Logging(blockEntity.getReporterContext(), LOGGER)) {
+            blockEntity.read(NbtReadView.create(errorReporter, client.world.getRegistryManager(), tag));
+        }
 //		blockEntity.setNeedsUpdatePacket(false);
 		if (client.currentScreen instanceof CommandBlockIDEScreen) {
 			((CommandBlockIDEScreen)client.currentScreen).update(position);
@@ -105,5 +108,5 @@ public final class DataCommandUpdateRequester {
 		}
 	}
 
-	private static final Logger LOGGER = LogManager.getLogger();
+	private static final Logger LOGGER = LoggerFactory.getLogger(DataCommandUpdateRequester.class);
 }

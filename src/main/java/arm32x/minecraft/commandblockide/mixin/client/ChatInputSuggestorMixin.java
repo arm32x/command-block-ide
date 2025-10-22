@@ -119,7 +119,6 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 
 	// The IntelliJ Minecraft Development plugin seems to think the method
 	// signature is wrong when in reality it works just fine.
-	@SuppressWarnings("InvalidInjectorMethodSignature")
 	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	private boolean onCheckForSlash(boolean bl) {
 		return !ide$slashForbidden && bl;
@@ -138,7 +137,6 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 	}
 
 	// See above.
-	@SuppressWarnings("InvalidInjectorMethodSignature")
 	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	public int onGetTextFieldCursor1(int cursor) {
 		return StringMapping.mapIndexOrAfter(ide$mapping, true, cursor);

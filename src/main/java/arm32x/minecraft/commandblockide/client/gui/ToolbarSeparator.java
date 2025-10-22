@@ -24,7 +24,7 @@ public final class ToolbarSeparator extends ClickableWidget {
 	}
 
 	@Override
-	public boolean isNarratable() {
+	public boolean isInteractable() {
 		return false;
 	}
 

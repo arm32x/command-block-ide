@@ -50,7 +50,7 @@ public final class CommandBlockIDE implements ModInitializer {
 				}
 
 				ServerPlayerEntity player = context.player();
-				MinecraftServer server = player.server;
+				MinecraftServer server = context.server();
 				server.execute(() -> {
 					Text feedbackMessage = FunctionIO.saveFunction(server, functionId, Arrays.asList(lines));
 					player.sendMessage(feedbackMessage);

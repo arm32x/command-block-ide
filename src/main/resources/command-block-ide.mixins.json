@@ -12,7 +12,6 @@
     "client.ChatInputSuggestorMixin",
     "client.ClientPlayerEntityMixin",
     "client.ClientPlayNetworkHandlerMixin",
-    "client.CommandBlockBlockEntityAccessor",
     "client.DrawContextAccessor",
     "client.EditBoxAccessor",
     "client.MessageHandlerMixin",

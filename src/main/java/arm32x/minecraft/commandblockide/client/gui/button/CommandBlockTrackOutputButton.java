@@ -2,6 +2,7 @@ package arm32x.minecraft.commandblockide.client.gui.button;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import net.minecraft.client.gui.tooltip.Tooltip;
+import net.minecraft.client.input.AbstractInput;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -35,7 +36,7 @@ public final class CommandBlockTrackOutputButton extends IconButton implements D
 	}
 
 	@Override
-	public void onPress() {
+	public void onPress(AbstractInput input) {
 		trackingOutput = !trackingOutput;
 		dirty = true;
 		updateTooltip();
