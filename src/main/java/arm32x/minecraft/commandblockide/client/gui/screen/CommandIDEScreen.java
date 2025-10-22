@@ -355,11 +355,6 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			context.fill(width - 3, scrollbarPosition + 1, width - 1, scrollbarPosition + scrollbarHeight - 1, 0x3FFFFFFF);
 		}
 
-        // TODO: Put this layering change back if it's needed
-		// var matrices = context.getMatrices();
-		// matrices.pushMatrix();
-		// matrices.translate(0.0, 0.0, 10.0);
-
 		super.render(context, mouseX, mouseY, delta);
 		if (statusText != null) {
             int x = statusTextX + 5;
@@ -368,8 +363,6 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
             context.fill(x - 2, y - 2, x + statusTextWidth + 2, y + 9 + 2, 0x7F000000);
             context.drawTextWithShadow(textRenderer, statusText, statusTextX + 5, height - 22, 0xFFFFFFFF);
 		}
-
-		// matrices.popMatrix();
 	}
 
 	@Override
