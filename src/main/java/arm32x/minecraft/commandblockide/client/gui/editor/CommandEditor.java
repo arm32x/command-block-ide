@@ -170,7 +170,6 @@ public abstract class CommandEditor extends Container implements Dirtyable {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        // TODO: Add back shift-scroll for horizontal scrolling
         return suggestor.mouseScrolled(verticalAmount)
                 || super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }

@@ -253,7 +253,6 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			if (editor.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) return true;
 		}
 
-        // TODO: Add back shift-scroll for horizontal scrolling
 		if (verticalAmount != 0 && mouseY < height - 36) {
 			setScrollOffset(getScrollOffset() - (int)Math.round(verticalAmount * SCROLL_SENSITIVITY));
 			return true;

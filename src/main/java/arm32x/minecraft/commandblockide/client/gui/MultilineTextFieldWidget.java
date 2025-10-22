@@ -243,10 +243,6 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
 		if (this.isMouseOver(mouseX, mouseY)) {
-            // TODO: Add back shift-scroll for horizontal scrolling
-			// horizontalAmount = Screen.hasShiftDown() ? verticalAmount : horizontalAmount;
-			// verticalAmount = Screen.hasShiftDown() ? 0 : verticalAmount;
-
 			boolean changed = setHorizontalScroll(getHorizontalScroll() - (int)Math.round(horizontalAmount * SCROLL_SENSITIVITY));
 			changed = changed || setVerticalScroll(getVerticalScroll() - (int)Math.round(verticalAmount * SCROLL_SENSITIVITY));
 
