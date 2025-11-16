@@ -149,7 +149,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
         editBox.moveCursor(CursorMovement.RELATIVE, offset);
     }
 
-    private void moveCursor(double mouseX, double mouseY) {
+    private void moveCursor(double mouseX, double mouseY, boolean hasShiftDown) {
         double virtualX = mouseX - getInnerX() + getHorizontalScroll();
         double virtualY = mouseY - getInnerY() + getVerticalScroll();
 
@@ -168,7 +168,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			charIndex++;
 		}
 
-		setCursor(charIndex, false);
+		setCursor(charIndex, hasShiftDown);
     }
 
     @Override
@@ -212,8 +212,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
             setFocused(isMouseOver(click.x(), click.y()));
         }
         if (isFocused() && isMouseOver(click.x(), click.y()) && click.button() == 0) {
-            editBox.setSelecting(click.hasShift());
-            moveCursor(click.x(), click.y());
+            moveCursor(click.x(), click.y(), click.hasShift());
             return true;
         }
         return false;
@@ -228,8 +227,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
             setFocused(isMouseOver(click.x(), click.y()));
         }
         if (isFocused() && isMouseOver(click.x(), click.y()) && click.button() == 0) {
-            editBox.setSelecting(true);
-            moveCursor(click.x(), click.y());
+            moveCursor(click.x(), click.y(), true);
             editBox.setSelecting(click.hasShift());
             return true;
         }
