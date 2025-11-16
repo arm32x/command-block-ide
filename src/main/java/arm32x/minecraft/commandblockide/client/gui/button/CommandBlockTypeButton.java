@@ -2,18 +2,15 @@ package arm32x.minecraft.commandblockide.client.gui.button;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.mixin.client.DrawContextAccessor;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.cursor.StandardCursors;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.input.AbstractInput;
-import net.minecraft.client.render.*;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.joml.Matrix4f;
 
 public final class CommandBlockTypeButton extends IconButton implements Dirtyable {
 	private CommandBlockBlockEntity.Type type = CommandBlockBlockEntity.Type.REDSTONE;
@@ -94,6 +91,11 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 		int x1 = getX(), x2 = x1 + 16, y1 = getY(), y2 = y1 + 16;
 		float u1 = 0.0f, u2 = 1.0f, v1 = 0.0f, v2 = 0.25f;
 		((DrawContextAccessor)context).invokeDrawTexturedQuad(RenderPipelines.GUI_TEXTURED, texture, x1, x2, y1, y2, u2, u1, v2, v1, color);
+
+        // super.renderWidget does this as well, but we don't call that here
+        if (isHovered()) {
+            context.setCursor(isInteractable() ? StandardCursors.POINTING_HAND : StandardCursors.NOT_ALLOWED);
+        }
 	}
 
 	@Override

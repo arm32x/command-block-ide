@@ -6,7 +6,6 @@ import arm32x.minecraft.commandblockide.util.OrderedTexts;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.fabricmc.api.EnvType;
@@ -16,13 +15,11 @@ import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.EditBox;
+import net.minecraft.client.gui.cursor.StandardCursors;
 import net.minecraft.client.gui.screen.ChatInputSuggestor;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.input.CursorMovement;
 import net.minecraft.client.input.KeyInput;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -31,7 +28,6 @@ import net.minecraft.util.math.MathHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
@@ -317,6 +313,10 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		}
 
 		context.disableScissor();
+
+        if (isHovered()) {
+            context.setCursor(StandardCursors.IBEAM);
+        }
 	}
 
 	private void renderSelection(DrawContext context, int x, int y) {

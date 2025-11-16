@@ -1,11 +1,10 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.cursor.StandardCursors;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.PressableWidget;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -79,6 +78,12 @@ public abstract class IconButton extends PressableWidget {
 			// RenderSystem.disableDepthTest();
 			// RenderSystem.disableBlend();
 		}
+
+        // super.renderWidget does this as well, but that is only called for
+        // icon buttons with a background
+        if (isHovered()) {
+            context.setCursor(isInteractable() ? StandardCursors.POINTING_HAND : StandardCursors.NOT_ALLOWED);
+        }
 	}
 
 	@Override
