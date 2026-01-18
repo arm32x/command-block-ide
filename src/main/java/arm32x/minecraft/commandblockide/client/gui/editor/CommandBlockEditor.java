@@ -6,8 +6,6 @@ import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockTrackOutpu
 import arm32x.minecraft.commandblockide.client.gui.button.CommandBlockTypeButton;
 import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import arm32x.minecraft.commandblockide.client.update.DataCommandUpdateRequester;
-import java.util.Objects;
-import java.util.stream.Stream;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -18,8 +16,10 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.network.packet.c2s.play.UpdateCommandBlockC2SPacket;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.CommandBlockExecutor;
+
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public final class CommandBlockEditor extends CommandEditor {
 	private final CommandBlockBlockEntity blockEntity;
@@ -67,7 +67,7 @@ public final class CommandBlockEditor extends CommandEditor {
 		if (isLoaded() && isDirty()) {
 			CommandBlockExecutor executor = blockEntity.getCommandExecutor();
 			networkHandler.sendPacket(new UpdateCommandBlockC2SPacket(
-				BlockPos.ofFloored(executor.getPos()),
+				blockEntity.getPos(),
 				getSingleLineCommand(),
 				typeButton.getBlockType(),
 				trackOutputButton.isTrackingOutput(),
@@ -101,7 +101,7 @@ public final class CommandBlockEditor extends CommandEditor {
 			client.isInSingleplayer()
 				? Objects.requireNonNull(client.getServer()).getSaveProperties().getLevelName()
 				: Objects.requireNonNull(client.getCurrentServerEntry()).name,
-			BlockPos.ofFloored(executor.getPos())
+				blockEntity.getPos()
 		));
 		typeButton.setBlockType(blockEntity.getCommandBlockType());
 		typeButton.setConditional(blockEntity.isConditionalCommandBlock());

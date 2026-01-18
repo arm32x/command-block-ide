@@ -5,7 +5,6 @@ import arm32x.minecraft.commandblockide.mixin.client.DrawContextAccessor;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.cursor.StandardCursors;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.input.AbstractInput;
 import net.minecraft.text.MutableText;
@@ -76,7 +75,7 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 	}
 
 	@Override
-	public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+	public void drawIcon(DrawContext context, int mouseX, int mouseY, float delta) {
 		var texture = getTexture();
 
 		int color = active ? 0xFFFFFFFF : 0x7FFFFFFF;
@@ -91,11 +90,6 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 		int x1 = getX(), x2 = x1 + 16, y1 = getY(), y2 = y1 + 16;
 		float u1 = 0.0f, u2 = 1.0f, v1 = 0.0f, v2 = 0.25f;
 		((DrawContextAccessor)context).invokeDrawTexturedQuad(RenderPipelines.GUI_TEXTURED, texture, x1, x2, y1, y2, u2, u1, v2, v1, color);
-
-        // super.renderWidget does this as well, but we don't call that here
-        if (isHovered()) {
-            context.setCursor(isInteractable() ? StandardCursors.POINTING_HAND : StandardCursors.NOT_ALLOWED);
-        }
 	}
 
 	@Override

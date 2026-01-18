@@ -332,15 +332,15 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
         if (startY == endY) {
             // Selection spans one line
-            context.drawSelection(startX, startY, endX, endY + lineHeight - 1);
+            context.drawSelection(startX, startY, endX, endY + lineHeight - 1, false);
         } else {
             // Selection spans two or more lines
-            context.drawSelection(startX, startY, rightEdge, startY + lineHeight);
+            context.drawSelection(startX, startY, rightEdge, startY + lineHeight, false);
             if (!(startY - lineHeight == endY || endY - lineHeight == startY)) {
                 // Selection spans three or more lines
-                context.drawSelection(leftEdge, startY + lineHeight, rightEdge, endY);
+                context.drawSelection(leftEdge, startY + lineHeight, rightEdge, endY, false);
             }
-            context.drawSelection(leftEdge, endY, endX, endY + lineHeight - 1);
+            context.drawSelection(leftEdge, endY, endX, endY + lineHeight - 1, false);
         }
 	}
 

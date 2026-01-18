@@ -11,20 +11,24 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.datafixers.util.Either;
-import java.util.List;
-import java.util.Optional;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.CommandFunctionArgumentType;
-import static net.minecraft.command.argument.CommandFunctionArgumentType.commandFunction;
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import net.minecraft.command.permission.Permission;
+import net.minecraft.command.permission.PermissionLevel;
 import net.minecraft.server.command.FunctionCommand;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.function.CommandFunction;
 import net.minecraft.server.function.CommandFunctionManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+
+import java.util.List;
+import java.util.Optional;
+
+import static net.minecraft.command.argument.CommandFunctionArgumentType.commandFunction;
+import static net.minecraft.server.command.CommandManager.argument;
+import static net.minecraft.server.command.CommandManager.literal;
 
 public final class EditFunctionCommand {
 	/**
@@ -43,7 +47,11 @@ public final class EditFunctionCommand {
 
 	public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
 		dispatcher.register(literal("editfunction")
-			.requires(source -> source.hasPermissionLevel(2))
+				.requires(source ->
+						source.getPermissions().hasPermission(
+								new Permission.Level(PermissionLevel.GAMEMASTERS)
+						)
+				)
 			.then(argument("name", commandFunction())
 				.suggests(SUGGESTION_PROVIDER)
 				.executes(ctx -> {

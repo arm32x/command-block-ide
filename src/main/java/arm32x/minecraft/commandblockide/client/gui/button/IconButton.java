@@ -43,10 +43,10 @@ public abstract class IconButton extends PressableWidget {
 	}
 
 	@Override
-	public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+	public void drawIcon(DrawContext context, int mouseX, int mouseY, float delta) {
 		boolean drawsBackground = drawsBackground();
 		if (drawsBackground) {
-			super.renderWidget(context, mouseX, mouseY, delta);
+			this.drawButton(context);
 		}
 
 		var texture = getTexture();
@@ -78,12 +78,6 @@ public abstract class IconButton extends PressableWidget {
 			// RenderSystem.disableDepthTest();
 			// RenderSystem.disableBlend();
 		}
-
-        // super.renderWidget does this as well, but that is only called for
-        // icon buttons with a background
-        if (isHovered()) {
-            context.setCursor(isInteractable() ? StandardCursors.POINTING_HAND : StandardCursors.NOT_ALLOWED);
-        }
 	}
 
 	@Override

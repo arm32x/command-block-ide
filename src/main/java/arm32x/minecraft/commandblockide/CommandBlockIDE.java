@@ -5,13 +5,12 @@ import arm32x.minecraft.commandblockide.payloads.ApplyFunctionPayload;
 import arm32x.minecraft.commandblockide.server.command.EditFunctionCommand;
 import arm32x.minecraft.commandblockide.server.function.FunctionIO;
 import arm32x.minecraft.commandblockide.util.PacketMerger;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.command.permission.Permission;
+import net.minecraft.command.permission.PermissionLevel;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -22,6 +21,10 @@ import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 public final class CommandBlockIDE implements ModInitializer {
 	@Override
 	public void onInitialize() {
@@ -31,7 +34,7 @@ public final class CommandBlockIDE implements ModInitializer {
 		final PacketMerger functionMerger = new PacketMerger();
 		PayloadTypeRegistry.playC2S().register(Packets.APPLY_FUNCTION, ApplyFunctionPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(Packets.APPLY_FUNCTION, (payload, context) -> {
-			if (!context.player().hasPermissionLevel(2)) {
+			if (!context.player().getPermissions().hasPermission(new Permission.Level(PermissionLevel.GAMEMASTERS))) {
 				return;
 			}
 			Optional<PacketByteBuf> maybeMerged = Optional.empty();
