@@ -95,16 +95,16 @@ public final class FunctionIO {
         var functionResource = resourceManager.getResource(functionResourcePath);
         if (functionResource.isEmpty()) {
             // Error saving function '...': Not found in any datapack.
-            return Text.translatable("commandBlockIDE.saveFunction.failed.noResourcePack", functionId);
+            return Text.translatable("commandBlockIDE.saveFunction.failed.noResourcePack", functionId.toString());
         }
         var pack = functionResource.get().getPack();
 
         // Only directory-based resource packs are supported.
         if (pack instanceof ZipResourcePack) {
-            return Text.translatable("commandBlockIDE.saveFunction.failed.zipNotSupported", functionId).formatted(
+            return Text.translatable("commandBlockIDE.saveFunction.failed.zipNotSupported", functionId.toString()).formatted(
                 Formatting.RED);
         } else if (!(pack instanceof DirectoryResourcePack)) {
-            return Text.translatable("commandBlockIDE.saveFunction.failed.packClassNotSupported", functionId, pack.getClass().getSimpleName()).formatted(Formatting.RED);
+            return Text.translatable("commandBlockIDE.saveFunction.failed.packClassNotSupported", functionId.toString(), pack.getClass().getSimpleName()).formatted(Formatting.RED);
         }
         var directoryPack = (DirectoryResourcePack)pack;
 
@@ -113,7 +113,7 @@ public final class FunctionIO {
         if (pathResult.result().isEmpty()) {
             String errorMessage = pathResult.error().get().message();
             // Error saving function '...': Invalid path '...': ...
-            return Text.translatable("commandBlockIDE.saveFunction.failed.invalidPath", functionId, functionResourcePath, errorMessage);
+            return Text.translatable("commandBlockIDE.saveFunction.failed.invalidPath", functionId.toString(), functionResourcePath.toString(), errorMessage);
         }
         Path path = pathResult.result().get();
 
@@ -122,10 +122,10 @@ public final class FunctionIO {
             Files.write(path, lines, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             LOGGER.error("IO exception occurred while saving function '" + functionId.toString() + "':", e);
-            return Text.translatable("commandBlockIDE.saveFunction.failed.ioException", functionId).formatted(Formatting.RED);
+            return Text.translatable("commandBlockIDE.saveFunction.failed.ioException", functionId.toString()).formatted(Formatting.RED);
         }
 
-        return Text.translatable("commandBlockIDE.saveFunction.success.file", functionId);
+        return Text.translatable("commandBlockIDE.saveFunction.success.file", functionId.toString());
     }
 
     /**
