@@ -16,7 +16,7 @@
     "commandBlockIDE.lastOutput.off": "Çıktı Takip Edilmiyor",
     "commandBlockIDE.lastOutput.none": "Çıktı yok",
     "commandBlockIDE.narrator.editorIndex": "%s Numara",
-    "commandBlockIDE.saveFunction.success.file": "Funtion '%s' adlı dosyaya kaydedildi.",
+    "commandBlockIDE.saveFunction.success.file": "Function '%s' adlı dosyaya kaydedildi.",
     "commandBlockIDE.saveFunction.failed.missingNamespace": "'%s' adlı function'u kaydederken bir hata oluştu: '%s'ın/in Kaynak yöneticisinin ad alanı yok.",
     "commandBlockIDE.saveFunction.failed.noResourcePack": "'%s' adlı function'u kaydederken bir hata oluştu: Hiçbir datapack'te bulunmuyor.",
     "commandBlockIDE.saveFunction.failed.ioException": "'%s' adlı function'u kaydederken bir hata oluştu: Bir giriş/çıkış hatası oluştu.",
