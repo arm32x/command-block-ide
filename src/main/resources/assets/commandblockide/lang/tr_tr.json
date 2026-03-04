@@ -4,7 +4,7 @@
     "commandBlockIDE.close": "Kapat",
     "commandBlockIDE.save": "Kaydet",
     "commandBlockIDE.error": "Beklenmeyen bir hata oluştu:",
-    "commandBlockIDE.errorWithContext": "Şu işlemi gerçekleştirirken beklenmeyen bir hata oluştu: %s:",
+    "commandBlockIDE.errorWithContext": "Şu işlemi gerçekleştirirken beklenmeyen bir hata oluştu: %s",
     "commandBlockIDE.type.redstone": "Girdi",
     "commandBlockIDE.type.redstoneConditional": "Girdi, Koşullu",
     "commandBlockIDE.type.auto": "Yineleyici",
