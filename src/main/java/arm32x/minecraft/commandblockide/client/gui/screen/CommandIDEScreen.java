@@ -11,7 +11,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Tooltip;
@@ -332,16 +332,16 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	}
 
 	@Override
-	public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-		// Avoid this.renderBackground because it's a no-op (see below).
-		super.renderBackground(context, mouseX, mouseY, delta);
+	public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+		// Avoid this.extractBackground because it's a no-op (see below).
+		super.extractBackground(context, mouseX, mouseY, delta);
 
 		for (CommandEditor editor : editors) {
-			editor.render(context, mouseX, mouseY, delta);
+			editor.extractRenderState(context, mouseX, mouseY, delta);
 		}
 		for (CommandEditor editor : editors) {
 			// This is done in a separate loop to ensure it's rendered on top.
-			editor.renderSuggestions(context, mouseX, mouseY);
+			editor.extractSuggestions(context, mouseX, mouseY);
 		}
 
 		if (maxScrollOffset > 0) {
@@ -351,18 +351,18 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			context.fill(width - 3, scrollbarPosition + 1, width - 1, scrollbarPosition + scrollbarHeight - 1, 0x3FFFFFFF);
 		}
 
-		super.render(context, mouseX, mouseY, delta);
+		super.extractRenderState(context, mouseX, mouseY, delta);
 		if (statusText != null) {
             int x = statusTextX + 5;
             int y = height - 22;
             int statusTextWidth = font.width(statusText);
             context.fill(x - 2, y - 2, x + statusTextWidth + 2, y + 9 + 2, 0x7F000000);
-            context.drawString(font, statusText, statusTextX + 5, height - 22, 0xFFFFFFFF);
+            context.text(font, statusText, statusTextX + 5, height - 22, 0xFFFFFFFF);
 		}
 	}
 
 	@Override
-	public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		// No-op. This is a hack to prevent the background from being drawn a
 		// second time from super.render.
 	}

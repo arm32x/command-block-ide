@@ -1,6 +1,6 @@
 package arm32x.minecraft.commandblockide.client.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.MutableComponent;
@@ -14,7 +14,7 @@ public final class ToolbarSeparator extends AbstractWidget {
 	}
 
 	@Override
-	public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void extractWidgetRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		context.fill(getX(), getY() + 1, getX() + 1, getY() + 1 + height, COLOR);
 	}
 

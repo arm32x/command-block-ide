@@ -4,7 +4,7 @@ import arm32x.minecraft.commandblockide.client.Dirtyable;
 import arm32x.minecraft.commandblockide.mixin.client.GuiGraphicsAccessor;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.MutableComponent;
@@ -75,7 +75,7 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
 	}
 
 	@Override
-	public void renderContents(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void extractContents(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		var texture = getTexture();
 
 		int color = active ? 0xFFFFFFFF : 0x7FFFFFFF;

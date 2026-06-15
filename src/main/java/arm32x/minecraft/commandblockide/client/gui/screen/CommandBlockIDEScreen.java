@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
@@ -92,10 +92,10 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 	}
 
 	@Override
-	public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		for (CommandEditor editor : editors) {
 			editor.lineNumberHighlighted = editor.index == startingIndex;
 		}
-		super.render(context, mouseX, mouseY, delta);
+		super.extractRenderState(context, mouseX, mouseY, delta);
 	}
 }

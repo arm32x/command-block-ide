@@ -31,7 +31,7 @@ public final class CommandBlockIDE implements ModInitializer {
 				EditFunctionCommand.register(dispatcher));
 
 		final PacketMerger functionMerger = new PacketMerger();
-		PayloadTypeRegistry.playC2S().register(Packets.APPLY_FUNCTION, ApplyFunctionPayload.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(Packets.APPLY_FUNCTION, ApplyFunctionPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(Packets.APPLY_FUNCTION, (payload, context) -> {
 			if (!context.player().permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.GAMEMASTERS))) {
 				return;

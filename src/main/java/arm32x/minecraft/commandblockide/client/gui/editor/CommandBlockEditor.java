@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -133,15 +133,15 @@ public final class CommandBlockEditor extends CommandEditor {
 	}
 
 	@Override
-	protected void renderCommandField(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	protected void extractCommandField(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		if (trackOutputButton.isMouseOver(mouseX, mouseY)) {
 			commandField.visible = false;
 			lastOutputField.visible = true;
-			lastOutputField.render(context, mouseX, mouseY, delta);
+			lastOutputField.extractRenderState(context, mouseX, mouseY, delta);
 		} else {
 			commandField.visible = true;
 			lastOutputField.visible = false;
-			commandField.render(context, mouseX, mouseY, delta);
+			commandField.extractRenderState(context, mouseX, mouseY, delta);
 		}
 	}
 

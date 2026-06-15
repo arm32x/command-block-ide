@@ -21,14 +21,14 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.network.chat.Style;
@@ -182,31 +182,31 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        renderLineNumber(context);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        extractLineNumber(context);
         if (isLoaded()) {
-            renderCommandField(context, mouseX, mouseY, delta);
+            extractCommandField(context, mouseX, mouseY, delta);
         } else {
-            context.drawString(textRenderer, Component.translatable("commandBlockIDE.unloaded"), commandField.getX(), y + 5, 0x7FFFFFFF, false);
+            context.text(textRenderer, Component.translatable("commandBlockIDE.unloaded"), commandField.getX(), y + 5, 0x7FFFFFFF);
         }
-        super.render(context, mouseX, mouseY, delta);
+        super.extractRenderState(context, mouseX, mouseY, delta);
     }
 
-    protected void renderLineNumber(GuiGraphics context) {
+    protected void extractLineNumber(GuiGraphicsExtractor context) {
         String lineNumber = String.valueOf(index + 1);
         // Manually draw shadow because the existing functions don’t let you set the color.
-        context.drawString(textRenderer, lineNumber, x + 17 - textRenderer.width(lineNumber), y + 5, 0x3F000000, false);
-        context.drawString(textRenderer, lineNumber, x + 16 - textRenderer.width(lineNumber), y + 4, lineNumberHighlighted ? 0xFFFFFFFF : 0x7FFFFFFF, false);
+        context.text(textRenderer, lineNumber, x + 17 - textRenderer.width(lineNumber), y + 5, 0x3F000000);
+        context.text(textRenderer, lineNumber, x + 16 - textRenderer.width(lineNumber), y + 4, lineNumberHighlighted ? 0xFFFFFFFF : 0x7FFFFFFF);
     }
 
-    protected void renderCommandField(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    protected void extractCommandField(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         commandField.visible = true;
-        commandField.render(context, mouseX, mouseY, delta);
+        commandField.extractRenderState(context, mouseX, mouseY, delta);
     }
 
-    public void renderSuggestions(GuiGraphics context, int mouseX, int mouseY) {
+    public void extractSuggestions(GuiGraphicsExtractor context, int mouseX, int mouseY) {
         if (commandField.canConsumeInput()) {
-            suggestor.render(context, mouseX, mouseY);
+            suggestor.extractRenderState(context, mouseX, mouseY);
         }
     }
 
@@ -293,7 +293,7 @@ public abstract class CommandEditor extends Container implements Dirtyable {
         builder.add(NarratedElementType.TITLE, Component.translatable("narration.edit_box", commandField.getValue()));
     }
 
-    protected static List<FormattedCharSequence> highlight(ParseResults<SharedSuggestionProvider> parse, String text, StringMapping mapping) {
+    protected static List<FormattedCharSequence> highlight(ParseResults<ClientSuggestionProvider> parse, String text, StringMapping mapping) {
         // The ranges of text in the single-line command containing each
         // argument that should be highlighted.
         List<StringRange> ranges = parse

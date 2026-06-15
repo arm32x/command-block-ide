@@ -20,12 +20,12 @@ import org.jetbrains.annotations.Nullable;
 public final class CommandBlockIDEClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
-		PayloadTypeRegistry.playS2C().register(Packets.EDIT_FUNCTION, EditFunctionPayload.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(Packets.EDIT_FUNCTION, EditFunctionPayload.CODEC);
 		ClientPlayNetworking.registerGlobalReceiver(Packets.EDIT_FUNCTION, (payload, context) -> {
 			Minecraft client = context.client();
 			client.execute(() -> client.setScreen(new CommandFunctionIDEScreen(payload.id(), payload.lineCount())));
 		});
-		PayloadTypeRegistry.playS2C().register(Packets.UPDATE_FUNCTION_COMMAND, UpdateFunctionCommandPayload.CODEC);
+		PayloadTypeRegistry.clientboundPlay().register(Packets.UPDATE_FUNCTION_COMMAND, UpdateFunctionCommandPayload.CODEC);
 		ClientPlayNetworking.registerGlobalReceiver(Packets.UPDATE_FUNCTION_COMMAND, (payload, context) -> {
 			Minecraft client = context.client();
 			client.execute(() -> {
