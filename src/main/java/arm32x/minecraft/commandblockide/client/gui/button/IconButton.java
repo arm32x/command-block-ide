@@ -1,7 +1,7 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.network.chat.MutableComponent;
@@ -42,10 +42,10 @@ public abstract class IconButton extends AbstractButton {
 	}
 
 	@Override
-	public void renderContents(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void extractContents(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		boolean drawsBackground = drawsBackground();
 		if (drawsBackground) {
-			this.renderDefaultSprite(context);
+			this.extractDefaultSprite(context);
 		}
 
 		var texture = getTexture();

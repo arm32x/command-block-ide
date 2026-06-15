@@ -13,7 +13,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.MultilineTextField;
 import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.components.CommandSuggestions;
@@ -100,11 +100,6 @@ public class MultilineTextFieldWidget extends EditBox {
 	@Override
 	public String getHighlighted() {
         return editBox.getSelectedText();
-    }
-
-    @Override
-    public void setFilter(Predicate<String> textPredicate) {
-        throw new UnsupportedOperationException();
     }
 
 	@Override
@@ -251,7 +246,7 @@ public class MultilineTextFieldWidget extends EditBox {
 	}
 
 	@Override
-	public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void extractWidgetRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		if (!isVisible()) {
 			return;
 		}
@@ -282,7 +277,7 @@ public class MultilineTextFieldWidget extends EditBox {
 		List<FormattedCharSequence> lines = getSyntaxHighlighter().highlight(getValue());
 		for (int index = 0; index < lines.size(); index++) {
 			FormattedCharSequence line = lines.get(index);
-            context.drawString(self.getFont(), line, x, y + lineHeight * index, textColor);
+            context.text(self.getFont(), line, x, y + lineHeight * index, textColor);
 		}
 
 		if (showCursor) {
@@ -302,7 +297,7 @@ public class MultilineTextFieldWidget extends EditBox {
 			if (lineCursor) {
 				context.fill(cursorX, cursorY - 1, cursorX + 1, cursorY + 10, 0xFFD0D0D0);
 			} else {
-				context.drawString(self.getFont(), "_", cursorX + 1, cursorY, textColor);
+				context.text(self.getFont(), "_", cursorX + 1, cursorY, textColor);
 			}
 		}
 
@@ -317,7 +312,7 @@ public class MultilineTextFieldWidget extends EditBox {
         }
 	}
 
-	private void renderSelection(GuiGraphics context, int x, int y) {
+	private void renderSelection(GuiGraphicsExtractor context, int x, int y) {
         var selection = editBox.getSelected();
         int normalizedSelectionStart = selection.beginIndex();
         int normalizedSelectionEnd = selection.endIndex();

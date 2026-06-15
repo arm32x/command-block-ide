@@ -11,7 +11,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.network.chat.Style;
 import net.minecraft.ChatFormatting;
@@ -37,13 +37,13 @@ public final class CommandSuggestionsMixin implements ChatInputSuggestorExtensio
 
 	@Shadow @Final EditBox input;
 
-	@Shadow private @Nullable ParseResults<SharedSuggestionProvider> currentParse;
+	@Shadow private @Nullable ParseResults<ClientSuggestionProvider> currentParse;
 	@Shadow private @Nullable CompletableFuture<Suggestions> pendingSuggestions;
 
 	@Shadow private @Nullable CommandSuggestions.SuggestionsList suggestions;
 
 	@ModifyConstant(
-		method = {"showSuggestions(Z)V", "renderUsage(Lnet/minecraft/client/gui/GuiGraphics;)V"},
+		method = {"showSuggestions(Z)V", "extractUsage(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V"},
 		constant = @Constant(intValue = 72)
 	)
 	public int getY(int seventyTwo) {
@@ -62,10 +62,7 @@ public final class CommandSuggestionsMixin implements ChatInputSuggestorExtensio
 	}
 
 	@ModifyArg(
-		method = {
-                "showSuggestions(Z)V",
-                "fillNodeUsage(Lnet/minecraft/ChatFormatting;)Z"
-		},
+		method = "showSuggestions(Z)V",
 		at = @At(
 			value = "INVOKE",
 			target = "Lnet/minecraft/client/gui/components/EditBox;getScreenX(I)I",
@@ -102,8 +99,8 @@ public final class CommandSuggestionsMixin implements ChatInputSuggestorExtensio
 		return ide$mapping;
 	}
 
-	@Inject(method = "updateUsageInfo()V", at = @At("HEAD"), cancellable = true)
-	public void onShowCommandSuggestions(CallbackInfo ci) {
+	@Inject(method = "updateUsageInfo(Lcom/mojang/brigadier/ParseResults;Lcom/mojang/brigadier/suggestion/Suggestions;)V", at = @At("HEAD"), cancellable = true)
+	public void onShowCommandSuggestions(ParseResults<ClientSuggestionProvider> currentParse, Suggestions suggestions, CallbackInfo ci) {
 		if (ide$allowComments && input.getValue().startsWith("#")
 			|| ide$mapping != null && ide$mapping.inverted().mapIndex(input.getCursorPosition()).isEmpty()) {
 			ci.cancel();
@@ -143,7 +140,7 @@ public final class CommandSuggestionsMixin implements ChatInputSuggestorExtensio
 	}
 
 	@ModifyArg(
-		method = "fillNodeUsage(Lnet/minecraft/ChatFormatting;)Z",
+		method = "updateUsageInfo(Lcom/mojang/brigadier/ParseResults;Lcom/mojang/brigadier/suggestion/Suggestions;)V",
 		at = @At(
 			value = "INVOKE",
 			target = "Lcom/mojang/brigadier/context/CommandContextBuilder;findSuggestionContext(I)Lcom/mojang/brigadier/context/SuggestionContext;",

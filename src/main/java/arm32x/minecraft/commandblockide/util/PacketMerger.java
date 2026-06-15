@@ -1,7 +1,7 @@
 package arm32x.minecraft.commandblockide.util;
 
 import java.util.Optional;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.FriendlyByteBufs;
 import net.minecraft.network.FriendlyByteBuf;
 
 /**
@@ -9,7 +9,7 @@ import net.minecraft.network.FriendlyByteBuf;
  * into one {@code PacketByteBuf}.
  */
 public final class PacketMerger {
-	private FriendlyByteBuf destination = PacketByteBufs.create();
+	private FriendlyByteBuf destination = FriendlyByteBufs.create();
 	private int chunksRemaining = -1;
 
 	public PacketMerger() { }
@@ -42,7 +42,7 @@ public final class PacketMerger {
 		destination.writeBytes(buf);
 		if (--chunksRemaining == 0) {
 			FriendlyByteBuf merged = destination;
-			destination = PacketByteBufs.create();
+			destination = FriendlyByteBufs.create();
 			chunksRemaining = -1;
 			return Optional.of(merged);
 		} else {

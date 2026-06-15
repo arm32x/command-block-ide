@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.client.gui.*;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -59,9 +59,9 @@ public abstract class Container extends AbstractContainerEventHandler implements
 	public List<? extends GuiEventListener> children() { return children; }
 
 	@Override
-	public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		for (Renderable drawable : drawables) {
-			drawable.render(context, mouseX, mouseY, delta);
+			drawable.extractRenderState(context, mouseX, mouseY, delta);
 		}
 	}
 }
