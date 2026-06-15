@@ -2,27 +2,27 @@ package arm32x.minecraft.commandblockide.payloads;
 
 import arm32x.minecraft.commandblockide.Packets;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-public record ApplyFunctionPayload(ByteBuf bytes) implements CustomPayload {
-    public static final PacketCodec<PacketByteBuf, ApplyFunctionPayload> CODEC = PacketCodec.of(ApplyFunctionPayload::send, ApplyFunctionPayload::new);
+public record ApplyFunctionPayload(ByteBuf bytes) implements CustomPacketPayload {
+    public static final StreamCodec<FriendlyByteBuf, ApplyFunctionPayload> CODEC = StreamCodec.ofMember(ApplyFunctionPayload::send, ApplyFunctionPayload::new);
 
-    public ApplyFunctionPayload(PacketByteBuf buf) {
+    public ApplyFunctionPayload(FriendlyByteBuf buf) {
         this(buf.readBytes(buf.readableBytes()));
     }
 
-    private void send(PacketByteBuf buf) {
+    private void send(FriendlyByteBuf buf) {
         buf.writeBytes(bytes, bytes.readableBytes());
     }
 
-    public PacketByteBuf toBuf() {
-        return new PacketByteBuf(bytes);
+    public FriendlyByteBuf toBuf() {
+        return new FriendlyByteBuf(bytes);
     }
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return Packets.APPLY_FUNCTION;
     }
 }

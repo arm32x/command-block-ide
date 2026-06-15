@@ -1,12 +1,12 @@
 package arm32x.minecraft.commandblockide.util;
 
-import net.minecraft.text.CharacterVisitor;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Style;
+import net.minecraft.util.FormattedCharSink;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Style;
 
 public final class OrderedTexts {
-    public static OrderedText skip(int count, OrderedText text) {
-        return visitor -> text.accept(new CharacterVisitor() {
+    public static FormattedCharSequence skip(int count, FormattedCharSequence text) {
+        return visitor -> text.accept(new FormattedCharSink() {
             private int remaining = count;
 
             @Override
@@ -20,8 +20,8 @@ public final class OrderedTexts {
         });
     }
 
-    public static OrderedText limit(int count, OrderedText text) {
-        return visitor -> text.accept(new CharacterVisitor() {
+    public static FormattedCharSequence limit(int count, FormattedCharSequence text) {
+        return visitor -> text.accept(new FormattedCharSink() {
             private int remaining = count;
 
             @Override

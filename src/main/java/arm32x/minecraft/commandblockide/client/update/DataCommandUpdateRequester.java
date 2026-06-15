@@ -5,17 +5,17 @@ import arm32x.minecraft.commandblockide.client.gui.screen.CommandBlockIDEScreen;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.CommandBlockBlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.storage.NbtReadView;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableTextContent;
-import net.minecraft.util.ErrorReporter;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.CommandBlockEntity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 public final class DataCommandUpdateRequester {
 	private static @Nullable DataCommandUpdateRequester INSTANCE = null;
 
-	private final Map<BlockPos, CommandBlockBlockEntity> blocksToUpdate = new HashMap<>();
+	private final Map<BlockPos, CommandBlockEntity> blocksToUpdate = new HashMap<>();
 
 	private DataCommandUpdateRequester() { }
 
@@ -35,15 +35,15 @@ public final class DataCommandUpdateRequester {
 		}
 	}
 
-	public void requestUpdate(ClientPlayerEntity player, CommandBlockBlockEntity blockEntity) {
-		BlockPos position = blockEntity.getPos();
+	public void requestUpdate(LocalPlayer player, CommandBlockEntity blockEntity) {
+		BlockPos position = blockEntity.getBlockPos();
 		blocksToUpdate.put(position, blockEntity);
 
 		String command = String.format("data get block %d %d %d", position.getX(), position.getY(), position.getZ());
-		player.networkHandler.sendChatCommand(command);
+		player.connection.sendCommand(command);
 	}
 
-	public boolean handleFeedback(MinecraftClient client, TranslatableTextContent message) {
+	public boolean handleFeedback(Minecraft client, TranslatableContents message) {
 		Object[] args = message.getArgs();
 		LOGGER.trace("Handling feedback for message {} with args {}.", message, args);
 
@@ -63,37 +63,37 @@ public final class DataCommandUpdateRequester {
 			return false;
 		}
 
-		if (client.world == null) {
+		if (client.level == null) {
 			LOGGER.warn("Client is outside of a world.");
 			return false;
 		}
-		BlockState blockState = client.world.getBlockState(position);
+		BlockState blockState = client.level.getBlockState(position);
 		if (!isCommandBlock(blockState)) {
 			LOGGER.debug("Block {} is not a command block.", position);
 			return false;
 		}
 
-		String stringifiedTag = ((Text)args[3]).getString();
-		@Nullable NbtCompound tag;
+		String stringifiedTag = ((Component)args[3]).getString();
+		@Nullable CompoundTag tag;
 		try {
-			tag = StringNbtReader.readCompound(stringifiedTag);
+			tag = TagParser.parseCompoundFully(stringifiedTag);
 		} catch (CommandSyntaxException ex) {
 			LOGGER.error("Error parsing feedback from data command.", ex);
 			return false;
 		}
 
-		@Nullable CommandBlockBlockEntity blockEntity = blocksToUpdate.get(position);
+		@Nullable CommandBlockEntity blockEntity = blocksToUpdate.get(position);
 		if (blockEntity == null) {
 			LOGGER.debug("Block entity {} not queued for update.", position);
 			return false;
 		}
 
-        try (var errorReporter = new ErrorReporter.Logging(blockEntity.getReporterContext(), LOGGER)) {
-            blockEntity.read(NbtReadView.create(errorReporter, client.world.getRegistryManager(), tag));
+        try (var errorReporter = new ProblemReporter.ScopedCollector(blockEntity.problemPath(), LOGGER)) {
+            blockEntity.loadWithComponents(TagValueInput.create(errorReporter, client.level.registryAccess(), tag));
         }
 //		blockEntity.setNeedsUpdatePacket(false);
-		if (client.currentScreen instanceof CommandBlockIDEScreen) {
-			((CommandBlockIDEScreen)client.currentScreen).update(position);
+		if (client.screen instanceof CommandBlockIDEScreen) {
+			((CommandBlockIDEScreen)client.screen).update(position);
 		}
 		blocksToUpdate.remove(position);
 
@@ -101,7 +101,7 @@ public final class DataCommandUpdateRequester {
 	}
 
 	private static String getStringFromText(Object object) {
-		if (object instanceof Text text) {
+		if (object instanceof Component text) {
 			return text.getString();
 		} else {
 			return object.toString();

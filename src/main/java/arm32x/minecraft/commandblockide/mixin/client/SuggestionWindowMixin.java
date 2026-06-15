@@ -5,20 +5,44 @@ import arm32x.minecraft.commandblockide.client.processor.StringMapping;
 import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggestorExtension;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
-import net.minecraft.client.gui.screen.ChatInputSuggestor;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import org.spongepowered.asm.mixin.Final;
+import net.minecraft.client.gui.components.CommandSuggestions;
+import net.minecraft.client.gui.components.EditBox;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.Unique;
 
-@Mixin(ChatInputSuggestor.SuggestionWindow.class)
+import java.lang.reflect.Field;
+
+@Mixin(CommandSuggestions.SuggestionsList.class)
 public abstract class SuggestionWindowMixin {
-    @Shadow(aliases = { "field_21615" }) private @Final ChatInputSuggestor this$0;
+    @Unique private CommandSuggestions ide$commandSuggestions;
+
+    @Unique
+    private CommandSuggestions ide$getCommandSuggestions() {
+        if (ide$commandSuggestions != null) {
+            return ide$commandSuggestions;
+        }
+
+        for (Field field : getClass().getDeclaredFields()) {
+            if (field.getType() == CommandSuggestions.class && !field.getName().startsWith("ide$")) {
+                try {
+                    field.setAccessible(true);
+                    CommandSuggestions commandSuggestions = (CommandSuggestions)field.get(this);
+                    if (commandSuggestions != null) {
+                        return ide$commandSuggestions = commandSuggestions;
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException("Unable to read CommandSuggestions owner from SuggestionsList", e);
+                }
+            }
+        }
+
+        throw new IllegalStateException("Unable to find CommandSuggestions owner field on SuggestionsList");
+    }
 
     @Redirect(
-        method = "complete()V",
+        method = "useSuggestion()V",
         at = @At(
             value = "INVOKE",
             target = "Lcom/mojang/brigadier/suggestion/Suggestion;apply(Ljava/lang/String;)Ljava/lang/String;",
@@ -26,7 +50,7 @@ public abstract class SuggestionWindowMixin {
         )
     )
     private String applySuggestion(Suggestion instance, String input) {
-        StringMapping mapping = ((ChatInputSuggestorExtension)this$0).ide$getMapping();
+        StringMapping mapping = ((ChatInputSuggestorExtension)ide$getCommandSuggestions()).ide$getMapping();
         int start = StringMapping.mapIndexOrAfter(mapping, false, instance.getRange().getStart());
         int end = StringMapping.mapIndexOrAfter(mapping, false, instance.getRange().getEnd());
 
@@ -45,7 +69,7 @@ public abstract class SuggestionWindowMixin {
     }
 
     @Redirect(
-        method = "complete()V",
+        method = "useSuggestion()V",
         at = @At(
             value = "INVOKE",
             target = "Lcom/mojang/brigadier/context/StringRange;getStart()I",
@@ -53,7 +77,7 @@ public abstract class SuggestionWindowMixin {
         )
     )
     private int getMappedStart(StringRange instance) {
-        StringMapping mapping = ((ChatInputSuggestorExtension)this$0).ide$getMapping();
+        StringMapping mapping = ((ChatInputSuggestorExtension)ide$getCommandSuggestions()).ide$getMapping();
         return StringMapping.mapIndexOrAfter(mapping, false, instance.getStart());
     }
 
@@ -61,11 +85,11 @@ public abstract class SuggestionWindowMixin {
         method = "<init>",
         at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;drawsBackground()Z"
+            target = "Lnet/minecraft/client/gui/components/EditBox;isBordered()Z"
         )
     )
-    public boolean getTextFieldDrawsBackground(TextFieldWidget textField) {
+    public boolean getTextFieldDrawsBackground(EditBox textField) {
         // This will result in the suggestor moving left 1 pixel.
-        return !(textField instanceof MultilineTextFieldWidget) && textField.drawsBackground();
+        return !(textField instanceof MultilineTextFieldWidget) && textField.isBordered();
     }
 }

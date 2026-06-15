@@ -2,17 +2,17 @@ package arm32x.minecraft.commandblockide.client;
 
 import java.util.*;
 import java.util.stream.Stream;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CommandBlock;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CommandBlock;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 
 public final class CommandChainTracer {
-	private final ClientWorld world;
+	private final ClientLevel world;
 
-	public CommandChainTracer(ClientWorld world) {
+	public CommandChainTracer(ClientLevel world) {
 		this.world = world;
 	}
 
@@ -48,14 +48,14 @@ public final class CommandChainTracer {
 		public boolean hasNext() {
 			BlockState blockState = world.getBlockState(position);
 			if (isCommandBlock(blockState)) {
-				Direction facing = blockState.get(CommandBlock.FACING);
-				BlockPos nextPosition = position.offset(facing);
+				Direction facing = blockState.getValue(CommandBlock.FACING);
+				BlockPos nextPosition = position.relative(facing);
 				BlockState nextBlockState = world.getBlockState(nextPosition);
 				return Stream.of(
 					Blocks.COMMAND_BLOCK,
 					Blocks.REPEATING_COMMAND_BLOCK,
 					Blocks.CHAIN_COMMAND_BLOCK
-				).anyMatch(nextBlockState::isOf) && !visited.contains(nextPosition);
+				).anyMatch(nextBlockState::is) && !visited.contains(nextPosition);
 			}
 			return false;
 		}
@@ -64,14 +64,14 @@ public final class CommandChainTracer {
 		public BlockPos next() {
 			BlockState blockState = world.getBlockState(position);
 			if (isCommandBlock(blockState)) {
-				Direction facing = blockState.get(CommandBlock.FACING);
-				BlockPos nextPosition = position.offset(facing);
+				Direction facing = blockState.getValue(CommandBlock.FACING);
+				BlockPos nextPosition = position.relative(facing);
 				BlockState nextBlockState = world.getBlockState(nextPosition);
 				if (Stream.of(
 						Blocks.COMMAND_BLOCK,
 						Blocks.REPEATING_COMMAND_BLOCK,
 						Blocks.CHAIN_COMMAND_BLOCK
-					).anyMatch(nextBlockState::isOf) && !visited.contains(nextPosition)) {
+					).anyMatch(nextBlockState::is) && !visited.contains(nextPosition)) {
 					position = nextPosition;
 					visited.add(position);
 					return position;
@@ -97,7 +97,7 @@ public final class CommandChainTracer {
 					Blocks.COMMAND_BLOCK,
 					Blocks.REPEATING_COMMAND_BLOCK,
 					Blocks.CHAIN_COMMAND_BLOCK
-				).anyMatch(blockState::isOf)) {
+				).anyMatch(blockState::is)) {
 				long resultCount = getStream(blockState).count();
 				return resultCount == 1;
 			}
@@ -111,7 +111,7 @@ public final class CommandChainTracer {
 					Blocks.COMMAND_BLOCK,
 					Blocks.REPEATING_COMMAND_BLOCK,
 					Blocks.CHAIN_COMMAND_BLOCK
-				).anyMatch(blockState::isOf)) {
+				).anyMatch(blockState::is)) {
 				List<BlockPos> results = getStream(blockState).toList();
 				if (results.size() != 1) {
 					throw new NoSuchElementException();
@@ -125,15 +125,15 @@ public final class CommandChainTracer {
 
 		private Stream<BlockPos> getStream(BlockState blockState) {
 			return Stream.of(Direction.values())
-				.filter((direction) -> direction != blockState.get(CommandBlock.FACING))
-				.map((direction) -> position.offset(direction))
+				.filter((direction) -> direction != blockState.getValue(CommandBlock.FACING))
+				.map((direction) -> position.relative(direction))
 				.filter((pos) -> isCommandBlock(world.getBlockState(pos)) && !visited.contains(pos))
-				.filter((pos) -> pos.offset(world.getBlockState(pos).get(CommandBlock.FACING)).equals(position));
+				.filter((pos) -> pos.relative(world.getBlockState(pos).getValue(CommandBlock.FACING)).equals(position));
 		}
 	}
 
 	// TODO: Move to a proper utility class.
 	public static boolean isCommandBlock(BlockState blockState) {
-		return blockState.isOf(Blocks.COMMAND_BLOCK) || blockState.isOf(Blocks.REPEATING_COMMAND_BLOCK) || blockState.isOf(Blocks.CHAIN_COMMAND_BLOCK);
+		return blockState.is(Blocks.COMMAND_BLOCK) || blockState.is(Blocks.REPEATING_COMMAND_BLOCK) || blockState.is(Blocks.CHAIN_COMMAND_BLOCK);
 	}
 }

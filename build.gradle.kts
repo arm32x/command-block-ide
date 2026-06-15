@@ -25,7 +25,7 @@ dependencies {
     val minecraft_version: String by project
     minecraft("com.mojang:minecraft:$minecraft_version")
     val yarn_mappings: String by project
-    mappings("net.fabricmc:yarn:$yarn_mappings:v2")
+    mappings(loom.officialMojangMappings())
     val loader_version: String by project
     modImplementation("net.fabricmc:fabric-loader:$loader_version")
 

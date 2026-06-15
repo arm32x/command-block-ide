@@ -1,11 +1,11 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.input.AbstractInput;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.input.InputWithModifiers;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 public final class CommandBlockTrackOutputButton extends IconButton implements Dirtyable {
 	private boolean trackingOutput = false;
@@ -20,23 +20,23 @@ public final class CommandBlockTrackOutputButton extends IconButton implements D
 	@Override
 	protected Identifier getTexture() {
 		return trackingOutput
-			? Identifier.of("minecraft", "textures/item/writable_book.png")
-			: Identifier.of("minecraft", "textures/item/written_book.png");
+			? Identifier.fromNamespaceAndPath("minecraft", "textures/item/writable_book.png")
+			: Identifier.fromNamespaceAndPath("minecraft", "textures/item/written_book.png");
 	}
 
 	@Override
-	public MutableText getNarrationMessage() {
-		return getNarrationMessage(getTooltipText());
+	public MutableComponent createNarrationMessage() {
+		return wrapDefaultNarrationMessage(getTooltipText());
 	}
 
-	private Text getTooltipText() {
+	private Component getTooltipText() {
 		return trackingOutput
-			? Text.translatable("commandBlockIDE.lastOutput.on")
-			: Text.translatable("commandBlockIDE.lastOutput.off");
+			? Component.translatable("commandBlockIDE.lastOutput.on")
+			: Component.translatable("commandBlockIDE.lastOutput.off");
 	}
 
 	@Override
-	public void onPress(AbstractInput input) {
+	public void onPress(InputWithModifiers input) {
 		trackingOutput = !trackingOutput;
 		dirty = true;
 		updateTooltip();
@@ -46,7 +46,7 @@ public final class CommandBlockTrackOutputButton extends IconButton implements D
 	public boolean isDirty() { return dirty; }
 
 	private void updateTooltip() {
-		setTooltip(Tooltip.of(getTooltipText()));
+		setTooltip(Tooltip.create(getTooltipText()));
 	}
 
 	public boolean isTrackingOutput() {

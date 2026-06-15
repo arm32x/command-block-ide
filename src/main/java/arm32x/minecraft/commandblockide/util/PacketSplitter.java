@@ -4,43 +4,43 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Splits a {@link PacketByteBuf} into several chunks to avoid size limitations.
+ * Splits a {@link FriendlyByteBuf} into several chunks to avoid size limitations.
  */
 public final class PacketSplitter implements Iterable<ByteBuf> {
 	public static final int CHUNK_SIZE = 32500;
 	public static final int HEADER_MAGIC = 1397771337 /* SPLI */;
 
-	private final PacketByteBuf source;
+	private final FriendlyByteBuf source;
 
-	public PacketSplitter(PacketByteBuf source) {
+	public PacketSplitter(FriendlyByteBuf source) {
 		this.source = source;
 	}
 
 	/**
 	 * Writes a {@code PacketSplitter} header to the provided {@link
-	 * PacketByteBuf}. This should be written to the {@code PacketByteBuf}
+	 * FriendlyByteBuf}. This should be written to the {@code PacketByteBuf}
 	 * first, before any other data.
 	 * @param buf The {@code PacketByteBuf} to write the header to.
 	 */
-	public static void writeHeader(PacketByteBuf buf) {
+	public static void writeHeader(FriendlyByteBuf buf) {
 		buf.writeInt(HEADER_MAGIC);
 		buf.writeInt(0);
 	}
 
 	/**
 	 * Updates the chunk count in the {@code PacketSplitter} header of the
-	 * provided {@link PacketByteBuf}.
+	 * provided {@link FriendlyByteBuf}.
 	 * @param buf The {@code PacketByteBuf} to update the chunk count of. It
 	 *            must contain a header written by {@link
-	 *            PacketSplitter#writeHeader(PacketByteBuf)}.
+	 *            PacketSplitter#writeHeader(FriendlyByteBuf)}.
 	 * @throws MissingHeaderException if {@code buf} does not contain a {@code
 	 *         PacketSplitter} header.
 	 */
-	public static void updateChunkCount(PacketByteBuf buf) {
+	public static void updateChunkCount(FriendlyByteBuf buf) {
 		int start = buf.readerIndex();
 		if (buf.readInt() != HEADER_MAGIC) {
 			throw new MissingHeaderException();

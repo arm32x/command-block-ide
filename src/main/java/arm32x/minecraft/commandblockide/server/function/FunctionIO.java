@@ -1,7 +1,7 @@
 package arm32x.minecraft.commandblockide.server.function;
 
-import arm32x.minecraft.commandblockide.mixin.server.DirectoryResourcePackAccessor;
-import arm32x.minecraft.commandblockide.mixin.server.FunctionLoaderAccessor;
+import arm32x.minecraft.commandblockide.mixin.server.PathPackResourcesAccessor;
+import arm32x.minecraft.commandblockide.mixin.server.ServerFunctionLibraryAccessor;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.DataResult;
 import java.io.IOException;
@@ -9,14 +9,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
-import net.minecraft.resource.DirectoryResourcePack;
-import net.minecraft.resource.ResourceType;
-import net.minecraft.resource.ZipResourcePack;
+import net.minecraft.server.packs.PathPackResources;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.FilePackResources;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.path.PathUtil;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.FileUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,37 +29,37 @@ public final class FunctionIO {
      * @return Either the lines read from the {@code .mcfunction} file, or a
      *         feedback message to show to the user indicating what went wrong.
      */
-    public static Either<List<String>, Text> loadFunction(MinecraftServer server, Identifier functionId) {
+    public static Either<List<String>, Component> loadFunction(MinecraftServer server, Identifier functionId) {
         // TODO: Use proper error handling instead of returning Text.
         // TODO: Make loading functions use a CompletableFuture so a loading
         //       screen can be shown.
 
         // Convert the function ID ('some_datapack:some_function') to a resource
         // path ('some_datapack:functions/some_function.mcfunction').
-        var resourceFinder = FunctionLoaderAccessor.getResourceFinder();
-        var functionResourcePath = resourceFinder.toResourcePath(functionId);
+        var resourceFinder = ServerFunctionLibraryAccessor.getResourceFinder();
+        var functionResourcePath = resourceFinder.idToFile(functionId);
 
         // Figure out which resource pack the function is in.
         var resourceManager = server.getResourceManager();
         var functionResource = resourceManager.getResource(functionResourcePath);
         if (functionResource.isEmpty()) {
-            return Either.right(Text.translatable("commandBlockIDE.loadFunction.failed.noResourcePack", functionId));
+            return Either.right(Component.translatable("commandBlockIDE.loadFunction.failed.noResourcePack", functionId));
         }
-        var pack = functionResource.get().getPack();
+        var pack = functionResource.get().source();
 
         // Only directory-based resource packs are supported.
-        if (pack instanceof ZipResourcePack) {
-            return Either.right(Text.translatable("commandBlockIDE.loadFunction.failed.zipNotSupported", functionId).formatted(Formatting.RED));
-        } else if (!(pack instanceof DirectoryResourcePack)) {
-            return Either.right(Text.translatable("commandBlockIDE.loadFunction.failed.packClassNotSupported", functionId, pack.getClass().getSimpleName()).formatted(Formatting.RED));
+        if (pack instanceof FilePackResources) {
+            return Either.right(Component.translatable("commandBlockIDE.loadFunction.failed.zipNotSupported", functionId).withStyle(ChatFormatting.RED));
+        } else if (!(pack instanceof PathPackResources)) {
+            return Either.right(Component.translatable("commandBlockIDE.loadFunction.failed.packClassNotSupported", functionId, pack.getClass().getSimpleName()).withStyle(ChatFormatting.RED));
         }
-        var directoryPack = (DirectoryResourcePack)pack;
+        var directoryPack = (PathPackResources)pack;
 
         // Get the path to the function resource in the filesystem.
-        DataResult<Path> pathResult = getFilesystemPathOfResource(directoryPack, ResourceType.SERVER_DATA, functionResourcePath);
+        DataResult<Path> pathResult = getFilesystemPathOfResource(directoryPack, PackType.SERVER_DATA, functionResourcePath);
         if (pathResult.result().isEmpty()) {
             String errorMessage = pathResult.error().get().message();
-            return Either.right(Text.translatable("commandBlockIDE.loadFunction.failed.invalidPath", functionId, functionResourcePath, errorMessage));
+            return Either.right(Component.translatable("commandBlockIDE.loadFunction.failed.invalidPath", functionId, functionResourcePath, errorMessage));
         }
         Path path = pathResult.result().get();
 
@@ -68,7 +68,7 @@ public final class FunctionIO {
             return Either.left(Files.readAllLines(path));
         } catch (IOException e) {
             LOGGER.error("IO exception occurred while loading function '" + functionId.toString() + "':", e);
-            return Either.right(Text.translatable("commandBlockIDE.loadFunction.failed.ioException", functionId).formatted(Formatting.RED));
+            return Either.right(Component.translatable("commandBlockIDE.loadFunction.failed.ioException", functionId).withStyle(ChatFormatting.RED));
         }
     }
 
@@ -80,40 +80,40 @@ public final class FunctionIO {
      * @param lines The lines to write into the {@code .mcfunction} file.
      * @return The feedback message to show to the user.
      */
-    public static Text saveFunction(MinecraftServer server, Identifier functionId, List<String> lines) {
+    public static Component saveFunction(MinecraftServer server, Identifier functionId, List<String> lines) {
         // TODO: Use proper error handling instead of returning Text.
         // TODO: Make saving functions use a CompletableFuture so errors can be
         //       properly shown to the user.
 
         // Convert the function ID ('some_datapack:some_function') to a resource
         // path ('some_datapack:functions/some_function.mcfunction').
-        var resourceFinder = FunctionLoaderAccessor.getResourceFinder();
-        var functionResourcePath = resourceFinder.toResourcePath(functionId);
+        var resourceFinder = ServerFunctionLibraryAccessor.getResourceFinder();
+        var functionResourcePath = resourceFinder.idToFile(functionId);
 
         // Figure out which resource pack the function is in.
         var resourceManager = server.getResourceManager();
         var functionResource = resourceManager.getResource(functionResourcePath);
         if (functionResource.isEmpty()) {
             // Error saving function '...': Not found in any datapack.
-            return Text.translatable("commandBlockIDE.saveFunction.failed.noResourcePack", functionId.toString());
+            return Component.translatable("commandBlockIDE.saveFunction.failed.noResourcePack", functionId.toString());
         }
-        var pack = functionResource.get().getPack();
+        var pack = functionResource.get().source();
 
         // Only directory-based resource packs are supported.
-        if (pack instanceof ZipResourcePack) {
-            return Text.translatable("commandBlockIDE.saveFunction.failed.zipNotSupported", functionId.toString()).formatted(
-                Formatting.RED);
-        } else if (!(pack instanceof DirectoryResourcePack)) {
-            return Text.translatable("commandBlockIDE.saveFunction.failed.packClassNotSupported", functionId.toString(), pack.getClass().getSimpleName()).formatted(Formatting.RED);
+        if (pack instanceof FilePackResources) {
+            return Component.translatable("commandBlockIDE.saveFunction.failed.zipNotSupported", functionId.toString()).withStyle(
+                ChatFormatting.RED);
+        } else if (!(pack instanceof PathPackResources)) {
+            return Component.translatable("commandBlockIDE.saveFunction.failed.packClassNotSupported", functionId.toString(), pack.getClass().getSimpleName()).withStyle(ChatFormatting.RED);
         }
-        var directoryPack = (DirectoryResourcePack)pack;
+        var directoryPack = (PathPackResources)pack;
 
         // Get the path to the function resource in the filesystem.
-        DataResult<Path> pathResult = getFilesystemPathOfResource(directoryPack, ResourceType.SERVER_DATA, functionResourcePath);
+        DataResult<Path> pathResult = getFilesystemPathOfResource(directoryPack, PackType.SERVER_DATA, functionResourcePath);
         if (pathResult.result().isEmpty()) {
             String errorMessage = pathResult.error().get().message();
             // Error saving function '...': Invalid path '...': ...
-            return Text.translatable("commandBlockIDE.saveFunction.failed.invalidPath", functionId.toString(), functionResourcePath.toString(), errorMessage);
+            return Component.translatable("commandBlockIDE.saveFunction.failed.invalidPath", functionId.toString(), functionResourcePath.toString(), errorMessage);
         }
         Path path = pathResult.result().get();
 
@@ -122,10 +122,10 @@ public final class FunctionIO {
             Files.write(path, lines, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             LOGGER.error("IO exception occurred while saving function '" + functionId.toString() + "':", e);
-            return Text.translatable("commandBlockIDE.saveFunction.failed.ioException", functionId.toString()).formatted(Formatting.RED);
+            return Component.translatable("commandBlockIDE.saveFunction.failed.ioException", functionId.toString()).withStyle(ChatFormatting.RED);
         }
 
-        return Text.translatable("commandBlockIDE.saveFunction.success.file", functionId.toString());
+        return Component.translatable("commandBlockIDE.saveFunction.success.file", functionId.toString());
     }
 
     /**
@@ -146,12 +146,12 @@ public final class FunctionIO {
      * @return A filesystem path to the same resource as {@code resourcePath}.
      */
     @SuppressWarnings("SameParameterValue")
-    private static DataResult<Path> getFilesystemPathOfResource(DirectoryResourcePack pack, ResourceType resourceType, Identifier resourcePath) {
-        Path root = ((DirectoryResourcePackAccessor)pack).getRoot();
+    private static DataResult<Path> getFilesystemPathOfResource(PathPackResources pack, PackType resourceType, Identifier resourcePath) {
+        Path root = ((PathPackResourcesAccessor)pack).getRoot();
         Path namespaceDir = root.resolve(resourceType.getDirectory()).resolve(resourcePath.getNamespace());
 
-        return PathUtil.split(resourcePath.getPath())
-            .map(segments -> PathUtil.getPath(namespaceDir, segments));
+        return FileUtil.decomposePath(resourcePath.getPath())
+            .map(segments -> FileUtil.resolvePath(namespaceDir, segments));
     }
 
     private static final Logger LOGGER = LogManager.getLogger();
