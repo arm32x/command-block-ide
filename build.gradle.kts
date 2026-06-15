@@ -1,9 +1,6 @@
-@file:Suppress("LocalVariableName")
-
 plugins {
-    id("com.github.johnrengelman.shadow")
-    id("com.gladed.androidgitversion")
-    id("fabric-loom")
+    alias(libs.plugins.android.git.version)
+    alias(libs.plugins.fabric.loom)
     `java-library`
 }
 
@@ -15,47 +12,38 @@ androidGitVersion {
 group = "arm32x.minecraft"
 version = androidGitVersion.name()
 
-configurations.implementation.get().extendsFrom(configurations["shadow"])
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    val minecraft_version: String by project
-    minecraft("com.mojang:minecraft:$minecraft_version")
-    val yarn_mappings: String by project
-    mappings(loom.officialMojangMappings())
-    val loader_version: String by project
-    modImplementation("net.fabricmc:fabric-loader:$loader_version")
+    minecraft(libs.minecraft)
 
-    val fabric_version: String by project
-    modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_version")
+    implementation(libs.fabric.loader)
+    implementation(libs.fabric.api)
 
-    val msgpack_java_version: String by project
-    shadow("org.msgpack:msgpack-core:${msgpack_java_version}")
+    implementation(libs.msgpack.core)
+    include(libs.msgpack.core)
 
-    val junit_version: String by project
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junit_version}")
-    val jqwik_version: String by project
-    testImplementation("net.jqwik:jqwik:${jqwik_version}")
-    val assertj_version: String by project
-    testImplementation("org.assertj:assertj-core:${assertj_version}")
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.jqwik)
+    testImplementation(libs.assertj.core)
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get().toInt()))
     }
     withSourcesJar()
 }
 
-tasks.withType<JavaCompile> {
+tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
+    options.release.set(libs.versions.java.get().toInt())
 }
 
 loom {
-    accessWidenerPath.set(File("src/main/resources/commandblockide.accesswidener"))
+    accessWidenerPath.set(file("src/main/resources/commandblockide.accesswidener"))
 }
 
 tasks.processResources {
@@ -66,24 +54,17 @@ tasks.processResources {
     }
 }
 
-// Reproducible builds (or at least an attempt)
-tasks.withType<AbstractArchiveTask> {
+tasks.withType<AbstractArchiveTask>().configureEach {
     isPreserveFileTimestamps = false
     isReproducibleFileOrder = true
 }
 
 tasks.jar {
-    from("LICENSE")
-}
-
-tasks.shadowJar {
-    configurations = listOf(project.configurations.shadow.get())
-}
-
-tasks.remapJar {
-    dependsOn(tasks.shadowJar)
-    inputFile.set(tasks.shadowJar.get().archiveFile)
-    doLast {
-        tasks.shadowJar.get().archiveFile.get().asFile.delete()
+    from("LICENSE") {
+        rename { "${it}_${project.name}" }
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

@@ -26,9 +26,10 @@
     ],
     "accessWidener": "commandblockide.accesswidener",
     "depends": {
-        "fabricloader": ">=0.16.10",
+        "fabricloader": ">=0.19.3",
         "fabric-api": "*",
-        "minecraft": "1.21.x"
+        "minecraft": "~26.1",
+        "java": ">=25"
     },
     "custom": {
         "vanguard": {
