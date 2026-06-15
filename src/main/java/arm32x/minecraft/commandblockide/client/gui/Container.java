@@ -4,33 +4,38 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.client.gui.*;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
 
-public abstract class Container extends AbstractParentElement implements Drawable, Selectable {
-	protected final List<Element> children = new ArrayList<>();
-	protected final List<Selectable> selectables = new ArrayList<>();
-	protected final List<Drawable> drawables = new ArrayList<>();
+public abstract class Container extends AbstractContainerEventHandler implements Renderable, NarratableEntry {
+	protected final List<GuiEventListener> children = new ArrayList<>();
+	protected final List<NarratableEntry> selectables = new ArrayList<>();
+	protected final List<Renderable> drawables = new ArrayList<>();
 
-	protected <T extends Element & Selectable & Drawable> T addDrawableChild(T child) {
+	protected <T extends GuiEventListener & NarratableEntry & Renderable> T addDrawableChild(T child) {
 		drawables.add(child);
 		return addSelectableChild(child);
 	}
 
-	protected <T extends Drawable> T addDrawable(T drawable) {
+	protected <T extends Renderable> T addDrawable(T drawable) {
 		drawables.add(drawable);
 		return drawable;
 	}
 
-	protected <T extends Element & Selectable> T addSelectableChild(T child) {
+	protected <T extends GuiEventListener & NarratableEntry> T addSelectableChild(T child) {
 		children.add(child);
 		selectables.add(child);
 		return child;
 	}
 
-	protected void remove(Element child) {
-		if (child instanceof Drawable) {
+	protected void remove(GuiEventListener child) {
+		if (child instanceof Renderable) {
 			drawables.remove(child);
 		}
-		if (child instanceof Selectable) {
+		if (child instanceof NarratableEntry) {
 			selectables.remove(child);
 		}
 		children.remove(child);
@@ -43,19 +48,19 @@ public abstract class Container extends AbstractParentElement implements Drawabl
 	}
 
 	@Override
-	public SelectionType getType() {
+	public NarrationPriority narrationPriority() {
 		return selectables.stream()
-			.map(Selectable::getType)
+			.map(NarratableEntry::narrationPriority)
 			.max(Comparator.naturalOrder())
-			.orElse(SelectionType.NONE);
+			.orElse(NarrationPriority.NONE);
 	}
 
 	@Override
-	public List<? extends Element> children() { return children; }
+	public List<? extends GuiEventListener> children() { return children; }
 
 	@Override
-	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-		for (Drawable drawable : drawables) {
+	public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+		for (Renderable drawable : drawables) {
 			drawable.render(context, mouseX, mouseY, delta);
 		}
 	}

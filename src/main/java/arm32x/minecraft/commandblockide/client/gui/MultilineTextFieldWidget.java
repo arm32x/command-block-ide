@@ -1,7 +1,7 @@
 package arm32x.minecraft.commandblockide.client.gui;
 
+import arm32x.minecraft.commandblockide.mixin.client.MultilineTextFieldAccessor;
 import arm32x.minecraft.commandblockide.mixin.client.EditBoxAccessor;
-import arm32x.minecraft.commandblockide.mixin.client.TextFieldWidgetAccessor;
 import arm32x.minecraft.commandblockide.util.OrderedTexts;
 import java.util.Arrays;
 import java.util.List;
@@ -10,32 +10,32 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.EditBox;
-import net.minecraft.client.gui.cursor.StandardCursors;
-import net.minecraft.client.gui.screen.ChatInputSuggestor;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.input.CursorMovement;
-import net.minecraft.client.input.KeyInput;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.MultilineTextField;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import net.minecraft.client.gui.components.CommandSuggestions;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Whence;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
-public class MultilineTextFieldWidget extends TextFieldWidget {
+public class MultilineTextFieldWidget extends EditBox {
 	/**
 	 * Allows easy and convenient access to private fields in the superclass.
 	 */
-	private final TextFieldWidgetAccessor self = (TextFieldWidgetAccessor)this;
+	private final EditBoxAccessor self = (EditBoxAccessor)this;
 
     // TODO: Allow the user to configure this or to indent with tabs.
     // Note that both the text field renderer and the command processor do not
@@ -46,7 +46,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	// invisible before switching to the other state.
     private static final long CURSOR_BLINK_INTERVAL_MS = 300;
 
-	private final EditBox editBox;
+	private final MultilineTextField editBox;
 
 	private boolean horizontalScrollEnabled;
 	private int horizontalScroll = 0;
@@ -59,18 +59,18 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 	private @Nullable Runnable cursorChangeListener = null;
 
-	public MultilineTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text, boolean horizontalScrollEnabled, boolean verticalScrollEnabled) {
+	public MultilineTextFieldWidget(Font textRenderer, int x, int y, int width, int height, Component text, boolean horizontalScrollEnabled, boolean verticalScrollEnabled) {
 		super(textRenderer, x, y, width, height, text);
 		this.horizontalScrollEnabled = horizontalScrollEnabled;
 		this.verticalScrollEnabled = verticalScrollEnabled;
 
 		// TODO: Support soft wrap.
-		editBox = new EditBox(textRenderer, Integer.MAX_VALUE);
+		editBox = new MultilineTextField(textRenderer, Integer.MAX_VALUE);
 	}
 
-	public MultilineTextFieldWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text) {
+	public MultilineTextFieldWidget(Font textRenderer, int x, int y, int width, int height, Component text) {
 		this(textRenderer, x, y, width, height, text, true, true);
-		editBox.setCursorChangeListener(() -> {
+		editBox.setCursorListener(() -> {
 			scrollToEnsureCursorVisible();
 			if (cursorChangeListener != null) {
 				cursorChangeListener.run();
@@ -79,8 +79,8 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	@Override
-	public void setChangedListener(@Nullable Consumer<String> changedListener) {
-		editBox.setChangeListener(Objects.requireNonNullElseGet(changedListener, () -> text -> {}));
+	public void setResponder(@Nullable Consumer<String> changedListener) {
+		editBox.setValueListener(Objects.requireNonNullElseGet(changedListener, () -> text -> {}));
 	}
 
 	public void setCursorChangeListener(@Nullable Runnable cursorChangeListener) {
@@ -88,28 +88,28 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
     @Override
-    public void setText(String text) {
-        editBox.setText(text);
+    public void setValue(String text) {
+        editBox.setValue(text);
     }
 
 	@Override
-	public String getText() {
-        return editBox.getText();
+	public String getValue() {
+        return editBox.value();
     }
 
 	@Override
-	public String getSelectedText() {
+	public String getHighlighted() {
         return editBox.getSelectedText();
     }
 
     @Override
-    public void setTextPredicate(Predicate<String> textPredicate) {
+    public void setFilter(Predicate<String> textPredicate) {
         throw new UnsupportedOperationException();
     }
 
 	@Override
     @Deprecated
-	public void addFormatter(TextFieldWidget.Formatter formatter) {
+	public void addFormatter(EditBox.TextFormatter formatter) {
 		// Do nothing, since we use our own syntax highlighting system. I would
         // love to throw an UnsupportedOperationException, but this is called by
         // ChatInputSuggestor.
@@ -124,41 +124,41 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
     }
 
 	@Override
-	public void write(String text) {
-        editBox.replaceSelection(text);
+	public void insertText(String text) {
+        editBox.insertText(text);
 	}
 
     @Override
-    public void eraseWords(int wordOffset) {
+    public void deleteWords(int wordOffset) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void eraseCharacters(int characterOffset) {
-        editBox.delete(characterOffset);
+    public void deleteChars(int characterOffset) {
+        editBox.deleteText(characterOffset);
     }
 
     @Override
-    public int getWordSkipPosition(int wordOffset) {
+    public int getWordPosition(int wordOffset) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void moveCursor(int offset, boolean hasShiftDown) {
 		editBox.setSelecting(hasShiftDown);
-        editBox.moveCursor(CursorMovement.RELATIVE, offset);
+        editBox.seekCursor(Whence.RELATIVE, offset);
     }
 
     private void moveCursor(double mouseX, double mouseY, boolean hasShiftDown) {
         double virtualX = mouseX - getInnerX() + getHorizontalScroll();
         double virtualY = mouseY - getInnerY() + getVerticalScroll();
 
-		int lineIndex = MathHelper.floor(virtualY / getLineHeight());
+		int lineIndex = Mth.floor(virtualY / getLineHeight());
 
 		// Get a rough estimate of where the cursor should be.
-		EditBox.Substring lineSubstring = editBox.getLine(lineIndex);
-		String line = getText().substring(lineSubstring.beginIndex(), lineSubstring.endIndex());
-		int charIndexInLine = self.getTextRenderer().trimToWidth(line, MathHelper.floor(virtualX)).length();
+		MultilineTextField.StringView lineSubstring = editBox.getLineView(lineIndex);
+		String line = getValue().substring(lineSubstring.beginIndex(), lineSubstring.endIndex());
+		int charIndexInLine = self.getFont().plainSubstrByWidth(line, Mth.floor(virtualX)).length();
 		int charIndex = lineSubstring.beginIndex() + charIndexInLine;
 
 		// Refine the estimate by determining the nearest character boundary.
@@ -168,67 +168,67 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			charIndex++;
 		}
 
-		setCursor(charIndex, hasShiftDown);
+		moveCursorTo(charIndex, hasShiftDown);
     }
 
     @Override
-    public void setCursor(int cursor, boolean hasShiftDown) {
+    public void moveCursorTo(int cursor, boolean hasShiftDown) {
 		editBox.setSelecting(hasShiftDown);
-        editBox.moveCursor(CursorMovement.ABSOLUTE, cursor);
+        editBox.seekCursor(Whence.ABSOLUTE, cursor);
     }
 
     @Override
-    public void setSelectionStart(int cursor) {
-		setCursor(cursor, true);
+    public void setCursorPosition(int cursor) {
+		moveCursorTo(cursor, true);
     }
 
 	@Override
-	public void setSelectionEnd(int index) {
-		((EditBoxAccessor)editBox).setSelectionEnd(index);
+	public void setHighlightPos(int index) {
+		((MultilineTextFieldAccessor)editBox).setSelectCursor(index);
 	}
 
 	@Override
-	public boolean keyPressed(KeyInput input) {
+	public boolean keyPressed(KeyEvent input) {
 		if (input.key() == GLFW.GLFW_KEY_TAB) {
             if (editBox.hasSelection()) {
                 logger.warn("Indenting selected lines is not yet supported");
             } else {
-                int cursorLeft = getCursor() - getLineStartBefore(getCursor());
+                int cursorLeft = getCursorPosition() - getLineStartBefore(getCursorPosition());
                 String indent = " ".repeat(4 - cursorLeft % INDENT_SIZE);
-                editBox.replaceSelection(indent);
+                editBox.insertText(indent);
             }
             return true;
         } else {
-			return editBox.handleSpecialKey(input);
+			return editBox.keyPressed(input);
 		}
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         if (!this.isVisible()) {
             return false;
         }
-        if (self.isFocusUnlocked()) {
+        if (self.isCanLoseFocus()) {
             setFocused(isMouseOver(click.x(), click.y()));
         }
         if (isFocused() && isMouseOver(click.x(), click.y()) && click.button() == 0) {
-            moveCursor(click.x(), click.y(), click.hasShift());
+            moveCursor(click.x(), click.y(), click.hasShiftDown());
             return true;
         }
         return false;
     }
 
     @Override
-    public boolean mouseDragged(Click click, double offsetX, double offsetY) {
+    public boolean mouseDragged(MouseButtonEvent click, double offsetX, double offsetY) {
         if (!this.isVisible()) {
             return false;
         }
-        if (self.isFocusUnlocked()) {
+        if (self.isCanLoseFocus()) {
             setFocused(isMouseOver(click.x(), click.y()));
         }
         if (isFocused() && isMouseOver(click.x(), click.y()) && click.button() == 0) {
             moveCursor(click.x(), click.y(), true);
-            editBox.setSelecting(click.hasShift());
+            editBox.setSelecting(click.hasShiftDown());
             return true;
         }
         return false;
@@ -251,14 +251,14 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	@Override
-	public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+	public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
 		if (!isVisible()) {
 			return;
 		}
 
-		if (drawsBackground()) {
-			var textureId = TextFieldWidgetAccessor.getTextures().get(isInteractable(), isFocused());
-			context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, textureId, getX(), getY(), getWidth(), getHeight());
+		if (isBordered()) {
+			var textureId = EditBoxAccessor.getTextures().get(isActive(), isFocused());
+			context.blitSprite(RenderPipelines.GUI_TEXTURED, textureId, getX(), getY(), getWidth(), getHeight());
 		}
 
 		context.enableScissor(
@@ -268,41 +268,41 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			this.getY() + this.getHeight() - 1
 		);
 
-		int textColor = self.invokeIsEditable() ? self.getEditableColor() : self.getUneditableColor();
+		int textColor = self.invokeIsEditable() ? self.getTextColor() : self.getTextColorUneditable();
 		int x = getInnerX() - horizontalScroll;
 		int y = getInnerY() - verticalScroll;
 
-		long timeSinceLastSwitchFocusMs = Util.getMeasuringTimeMs() - self.getLastSwitchFocusTime();
+		long timeSinceLastSwitchFocusMs = Util.getMillis() - self.getFocusedTime();
         boolean showCursor = isFocused() && timeSinceLastSwitchFocusMs / CURSOR_BLINK_INTERVAL_MS % 2 == 0;
-		boolean lineCursor = getCursor() < getText().length() || getText().length() >= self.invokeGetMaxLength();
+		boolean lineCursor = getCursorPosition() < getValue().length() || getValue().length() >= self.invokeGetMaxLength();
 
 		int cursorLine = getCurrentLineIndex();
 		int cursorY = y + lineHeight * cursorLine;
 
-		List<OrderedText> lines = getSyntaxHighlighter().highlight(getText());
+		List<FormattedCharSequence> lines = getSyntaxHighlighter().highlight(getValue());
 		for (int index = 0; index < lines.size(); index++) {
-			OrderedText line = lines.get(index);
-            context.drawTextWithShadow(self.getTextRenderer(), line, x, y + lineHeight * index, textColor);
+			FormattedCharSequence line = lines.get(index);
+            context.drawString(self.getFont(), line, x, y + lineHeight * index, textColor);
 		}
 
 		if (showCursor) {
             // Figure out the cursor X position by measuring the text before it.
             // This assumes that the highlighter returns the same characters as
             // the original text, which is not enforced by the API.
-            int indexOfLastNewlineBeforeCursor = getLineStartBefore(getCursor()) - 1;
+            int indexOfLastNewlineBeforeCursor = getLineStartBefore(getCursorPosition()) - 1;
             int codePointsBeforeCursor;
             if (indexOfLastNewlineBeforeCursor != -1) {
-                codePointsBeforeCursor = getText().codePointCount(indexOfLastNewlineBeforeCursor, Math.max(getCursor() - 1, 0));
+                codePointsBeforeCursor = getValue().codePointCount(indexOfLastNewlineBeforeCursor, Math.max(getCursorPosition() - 1, 0));
             } else {
-                codePointsBeforeCursor = getText().codePointCount(0, getCursor());
+                codePointsBeforeCursor = getValue().codePointCount(0, getCursorPosition());
             }
-            OrderedText textBeforeCursor = OrderedTexts.limit(codePointsBeforeCursor, lines.get(cursorLine));
-            int cursorX = x + self.getTextRenderer().getWidth(textBeforeCursor) - 1;
+            FormattedCharSequence textBeforeCursor = OrderedTexts.limit(codePointsBeforeCursor, lines.get(cursorLine));
+            int cursorX = x + self.getFont().width(textBeforeCursor) - 1;
 
 			if (lineCursor) {
 				context.fill(cursorX, cursorY - 1, cursorX + 1, cursorY + 10, 0xFFD0D0D0);
 			} else {
-				context.drawTextWithShadow(self.getTextRenderer(), "_", cursorX + 1, cursorY, textColor);
+				context.drawString(self.getFont(), "_", cursorX + 1, cursorY, textColor);
 			}
 		}
 
@@ -313,18 +313,18 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 		context.disableScissor();
 
         if (isHovered()) {
-            context.setCursor(StandardCursors.IBEAM);
+            context.requestCursor(CursorTypes.IBEAM);
         }
 	}
 
-	private void renderSelection(DrawContext context, int x, int y) {
-        var selection = editBox.getSelection();
+	private void renderSelection(GuiGraphics context, int x, int y) {
+        var selection = editBox.getSelected();
         int normalizedSelectionStart = selection.beginIndex();
         int normalizedSelectionEnd = selection.endIndex();
 
-        int startX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionStart), normalizedSelectionStart)) - 1;
+        int startX = x + self.getFont().width(getValue().substring(getLineStartBefore(normalizedSelectionStart), normalizedSelectionStart)) - 1;
         int startY = y + lineHeight * getLineIndex(normalizedSelectionStart) - 1;
-        int endX = x + self.getTextRenderer().getWidth(getText().substring(getLineStartBefore(normalizedSelectionEnd), normalizedSelectionEnd)) - 1;
+        int endX = x + self.getFont().width(getValue().substring(getLineStartBefore(normalizedSelectionEnd), normalizedSelectionEnd)) - 1;
         int endY = y + lineHeight * getLineIndex(normalizedSelectionEnd) - 1;
 
         int leftEdge = getInnerX() - 1;
@@ -332,26 +332,26 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
         if (startY == endY) {
             // Selection spans one line
-            context.drawSelection(startX, startY, endX, endY + lineHeight - 1, true);
+            context.textHighlight(startX, startY, endX, endY + lineHeight - 1, true);
         } else {
             // Selection spans two or more lines
-            context.drawSelection(startX, startY, rightEdge, startY + lineHeight, true);
+            context.textHighlight(startX, startY, rightEdge, startY + lineHeight, true);
             if (!(startY - lineHeight == endY || endY - lineHeight == startY)) {
                 // Selection spans three or more lines
-                context.drawSelection(leftEdge, startY + lineHeight, rightEdge, endY, true);
+                context.textHighlight(leftEdge, startY + lineHeight, rightEdge, endY, true);
             }
-            context.drawSelection(leftEdge, endY, endX, endY + lineHeight - 1, true);
+            context.textHighlight(leftEdge, endY, endX, endY + lineHeight - 1, true);
         }
 	}
 
     @Override
     public void setMaxLength(int maxLength) {
-        editBox.setMaxLength(maxLength);
+        editBox.setCharacterLimit(maxLength);
     }
 
     @Override
-    public int getCursor() {
-        return editBox.getCursor();
+    public int getCursorPosition() {
+        return editBox.cursor();
     }
 
 	public int getLineCount() {
@@ -359,11 +359,11 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	public int getCurrentLineIndex() {
-		return getLineIndex(getCursor());
+		return getLineIndex(getCursorPosition());
 	}
 
 	private int getLineIndex(int charIndex) {
-		return (int)getText()
+		return (int) getValue()
 			.substring(0, charIndex)
 			.codePoints()
 			.filter(point -> point == '\n')
@@ -371,20 +371,20 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	private int getLineStartBefore(int charIndex) {
-		return getText().lastIndexOf('\n', Math.max(charIndex, 0) - 1) + 1;
+		return getValue().lastIndexOf('\n', Math.max(charIndex, 0) - 1) + 1;
 	}
 
     // Naming things is hard.
     public boolean isBeforeFirstNonWhitespaceCharacterInLine(int charIndex) {
-        return getText()
+        return getValue()
             .substring(getLineStartBefore(charIndex), charIndex)
             .chars()
             .allMatch(Character::isWhitespace);
     }
 
 	public String getLine(int lineIndex) {
-		var line = editBox.getLine(lineIndex);
-		return getText().substring(line.beginIndex(), line.endIndex());
+		var line = editBox.getLineView(lineIndex);
+		return getValue().substring(line.beginIndex(), line.endIndex());
 	}
 
 	protected int getHorizontalScroll() {
@@ -392,15 +392,15 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	protected int getMaxHorizontalScroll() {
-		return Math.max(0, Arrays.stream(getText().split("\n"))
-			.mapToInt(self.getTextRenderer()::getWidth)
+		return Math.max(0, Arrays.stream(getValue().split("\n"))
+			.mapToInt(self.getFont()::width)
 			.max()
 			.orElse(0) + 8 - width);
 	}
 
 	protected boolean setHorizontalScroll(int horizontalScroll) {
 		int previous = this.horizontalScroll;
-		this.horizontalScroll = MathHelper.clamp(horizontalScroll, 0, getMaxHorizontalScroll());
+		this.horizontalScroll = Mth.clamp(horizontalScroll, 0, getMaxHorizontalScroll());
 		return this.horizontalScroll != previous;
 	}
 
@@ -414,7 +414,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 
 	protected boolean setVerticalScroll(int verticalScroll) {
 		int previous = this.verticalScroll;
-		this.verticalScroll = MathHelper.clamp(verticalScroll, 0, getMaxVerticalScroll());
+		this.verticalScroll = Mth.clamp(verticalScroll, 0, getMaxVerticalScroll());
 		return this.verticalScroll != previous;
 	}
 
@@ -437,11 +437,11 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	protected void scrollToEnsureCursorVisible() {
-		int virtualX = getCharacterVirtualX(getCursor());
-		int virtualY = getCharacterVirtualY(getCursor());
+		int virtualX = getCharacterVirtualX(getCursorPosition());
+		int virtualY = getCharacterVirtualY(getCursorPosition());
 
-		setHorizontalScroll(MathHelper.clamp(horizontalScroll, virtualX - getInnerWidth(), virtualX));
-		setVerticalScroll(MathHelper.clamp(verticalScroll, virtualY - getInnerHeight(), virtualY));
+		setHorizontalScroll(Mth.clamp(horizontalScroll, virtualX - getInnerWidth(), virtualX));
+		setVerticalScroll(Mth.clamp(verticalScroll, virtualY - getInnerHeight(), virtualY));
 	}
 
 	public int getLineHeight() {
@@ -453,7 +453,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
     public int getCharacterVirtualX(int charIndex) {
-		if (charIndex > getText().length()) {
+		if (charIndex > getValue().length()) {
 			return 0;
 		}
 		String line = getLine(getLineIndex(charIndex));
@@ -463,7 +463,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 			indexInLine = line.length();
 		}
 
-		return self.getTextRenderer().getWidth(line.substring(0, indexInLine));
+		return self.getFont().width(line.substring(0, indexInLine));
 	}
 
 	public int getCharacterRealX(int charIndex) {
@@ -471,7 +471,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	/**
-	 * Gets the desired X position of the {@link ChatInputSuggestor} window.
+	 * Gets the desired X position of the {@link CommandSuggestions} window.
 	 *
 	 * <p>This function is marked as deprecated because it <i>does not do what
 	 * the method name says</i> and is only here to be called by
@@ -483,7 +483,7 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	 */
 	@Deprecated
 	@Override
-	public int getCharacterX(int charIndex) {
+	public int getScreenX(int charIndex) {
 		// Since getInnerX isn't a method in the original TextFieldWidget,
 		// ChatInputSuggestor calls getCharacterX(0) instead.
 		if (charIndex == 0) {
@@ -495,8 +495,8 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	public int getCharacterVirtualY(int charIndex) {
-		if (charIndex > getText().length()) {
-			charIndex = getText().length();
+		if (charIndex > getValue().length()) {
+			charIndex = getValue().length();
 		}
 		int lineIndex = getLineIndex(charIndex);
 
@@ -508,15 +508,15 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
 	}
 
 	private int getInnerX() {
-		return this.getX() + (drawsBackground() ? 4 : 0);
+		return this.getX() + (isBordered() ? 4 : 0);
 	}
 
 	private int getInnerY() {
-		return this.getY() + (drawsBackground() ? 4 : 0);
+		return this.getY() + (isBordered() ? 4 : 0);
 	}
 
 	private int getInnerHeight() {
-		return drawsBackground() ? this.height - 6 : this.height;
+		return isBordered() ? this.height - 6 : this.height;
 	}
 
     private static final Logger logger = LogManager.getLogger();
@@ -527,9 +527,9 @@ public class MultilineTextFieldWidget extends TextFieldWidget {
          * A syntax highlighter that performs no highlighting.
          */
 		SyntaxHighlighter NONE = text -> Arrays.stream(text.split("\n"))
-            .map(line -> OrderedText.styledForwardsVisitedString(line, Style.EMPTY))
+            .map(line -> FormattedCharSequence.forward(line, Style.EMPTY))
             .toList();
 
-		List<OrderedText> highlight(String text);
+		List<FormattedCharSequence> highlight(String text);
 	}
 }

@@ -4,19 +4,19 @@
   "package": "arm32x.minecraft.commandblockide.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "server.DirectoryResourcePackAccessor",
-    "server.FunctionLoaderAccessor"
+    "server.PathPackResourcesAccessor",
+    "server.ServerFunctionLibraryAccessor"
   ],
   "client": [
-    "client.ChatInputSuggestorAccessor",
-    "client.ChatInputSuggestorMixin",
-    "client.ClientPlayerEntityMixin",
-    "client.ClientPlayNetworkHandlerMixin",
-    "client.DrawContextAccessor",
-    "client.EditBoxAccessor",
-    "client.MessageHandlerMixin",
+    "client.CommandSuggestionsAccessor",
+    "client.CommandSuggestionsMixin",
+    "client.LocalPlayerMixin",
+    "client.ClientPacketListenerMixin",
+    "client.GuiGraphicsAccessor",
+    "client.MultilineTextFieldAccessor",
+    "client.ChatListenerMixin",
     "client.SuggestionWindowMixin",
-    "client.TextFieldWidgetAccessor"
+    "client.EditBoxAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
