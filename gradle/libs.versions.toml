@@ -1,0 +1,28 @@
+[versions]
+java = "25"
+minecraft = "26.1.2"
+
+fabric-api = "0.151.0+26.1.2"
+fabric-loader = "0.19.3"
+fabric-loom = "1.16-SNAPSHOT"
+
+jqwik = "1.7.3"
+junit-jupiter = "5.9.2"
+android-git-version = "0.4.14"
+msgpack-core = "0.9.12"
+assertj-core = "3.24.2"
+
+[libraries]
+minecraft = { module = "com.mojang:minecraft", version.ref = "minecraft" }
+
+fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-api" }
+fabric-loader = { module = "net.fabricmc:fabric-loader", version.ref = "fabric-loader" }
+
+jqwik = { module = "net.jqwik:jqwik", version.ref = "jqwik" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+msgpack-core = { module = "org.msgpack:msgpack-core", version.ref = "msgpack-core" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj-core" }
+
+[plugins]
+fabric-loom = { id = "net.fabricmc.fabric-loom", version.ref = "fabric-loom" }
+android-git-version = { id = "com.gladed.androidgitversion", version.ref = "android-git-version" }
