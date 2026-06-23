@@ -1,9 +1,9 @@
 @file:Suppress("LocalVariableName")
 
 plugins {
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
     id("com.gladed.androidgitversion")
-    id("fabric-loom")
+    id("net.fabricmc.fabric-loom")
     `java-library`
 }
 
@@ -24,19 +24,19 @@ repositories {
 dependencies {
     val minecraft_version: String by project
     minecraft("com.mojang:minecraft:$minecraft_version")
-    val yarn_mappings: String by project
-    mappings("net.fabricmc:yarn:$yarn_mappings:v2")
     val loader_version: String by project
-    modImplementation("net.fabricmc:fabric-loader:$loader_version")
+    implementation("net.fabricmc:fabric-loader:$loader_version")
 
     val fabric_version: String by project
-    modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_version")
+    implementation("net.fabricmc.fabric-api:fabric-api:$fabric_version")
 
     val msgpack_java_version: String by project
     shadow("org.msgpack:msgpack-core:${msgpack_java_version}")
 
     val junit_version: String by project
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junit_version}")
+    val junit_platform_version: String by project
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:${junit_platform_version}")
     val jqwik_version: String by project
     testImplementation("net.jqwik:jqwik:${jqwik_version}")
     val assertj_version: String by project
@@ -45,13 +45,17 @@ dependencies {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
     withSourcesJar()
 }
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 loom {
@@ -77,13 +81,10 @@ tasks.jar {
 }
 
 tasks.shadowJar {
+    archiveClassifier.set("")
     configurations = listOf(project.configurations.shadow.get())
 }
 
-tasks.remapJar {
+tasks.assemble {
     dependsOn(tasks.shadowJar)
-    inputFile.set(tasks.shadowJar.get().archiveFile)
-    doLast {
-        tasks.shadowJar.get().archiveFile.get().asFile.delete()
-    }
 }

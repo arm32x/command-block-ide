@@ -4,7 +4,6 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -29,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 @Environment(EnvType.CLIENT)
 public final class MultilineCommandProcessor implements CommandProcessor {
 	@Override
-	public Pair<String, StringMapping> processCommand(String command) {
+	public ProcessedCommand processCommand(String command) {
 		StringBuilder builder = new StringBuilder();
 		NavigableMap<Integer, Integer> map = new TreeMap<>();
 
@@ -48,7 +47,7 @@ public final class MultilineCommandProcessor implements CommandProcessor {
 			}
 		}
 
-		return new Pair<>(builder.toString(), new StringMapping(map));
+		return new ProcessedCommand(builder.toString(), new StringMapping(map));
 	}
 
 	private static @Nullable MultilineCommandProcessor instance = null;

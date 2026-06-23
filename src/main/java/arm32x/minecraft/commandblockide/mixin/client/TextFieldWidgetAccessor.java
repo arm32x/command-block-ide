@@ -1,22 +1,22 @@
 package arm32x.minecraft.commandblockide.mixin.client;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.screen.ButtonTextures;
-import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.WidgetSprites;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(TextFieldWidget.class)
+@Mixin(EditBox.class)
 public interface TextFieldWidgetAccessor {
-	@Accessor int getEditableColor();
-	@Accessor int getUneditableColor();
-	@Accessor TextRenderer getTextRenderer();
-	@Accessor long getLastSwitchFocusTime();
-	@Accessor boolean isFocusUnlocked();
+	@Accessor int getTextColor();
+	@Accessor int getTextColorUneditable();
+	@Accessor Font getFont();
+	@Accessor long getFocusedTime();
+	@Accessor boolean isCanLoseFocus();
 
 	@Invoker int invokeGetMaxLength();
 	@Invoker boolean invokeIsEditable();
 
-	@Accessor("TEXTURES") static ButtonTextures getTextures() { throw new AssertionError(); };
+	@Accessor("SPRITES") static WidgetSprites getTextures() { throw new AssertionError(); };
 }

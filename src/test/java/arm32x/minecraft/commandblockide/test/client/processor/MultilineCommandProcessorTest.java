@@ -17,7 +17,7 @@ public final class MultilineCommandProcessorTest {
 		assertThat(
 			processor
 				.processCommand("execute\n    as @a\n    run\n        say two spaces:  not merged")
-				.getLeft()
+				.command()
 		).isEqualTo("execute as @a run say two spaces:  not merged");
 	}
 
@@ -27,7 +27,7 @@ public final class MultilineCommandProcessorTest {
 		assertThat(
 			processor
 				.processCommand("execute\n\tas @a\n\trun\n\t\tsay tab character:\tignored")
-				.getLeft()
+				.command()
 		).isEqualTo("execute \tas @a \trun \t\tsay tab character:\tignored");
 	}
 
@@ -37,7 +37,7 @@ public final class MultilineCommandProcessorTest {
 		assertThat(
 			processor
 				.processCommand("execute as @a run say trailing spaces: \n    not merged")
-				.getLeft()
+				.command()
 		).isEqualTo("execute as @a run say trailing spaces:  not merged");
 	}
 
@@ -47,7 +47,7 @@ public final class MultilineCommandProcessorTest {
 		assertThat(
 			processor
 				.processCommand(input)
-				.getLeft()
+				.command()
 				.length()
 		).isLessThanOrEqualTo(input.length());
 	}
@@ -56,8 +56,8 @@ public final class MultilineCommandProcessorTest {
 	@Label("The output mapping correctly maps non-whitespace characters back to the input")
 	public void testGeneratedStringMapping(@ForAll String input) {
 		var output = processor.processCommand(input);
-		String string = output.getLeft();
-		StringMapping mapping = output.getRight();
+		String string = output.command();
+		StringMapping mapping = output.mapping();
 
 		for (int index = 0; index < string.length(); index++) {
 			char outputChar = string.charAt(index);

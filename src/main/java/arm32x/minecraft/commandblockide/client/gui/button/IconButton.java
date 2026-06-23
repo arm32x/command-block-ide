@@ -1,16 +1,15 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.cursor.StandardCursors;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.PressableWidget;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ColorHelper;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 
-public abstract class IconButton extends PressableWidget {
+public abstract class IconButton extends AbstractButton {
 	protected final int iconWidth;
 	protected final int iconHeight;
 
@@ -19,18 +18,18 @@ public abstract class IconButton extends PressableWidget {
 	}
 
 	public IconButton(int x, int y, int width, int height, int iconWidth, int iconHeight) {
-		super(x, y, width, height, Text.empty());
+		super(x, y, width, height, Component.empty());
 		this.iconWidth = iconWidth;
 		this.iconHeight = iconHeight;
 	}
 
 	@Override
-	public final Text getMessage() {
-		return Text.empty();
+	public final Component getMessage() {
+		return Component.empty();
 	}
 
 	@Override
-	protected abstract MutableText getNarrationMessage();
+	protected abstract MutableComponent createNarrationMessage();
 
 	protected abstract Identifier getTexture();
 
@@ -43,10 +42,10 @@ public abstract class IconButton extends PressableWidget {
 	}
 
 	@Override
-	public void drawIcon(DrawContext context, int mouseX, int mouseY, float delta) {
+	public void extractContents(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		boolean drawsBackground = drawsBackground();
 		if (drawsBackground) {
-			this.drawButton(context);
+			this.extractDefaultSprite(context);
 		}
 
 		var texture = getTexture();
@@ -57,11 +56,11 @@ public abstract class IconButton extends PressableWidget {
 		if (drawsBackground) {
 			float brightness = active ? 1.0f : (float)0xA0 / 0xFF;
 
-			int color = ColorHelper.fromFloats(1.0f, brightness, brightness, brightness);
-			int shadowColor = ColorHelper.fromFloats(1.0f, brightness / 4, brightness / 4, brightness / 4);
+			int color = ARGB.colorFromFloat(1.0f, brightness, brightness, brightness);
+			int shadowColor = ARGB.colorFromFloat(1.0f, brightness / 4, brightness / 4, brightness / 4);
 
-			context.drawTexture(RenderPipelines.GUI_TEXTURED, texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, shadowColor);
-			context.drawTexture(RenderPipelines.GUI_TEXTURED, texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, color);
+			context.blit(RenderPipelines.GUI_TEXTURED, texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, shadowColor);
+			context.blit(RenderPipelines.GUI_TEXTURED, texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, color);
 		} else {
 			// RenderSystem.enableBlend();
 			// RenderSystem.defaultBlendFunc();
@@ -71,9 +70,9 @@ public abstract class IconButton extends PressableWidget {
 			int shadowColor = 0x3F000000;
 
 			if (active) {
-				context.drawTexture(RenderPipelines.GUI_TEXTURED, texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, shadowColor);
+				context.blit(RenderPipelines.GUI_TEXTURED, texture, iconX + 1, iconY + 1, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, shadowColor);
 			}
-			context.drawTexture(RenderPipelines.GUI_TEXTURED, texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, color);
+			context.blit(RenderPipelines.GUI_TEXTURED, texture, iconX, iconY, 0, 0, iconWidth, iconHeight, iconWidth, iconHeight, color);
 
 			// RenderSystem.disableDepthTest();
 			// RenderSystem.disableBlend();
@@ -81,7 +80,7 @@ public abstract class IconButton extends PressableWidget {
 	}
 
 	@Override
-	public void appendClickableNarrations(NarrationMessageBuilder builder) {
-		appendDefaultNarrations(builder);
+	public void updateWidgetNarration(NarrationElementOutput builder) {
+		defaultButtonNarrationText(builder);
 	}
 }

@@ -3,32 +3,34 @@ package arm32x.minecraft.commandblockide.mixin.client;
 import arm32x.minecraft.commandblockide.client.gui.screen.CommandBlockIDEScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.CommandBlockBlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientCommonNetworkHandler;
-import net.minecraft.client.network.ClientConnectionState;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.CommonListenerCookie;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Environment(EnvType.CLIENT)
-@Mixin(ClientPlayNetworkHandler.class)
-public abstract class ClientPlayNetworkHandlerMixin extends ClientCommonNetworkHandler {
-	protected ClientPlayNetworkHandlerMixin(MinecraftClient client, ClientConnection connection, ClientConnectionState connectionState) {
+@Mixin(ClientPacketListener.class)
+public abstract class ClientPlayNetworkHandlerMixin extends ClientCommonPacketListenerImpl {
+	protected ClientPlayNetworkHandlerMixin(Minecraft client, Connection connection, CommonListenerCookie connectionState) {
 		super(client, connection, connectionState);
 	}
 
-	// Injecting into a lambda, who knows how stable this is...
-	@Inject(method = "method_38542(Lnet/minecraft/network/packet/s2c/play/BlockEntityUpdateS2CPacket;Lnet/minecraft/block/entity/BlockEntity;)V", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
-	public void onBlockEntityUpdate(BlockEntityUpdateS2CPacket packet, BlockEntity blockEntity, CallbackInfo ci) {
-		if (blockEntity instanceof CommandBlockBlockEntity && client.currentScreen instanceof CommandBlockIDEScreen commandBlockIDEScreen) {
-			commandBlockIDEScreen.update(blockEntity.getPos());
+	@Inject(method = "handleBlockEntityData", at = @At("TAIL"))
+	public void onBlockEntityUpdate(ClientboundBlockEntityDataPacket packet, CallbackInfo ci) {
+		if (minecraft.level == null) {
+			return;
+		}
+		BlockEntity blockEntity = minecraft.level.getBlockEntity(packet.getPos());
+		if (blockEntity instanceof CommandBlockEntity && minecraft.gui.screen() instanceof CommandBlockIDEScreen commandBlockIDEScreen) {
+			commandBlockIDEScreen.update(blockEntity.getBlockPos());
 		}
 	}
 }

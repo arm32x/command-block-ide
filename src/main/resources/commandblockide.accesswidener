@@ -1,2 +1,2 @@
-accessWidener	v1	named
-accessible	class	net/minecraft/client/gui/EditBox$Substring
+accessWidener	v1	official
+accessible	class	net/minecraft/client/gui/components/MultilineTextField$StringView

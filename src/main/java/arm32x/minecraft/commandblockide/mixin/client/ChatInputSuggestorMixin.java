@@ -9,12 +9,12 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import java.util.concurrent.CompletableFuture;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.screen.ChatInputSuggestor;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.command.CommandSource;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Style;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.components.CommandSuggestions;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Environment(EnvType.CLIENT)
-@Mixin(ChatInputSuggestor.class)
+@Mixin(CommandSuggestions.class)
 public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtension {
 	@Unique private static final int ide$SUGGESTOR_Y_OFFSET = 9;
 
@@ -35,19 +35,19 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 	@Unique public @Nullable CommandProcessor ide$commandProcessor = null;
 	@Unique private @Nullable StringMapping ide$mapping = null;
 
-	@Shadow @Final TextFieldWidget textField;
+	@Shadow @Final EditBox input;
 
-	@Shadow private @Nullable ParseResults<CommandSource> parse;
+	@Shadow private @Nullable ParseResults<SharedSuggestionProvider> currentParse;
 	@Shadow private @Nullable CompletableFuture<Suggestions> pendingSuggestions;
 
-	@Shadow private @Nullable ChatInputSuggestor.SuggestionWindow window;
+	@Shadow private @Nullable CommandSuggestions.SuggestionsList suggestions;
 
 	@ModifyConstant(
-		method = { "show(Z)V", "renderMessages(Lnet/minecraft/client/gui/DrawContext;)V" },
+		method = { "showSuggestions(Z)V", "extractUsage(Lnet/minecraft/client/gui/GuiGraphicsExtractor;)V" },
 		constant = @Constant(intValue = 72)
 	)
 	public int getY(int seventyTwo) {
-		if (textField instanceof MultilineTextFieldWidget multiline) {
+		if (input instanceof MultilineTextFieldWidget multiline) {
 			if (pendingSuggestions != null) {
 				@Nullable Suggestions suggestions = pendingSuggestions.getNow(null);
 				if (suggestions != null && !suggestions.isEmpty()) {
@@ -55,20 +55,20 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 					return multiline.getCharacterRealY(charIndex) + ide$SUGGESTOR_Y_OFFSET;
 				}
 			}
-			return multiline.getCharacterRealY(multiline.getText().length()) + ide$SUGGESTOR_Y_OFFSET;
+			return multiline.getCharacterRealY(multiline.getValue().length()) + ide$SUGGESTOR_Y_OFFSET;
 		} else {
-			return textField.getY() + textField.getHeight() + 2;
+			return input.getY() + input.getHeight() + 2;
 		}
 	}
 
 	@ModifyArg(
 		method = {
-			"show(Z)V",
-			"showUsages(Lnet/minecraft/util/Formatting;)Z"
+			"showSuggestions(Z)V",
+			"updateUsageInfo(Lcom/mojang/brigadier/ParseResults;Lcom/mojang/brigadier/suggestion/Suggestions;)V"
 		},
 		at = @At(
 			value = "INVOKE",
-			target = "Lnet/minecraft/client/gui/widget/TextFieldWidget;getCharacterX(I)I",
+			target = "Lnet/minecraft/client/gui/components/EditBox;getScreenX(I)I",
 			ordinal = 0
 		),
 		index = 0
@@ -102,48 +102,48 @@ public final class ChatInputSuggestorMixin implements ChatInputSuggestorExtensio
 		return ide$mapping;
 	}
 
-	@Inject(method = "showCommandSuggestions()V", at = @At("HEAD"), cancellable = true)
-	public void onShowCommandSuggestions(CallbackInfo ci) {
-		if (ide$allowComments && textField.getText().startsWith("#")
-			|| ide$mapping != null && ide$mapping.inverted().mapIndex(textField.getCursor()).isEmpty()) {
+	@Inject(method = "updateUsageInfo(Lcom/mojang/brigadier/ParseResults;Lcom/mojang/brigadier/suggestion/Suggestions;)V", at = @At("HEAD"), cancellable = true)
+	public void onShowCommandSuggestions(ParseResults<SharedSuggestionProvider> currentParse, Suggestions suggestions, CallbackInfo ci) {
+		if (ide$allowComments && input.getValue().startsWith("#")
+			|| ide$mapping != null && ide$mapping.inverted().mapIndex(input.getCursorPosition()).isEmpty()) {
 			ci.cancel();
 		}
 	}
 
-	@Inject(method = "provideRenderText(Ljava/lang/String;I)Lnet/minecraft/text/OrderedText;", at = @At("HEAD"), cancellable = true)
-	public void onProvideRenderText(String original, int firstCharacterIndex, CallbackInfoReturnable<OrderedText> cir) {
-		if (ide$allowComments && textField.getText().startsWith("#")) {
-			cir.setReturnValue(OrderedText.styledForwardsVisitedString(original, Style.EMPTY.withColor(Formatting.DARK_GRAY)));
+	@Inject(method = "formatChat(Ljava/lang/String;I)Lnet/minecraft/util/FormattedCharSequence;", at = @At("HEAD"), cancellable = true)
+	public void onProvideRenderText(String original, int firstCharacterIndex, CallbackInfoReturnable<FormattedCharSequence> cir) {
+		if (ide$allowComments && input.getValue().startsWith("#")) {
+			cir.setReturnValue(FormattedCharSequence.forward(original, Style.EMPTY.withColor(ChatFormatting.DARK_GRAY)));
 		}
 	}
 
 	// The IntelliJ Minecraft Development plugin seems to think the method
 	// signature is wrong when in reality it works just fine.
-	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
+	@ModifyVariable(method = "updateCommandInfo()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	private boolean onCheckForSlash(boolean bl) {
 		return !ide$slashForbidden && bl;
 	}
 
 	// See above.
-	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
+	@ModifyVariable(method = "updateCommandInfo()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	public String onGetCommand(String command) {
 		if (ide$commandProcessor != null) {
 			var processed = ide$commandProcessor.processCommand(command);
-			ide$mapping = processed.getRight();
-			return processed.getLeft();
+			ide$mapping = processed.mapping();
+			return processed.command();
 		} else {
 			return command;
 		}
 	}
 
 	// See above.
-	@ModifyVariable(method = "refresh()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
+	@ModifyVariable(method = "updateCommandInfo()V", ordinal = 0, at = @At(value = "STORE", ordinal = 0))
 	public int onGetTextFieldCursor1(int cursor) {
 		return StringMapping.mapIndexOrAfter(ide$mapping, true, cursor);
 	}
 
 	@ModifyArg(
-		method = "showUsages(Lnet/minecraft/util/Formatting;)Z",
+		method = "updateUsageInfo(Lcom/mojang/brigadier/ParseResults;Lcom/mojang/brigadier/suggestion/Suggestions;)V",
 		at = @At(
 			value = "INVOKE",
 			target = "Lcom/mojang/brigadier/context/CommandContextBuilder;findSuggestionContext(I)Lcom/mojang/brigadier/context/SuggestionContext;",

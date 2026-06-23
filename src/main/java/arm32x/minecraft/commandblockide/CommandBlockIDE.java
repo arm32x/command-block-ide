@@ -12,15 +12,15 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.command.permission.Permission;
-import net.minecraft.command.permission.PermissionLevel;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.functions.CommandFunction;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.function.CommandFunction;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.PermissionLevel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,38 +31,38 @@ public final class CommandBlockIDE implements ModInitializer {
 				EditFunctionCommand.register(dispatcher));
 
 		final PacketMerger functionMerger = new PacketMerger();
-		PayloadTypeRegistry.playC2S().register(Packets.APPLY_FUNCTION, ApplyFunctionPayload.CODEC);
+		PayloadTypeRegistry.serverboundPlay().register(Packets.APPLY_FUNCTION, ApplyFunctionPayload.CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(Packets.APPLY_FUNCTION, (payload, context) -> {
-			if (!context.player().getPermissions().hasPermission(new Permission.Level(PermissionLevel.GAMEMASTERS))) {
+			if (!context.player().permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.GAMEMASTERS))) {
 				return;
 			}
-			Optional<PacketByteBuf> maybeMerged = Optional.empty();
+			Optional<FriendlyByteBuf> maybeMerged = Optional.empty();
 			try {
 				maybeMerged = functionMerger.append(payload.toBuf());
 			} catch (PacketMerger.InvalidSplitPacketException e) {
 				LOGGER.error("PacketMerger", e);
 			}
 			if (maybeMerged.isPresent()) {
-				PacketByteBuf merged = maybeMerged.get();
+				FriendlyByteBuf merged = maybeMerged.get();
 				Identifier functionId = merged.readIdentifier();
 				int lineCount = merged.readVarInt();
 				String[] lines = new String[lineCount];
 				for (int index = 0; index < lineCount; index++) {
-					lines[index] = merged.readString(Integer.MAX_VALUE >> 2);
+					lines[index] = merged.readUtf(Integer.MAX_VALUE >> 2);
 				}
 
-				ServerPlayerEntity player = context.player();
+				ServerPlayer player = context.player();
 				MinecraftServer server = context.server();
 				server.execute(() -> {
-					Text feedbackMessage = FunctionIO.saveFunction(server, functionId, Arrays.asList(lines));
-					player.sendMessage(feedbackMessage);
+					Component feedbackMessage = FunctionIO.saveFunction(server, functionId, Arrays.asList(lines));
+					player.sendSystemMessage(feedbackMessage);
 				});
 			}
 		});
 	}
 
 	private static void updateFunctionLines(MinecraftServer server, Identifier functionId, List<String> lines) {
-		Optional<CommandFunction<ServerCommandSource>> maybeFunction = server.getCommandFunctionManager().getFunction(functionId);
+		Optional<CommandFunction<CommandSourceStack>> maybeFunction = server.getFunctions().get(functionId);
 		maybeFunction.ifPresent(function -> ((CommandFunctionExtension)function).ide$setOriginalLines(lines));
 	}
 

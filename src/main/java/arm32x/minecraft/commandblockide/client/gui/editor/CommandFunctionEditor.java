@@ -3,10 +3,10 @@ package arm32x.minecraft.commandblockide.client.gui.editor;
 import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggestorExtension;
 import java.util.Objects;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 public final class CommandFunctionEditor extends CommandEditor {
@@ -14,7 +14,7 @@ public final class CommandFunctionEditor extends CommandEditor {
 
 	private boolean dirty = false;
 
-	public CommandFunctionEditor(Screen screen, TextRenderer textRenderer, int x, int y, int width, int height, int index) {
+	public CommandFunctionEditor(Screen screen, Font textRenderer, int x, int y, int width, int height, int index) {
 		super(screen, textRenderer, x, y, width, height, 0, 0, index);
 
 		ChatInputSuggestorExtension suggestorExtension = (ChatInputSuggestorExtension)suggestor;
@@ -23,30 +23,30 @@ public final class CommandFunctionEditor extends CommandEditor {
 	}
 
 	public void saveMultilineCommand(Identifier function) {
-		MinecraftClient client = MinecraftClient.getInstance();
-		String world = client.isInSingleplayer()
-			? Objects.requireNonNull(client.getServer()).getSaveProperties().getLevelName()
-			: Objects.requireNonNull(client.getCurrentServerEntry()).name;
+		Minecraft client = Minecraft.getInstance();
+		String world = client.isLocalServer()
+			? Objects.requireNonNull(client.getSingleplayerServer()).getWorldData().getLevelName()
+			: Objects.requireNonNull(client.getCurrentServer()).name;
 
-		MultilineCommandStorage.getInstance().add(commandField.getText(), getSingleLineCommand(), client.isInSingleplayer(), world, function, index);
+		MultilineCommandStorage.getInstance().add(commandField.getValue(), getSingleLineCommand(), client.isLocalServer(), world, function, index);
 	}
 
 	public void update(Identifier functionId, String command) {
 		originalCommand = command;
-		MinecraftClient client = MinecraftClient.getInstance();
-		commandField.setText(MultilineCommandStorage.getInstance().getRobust(
+		Minecraft client = Minecraft.getInstance();
+		commandField.setValue(MultilineCommandStorage.getInstance().getRobust(
 			command,
 			processor,
-			client.isInSingleplayer(),
-			client.isInSingleplayer()
-				? Objects.requireNonNull(client.getServer()).getSaveProperties().getLevelName()
-				: Objects.requireNonNull(client.getCurrentServerEntry()).name,
+			client.isLocalServer(),
+			client.isLocalServer()
+				? Objects.requireNonNull(client.getSingleplayerServer()).getWorldData().getLevelName()
+				: Objects.requireNonNull(client.getCurrentServer()).name,
 			functionId,
 			index
 		));
 
-		suggestor.setWindowActive(commandField.isActive());
-		suggestor.refresh();
+		suggestor.setAllowSuggestions(commandField.canConsumeInput());
+		suggestor.updateCommandInfo();
 
 		dirty = false;
 		setLoaded(true);

@@ -18,22 +18,22 @@ import java.util.function.IntConsumer;
 import java.util.stream.Stream;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ChatInputSuggestor;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.screen.narration.NarrationPart;
-import net.minecraft.client.input.CharInput;
-import net.minecraft.client.input.KeyInput;
-import net.minecraft.command.CommandSource;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.CommandSuggestions;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -49,10 +49,10 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     public final int index;
     public boolean lineNumberHighlighted = false;
 
-    protected final TextRenderer textRenderer;
+    protected final Font textRenderer;
 
     protected final MultilineTextFieldWidget commandField;
-    protected final ChatInputSuggestor suggestor;
+    protected final CommandSuggestions suggestor;
     protected final CommandProcessor processor = MultilineCommandProcessor.getInstance();
 
     private boolean suggestorActive = false;
@@ -62,7 +62,7 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     protected @Nullable IntConsumer heightChangedListener = null;
 
     @SuppressWarnings("ConstantConditions")
-    public CommandEditor(Screen screen, TextRenderer textRenderer, int x, int y, int width, int height, int leftPadding, int rightPadding, int index) {
+    public CommandEditor(Screen screen, Font textRenderer, int x, int y, int width, int height, int leftPadding, int rightPadding, int index) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -76,27 +76,27 @@ public abstract class CommandEditor extends Container implements Dirtyable {
                 textRenderer,
                 x + leftPadding + 20, y,
                 width - leftPadding - rightPadding - 20, height,
-                Text.translatable("advMode.command")
-                        .append(Text.translatable("commandBlockIDE.narrator.editorIndex", index + 1))
+                Component.translatable("advMode.command")
+                        .append(Component.translatable("commandBlockIDE.narrator.editorIndex", index + 1))
         ) {
             @Override
-            protected MutableText getNarrationMessage() {
-                return super.getNarrationMessage().append(suggestor.getNarration());
+            protected MutableComponent createNarrationMessage() {
+                return super.createNarrationMessage().append(suggestor.getNarrationMessage());
             }
         });
         commandField.setEditable(false);
         commandField.setMaxLength(Integer.MAX_VALUE);
 
-        suggestor = new ChatInputSuggestor(MinecraftClient.getInstance(), screen, commandField, textRenderer, true, true, 0, 16, false, Integer.MIN_VALUE);
+        suggestor = new CommandSuggestions(Minecraft.getInstance(), screen, commandField, textRenderer, true, true, 0, 16, false, Integer.MIN_VALUE);
         ((ChatInputSuggestorExtension) suggestor).ide$setCommandProcessor(processor);
-        suggestor.refresh();
+        suggestor.updateCommandInfo();
 
-        commandField.setChangedListener(this::commandChanged);
-        commandField.setCursorChangeListener(suggestor::refresh);
+        commandField.setResponder(this::commandChanged);
+        commandField.setCursorChangeListener(suggestor::updateCommandInfo);
         commandField.setSyntaxHighlighter((text) -> {
-            var parse = ((ChatInputSuggestorAccessor) suggestor).getParse();
+            var parse = ((ChatInputSuggestorAccessor) suggestor).getCurrentParse();
             if (parse != null) {
-                return highlight(parse, text, processor.processCommand(text).getRight());
+                return highlight(parse, text, processor.processCommand(text).mapping());
             } else {
                 // The command hasn't been parsed yet, so we show it without
                 // highlighting. I haven't ever seen this in game, though.
@@ -106,12 +106,12 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     }
 
     public void commandChanged(String newCommand) {
-        suggestor.refresh();
+        suggestor.updateCommandInfo();
         setHeight(commandField.getLineCount() * commandField.getLineHeight() + 4);
     }
 
     @Override
-    public boolean keyPressed(KeyInput input) {
+    public boolean keyPressed(KeyEvent input) {
         if (handleSpecialKey(input)) {
             return true;
         } else if (isSuggestorActive() && suggestor.keyPressed(input)) {
@@ -126,21 +126,21 @@ public abstract class CommandEditor extends Container implements Dirtyable {
         }
     }
 
-    private boolean handleSpecialKey(KeyInput input) {
+    private boolean handleSpecialKey(KeyEvent input) {
         if (
                 input.key() == GLFW.GLFW_KEY_TAB
                         && !isSuggestorActive()
-                        && !commandField.isBeforeFirstNonWhitespaceCharacterInLine(commandField.getCursor())
+                        && !commandField.isBeforeFirstNonWhitespaceCharacterInLine(commandField.getCursorPosition())
         ) {
             setSuggestorActive(true);
-            suggestor.refresh();
+            suggestor.updateCommandInfo();
             // Immediately trigger completion without using Mixin by
             // simulating a key press. The scancode and modifiers arguments
             // are never used.
-            return suggestor.keyPressed(new KeyInput(GLFW.GLFW_KEY_TAB, -1, 0));
-        } else if (input.key() == GLFW.GLFW_KEY_SPACE && input.hasCtrl()) {
+            return suggestor.keyPressed(new KeyEvent(GLFW.GLFW_KEY_TAB, -1, 0));
+        } else if (input.key() == GLFW.GLFW_KEY_SPACE && input.hasControlDown()) {
             setSuggestorActive(true);
-            suggestor.show(true);
+            suggestor.showSuggestions(true);
             return true;
         }
         // The Escape key is handled in CommandIDEScreen, not here.
@@ -148,12 +148,12 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     }
 
     @Override
-    public boolean charTyped(CharInput input) {
+    public boolean charTyped(CharacterEvent input) {
         if (super.charTyped(input)) {
             // The if statement ensures that only valid characters will trigger
             // the suggestions box.
             setSuggestorActive(true);
-            suggestor.refresh();
+            suggestor.updateCommandInfo();
             return true;
         } else {
             return false;
@@ -161,10 +161,10 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         boolean result = suggestor.mouseClicked(click)
                 || super.mouseClicked(click, doubled);
-        suggestor.setWindowActive(false);
+        suggestor.setAllowSuggestions(false);
         return result;
     }
 
@@ -178,40 +178,40 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     public void setFocused(boolean focused) {
         setFocused(commandField);
         commandField.setFocused(focused);
-        suggestor.setWindowActive(false);
+        suggestor.setAllowSuggestions(false);
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         renderLineNumber(context);
         if (isLoaded()) {
             renderCommandField(context, mouseX, mouseY, delta);
         } else {
-            context.drawText(textRenderer, Text.translatable("commandBlockIDE.unloaded"), commandField.getX(), y + 5, 0x7FFFFFFF, false);
+            context.text(textRenderer, Component.translatable("commandBlockIDE.unloaded"), commandField.getX(), y + 5, 0x7FFFFFFF, false);
         }
-        super.render(context, mouseX, mouseY, delta);
+        super.extractRenderState(context, mouseX, mouseY, delta);
     }
 
-    protected void renderLineNumber(DrawContext context) {
+    protected void renderLineNumber(GuiGraphicsExtractor context) {
         String lineNumber = String.valueOf(index + 1);
         // Manually draw shadow because the existing functions don’t let you set the color.
-        context.drawText(textRenderer, lineNumber, x + 17 - textRenderer.getWidth(lineNumber), y + 5, 0x3F000000, false);
-        context.drawText(textRenderer, lineNumber, x + 16 - textRenderer.getWidth(lineNumber), y + 4, lineNumberHighlighted ? 0xFFFFFFFF : 0x7FFFFFFF, false);
+        context.text(textRenderer, lineNumber, x + 17 - textRenderer.width(lineNumber), y + 5, 0x3F000000, false);
+        context.text(textRenderer, lineNumber, x + 16 - textRenderer.width(lineNumber), y + 4, lineNumberHighlighted ? 0xFFFFFFFF : 0x7FFFFFFF, false);
     }
 
-    protected void renderCommandField(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderCommandField(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         commandField.visible = true;
-        commandField.render(context, mouseX, mouseY, delta);
+        commandField.extractRenderState(context, mouseX, mouseY, delta);
     }
 
-    public void renderSuggestions(DrawContext context, int mouseX, int mouseY) {
-        if (commandField.isActive()) {
-            suggestor.render(context, mouseX, mouseY);
+    public void renderSuggestions(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+        if (commandField.canConsumeInput()) {
+            suggestor.extractRenderState(context, mouseX, mouseY);
         }
     }
 
     public String getSingleLineCommand() {
-        return processor.processCommand(commandField.getText()).getLeft();
+        return processor.processCommand(commandField.getValue()).command();
     }
 
     public boolean isLoaded() {
@@ -236,7 +236,7 @@ public abstract class CommandEditor extends Container implements Dirtyable {
         this.y = y;
 
         commandField.setY(y);
-        suggestor.refresh();
+        suggestor.updateCommandInfo();
 
     }
 
@@ -249,7 +249,7 @@ public abstract class CommandEditor extends Container implements Dirtyable {
 
         commandField.setWidth(width - leftPadding - rightPadding - 20);
 
-        suggestor.refresh();
+        suggestor.updateCommandInfo();
     }
 
     public int getHeight() {
@@ -262,7 +262,7 @@ public abstract class CommandEditor extends Container implements Dirtyable {
 
         commandField.setHeight(height);
 
-        suggestor.refresh();
+        suggestor.updateCommandInfo();
 
         if (changed) {
             onHeightChange(height);
@@ -274,7 +274,7 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     }
 
     public void setSuggestorActive(boolean suggestorActive) {
-        suggestor.setWindowActive(suggestorActive);
+        suggestor.setAllowSuggestions(suggestorActive);
         this.suggestorActive = suggestorActive;
     }
 
@@ -289,11 +289,11 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     }
 
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder) {
-        builder.put(NarrationPart.TITLE, Text.translatable("narration.edit_box", commandField.getText()));
+    public void updateNarration(NarrationElementOutput builder) {
+        builder.add(NarratedElementType.TITLE, Component.translatable("narration.edit_box", commandField.getValue()));
     }
 
-    protected static List<OrderedText> highlight(ParseResults<CommandSource> parse, String text, StringMapping mapping) {
+    protected static List<FormattedCharSequence> highlight(ParseResults<SharedSuggestionProvider> parse, String text, StringMapping mapping) {
         // The ranges of text in the single-line command containing each
         // argument that should be highlighted.
         List<StringRange> ranges = parse
@@ -309,7 +309,7 @@ public abstract class CommandEditor extends Container implements Dirtyable {
         // or after this index is a parse error.
         int mappedParseStopIndex = mapping.mapIndexOrAfter(parse.getReader().getCursor());
 
-        List<OrderedText> highlightedLines = new ArrayList<>();
+        List<FormattedCharSequence> highlightedLines = new ArrayList<>();
 
         int startIndex = 0;
         while (startIndex <= text.length()) {
@@ -366,14 +366,14 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     }
 
     private static final List<Style> ARGUMENT_STYLES = Stream.of(
-            Formatting.AQUA,
-            Formatting.YELLOW,
-            Formatting.GREEN,
-            Formatting.LIGHT_PURPLE,
-            Formatting.GOLD
+            ChatFormatting.AQUA,
+            ChatFormatting.YELLOW,
+            ChatFormatting.GREEN,
+            ChatFormatting.LIGHT_PURPLE,
+            ChatFormatting.GOLD
     ).map(Style.EMPTY::withColor).toList();
 
-    private static final Style INFO_STYLE = Style.EMPTY.withColor(Formatting.GRAY);
-    private static final Style ERROR_STYLE = Style.EMPTY.withColor(Formatting.RED);
-    private static final Style COMMENT_STYLE = Style.EMPTY.withColor(Formatting.DARK_GRAY);
+    private static final Style INFO_STYLE = Style.EMPTY.withColor(ChatFormatting.GRAY);
+    private static final Style ERROR_STYLE = Style.EMPTY.withColor(ChatFormatting.RED);
+    private static final Style COMMENT_STYLE = Style.EMPTY.withColor(ChatFormatting.DARK_GRAY);
 }

@@ -1,38 +1,38 @@
 package arm32x.minecraft.commandblockide.client.gui;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
-public final class ToolbarSeparator extends ClickableWidget {
+public final class ToolbarSeparator extends AbstractWidget {
 	public static final int COLOR = 0x3FFFFFFF;
 
 	public ToolbarSeparator() {
-		super(0, 0, 0, 18, Text.empty());
+		super(0, 0, 0, 18, Component.empty());
 	}
 
 	@Override
-	public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+	public void extractWidgetRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		context.fill(getX(), getY() + 1, getX() + 1, getY() + 1 + height, COLOR);
 	}
 
 	@Override
-	public SelectionType getType() {
-		return SelectionType.NONE;
+	public NarrationPriority narrationPriority() {
+		return NarrationPriority.NONE;
 	}
 
 	@Override
-	public boolean isInteractable() {
+	public boolean isActive() {
 		return false;
 	}
 
 	@Override
-	protected MutableText getNarrationMessage() {
-		return Text.empty();
+	protected MutableComponent createNarrationMessage() {
+		return Component.empty();
 	}
 
 	@Override
-	public void appendClickableNarrations(NarrationMessageBuilder builder) { }
+	public void updateWidgetNarration(NarrationElementOutput builder) { }
 }

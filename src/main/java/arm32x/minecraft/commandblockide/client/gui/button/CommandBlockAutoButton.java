@@ -1,11 +1,11 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.input.AbstractInput;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.input.InputWithModifiers;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 
 public final class CommandBlockAutoButton extends IconButton implements Dirtyable {
 	private boolean auto = false;
@@ -14,29 +14,29 @@ public final class CommandBlockAutoButton extends IconButton implements Dirtyabl
 
 	public CommandBlockAutoButton(int x, int y) {
 		super(x, y, 16, 16);
-		setTooltip(Tooltip.of(getTooltipText()));
+		setTooltip(Tooltip.create(getTooltipText()));
 	}
 
 	@Override
 	protected Identifier getTexture() {
 		return auto
-			? Identifier.of("minecraft", "textures/item/gunpowder.png")
-			: Identifier.of("minecraft", "textures/item/redstone.png");
+			? Identifier.fromNamespaceAndPath("minecraft", "textures/item/gunpowder.png")
+			: Identifier.fromNamespaceAndPath("minecraft", "textures/item/redstone.png");
 	}
 
 	@Override
-	public MutableText getNarrationMessage() {
-		return getNarrationMessage(getTooltipText());
+	public MutableComponent createNarrationMessage() {
+		return wrapDefaultNarrationMessage(getTooltipText());
 	}
 
-	private Text getTooltipText() {
+	private Component getTooltipText() {
 		return auto
-			? Text.translatable("advMode.mode.autoexec.bat")
-			: Text.translatable("advMode.mode.redstoneTriggered");
+			? Component.translatable("advMode.mode.autoexec.bat")
+			: Component.translatable("advMode.mode.redstoneTriggered");
 	}
 
 	@Override
-	public void onPress(AbstractInput input) {
+	public void onPress(InputWithModifiers input) {
 		auto = !auto;
 		dirty = true;
 		updateTooltip();
@@ -55,6 +55,6 @@ public final class CommandBlockAutoButton extends IconButton implements Dirtyabl
 	}
 
 	private void updateTooltip() {
-		setTooltip(Tooltip.of(getTooltipText()));
+		setTooltip(Tooltip.create(getTooltipText()));
 	}
 }

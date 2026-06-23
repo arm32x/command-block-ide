@@ -13,9 +13,9 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessagePacker;
@@ -83,7 +83,7 @@ public final class MultilineCommandStorage implements Serializable {
 			return multiline.get();
 		} else {
 			multiline = fallbackSource.get();
-			if (multiline.isPresent() && processor.processCommand(multiline.get()).getLeft().equals(singleLine)) {
+			if (multiline.isPresent() && processor.processCommand(multiline.get()).command().equals(singleLine)) {
 				return multiline.get();
 			}
 		}
@@ -190,7 +190,7 @@ public final class MultilineCommandStorage implements Serializable {
 				}
 				boolean isSingleplayer = unpacker.unpackBoolean();
 				String world = unpacker.unpackString();
-				var identifier = Identifier.of(unpacker.unpackString());
+				var identifier = Identifier.parse(unpacker.unpackString());
 				int lineIndex = unpacker.unpackInt();
 				var location = new CommandFunctionLocation(isSingleplayer, world, identifier, lineIndex);
 
@@ -205,8 +205,8 @@ public final class MultilineCommandStorage implements Serializable {
 	}
 
 	private static File getFile() {
-		var instance = MinecraftClient.getInstance();
-		return new File(instance.runDirectory, "commandblockide.bin");
+		var instance = Minecraft.getInstance();
+		return new File(instance.gameDirectory, "commandblockide.bin");
 	}
 
 	public static byte[] hash(String string) {

@@ -1,11 +1,11 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
 import java.util.function.Consumer;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.input.AbstractInput;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.input.InputWithModifiers;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 
 public final class SimpleIconButton extends IconButton {
 	private boolean drawsBackground;
@@ -19,12 +19,12 @@ public final class SimpleIconButton extends IconButton {
 	public SimpleIconButton(int x, int y, String iconName, Tooltip tooltip, boolean drawsBackground, Consumer<SimpleIconButton> pressAction) {
 		super(x, y, 20, 20, 16, 16);
 		this.drawsBackground = drawsBackground;
-		this.texture = Identifier.of("commandblockide", "textures/gui/icons/" + iconName + ".png");
+		this.texture = Identifier.fromNamespaceAndPath("commandblockide", "textures/gui/icons/" + iconName + ".png");
 		this.pressAction = pressAction;
 	}
 
 	@Override
-	public void onPress(AbstractInput input) {
+	public void onPress(InputWithModifiers input) {
 		pressAction.accept(this);
 	}
 
@@ -47,7 +47,7 @@ public final class SimpleIconButton extends IconButton {
 	}
 
 	@Override
-	protected MutableText getNarrationMessage() {
-		return getNarrationMessage(Text.empty());
+	protected MutableComponent createNarrationMessage() {
+		return wrapDefaultNarrationMessage(Component.empty());
 	}
 }

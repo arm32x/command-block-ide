@@ -9,21 +9,18 @@ import java.util.ArrayList;
 import java.util.List;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.tooltip.TooltipPositioner;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.input.KeyInput;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.ColorHelper;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFW;
@@ -43,28 +40,28 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	private double mouseYAtScrollbarDragStart = 0;
 	private int scrollOffsetAtScrollbarDragStart = 0;
 
-	protected @Nullable Text statusText = null;
+	protected @Nullable Component statusText = null;
 	private int statusTextX = 0;
 
 	public CommandIDEScreen() {
-		super(Text.empty());
+		super(Component.empty());
 	}
 
 	@Override
 	protected void init() {
 		statusTextX = addToolbarWidgets(List.of(
-			saveButton = new SimpleIconButton(0, 0, "save", Tooltip.of(Text.translatable("commandBlockIDE.save")), b -> save()),
+			saveButton = new SimpleIconButton(0, 0, "save", Tooltip.create(Component.translatable("commandBlockIDE.save")), b -> save()),
 			new ToolbarSeparator()
 		));
 
 		// Done button
-		addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, b -> { save(); close(); })
-			.position(width - 216, height - 28)
+		addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, b -> { save(); onClose(); })
+			.pos(width - 216, height - 28)
 			.size(100, 20)
 			.build());
 		// Cancel button
-		addDrawableChild(ButtonWidget.builder(ScreenTexts.CANCEL, b -> close())
-			.position(width - 108, height - 28)
+		addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, b -> onClose())
+			.pos(width - 108, height - 28)
 			.size(100, 20)
 			.build());
 
@@ -90,12 +87,12 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 
 	protected void initAfterFirst() {
 		for (CommandEditor editor : editors) {
-			addSelectableChild(editor);
+			addWidget(editor);
 			editor.setWidth(width - 16);
 		}
 
 		maxScrollOffset = Math.max(combinedEditorHeight - (height - 50), 0);
-		Element element = getFocused();
+		GuiEventListener element = getFocused();
 		if (element instanceof CommandEditor) {
 			setFocusedEditor((CommandEditor)element);
 		}
@@ -107,7 +104,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			setScrollOffset(Math.min(scrollOffset, combinedEditorHeight - 20));
 		});
 		editors.add(editor);
-		addSelectableChild(editor);
+		addWidget(editor);
 	}
 
 	public void save() {
@@ -118,12 +115,12 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	public boolean shouldCloseOnEsc() { return false; }
 
 	@Override
-	public void close() {
-		super.close();
+	public void onClose() {
+		super.onClose();
 	}
 
 	@Override
-	public boolean keyPressed(KeyInput input) {
+	public boolean keyPressed(KeyEvent input) {
 		if (handleSpecialKey(input)) {
 			return true;
 		} else if (getFocused() != null) {
@@ -135,12 +132,12 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 		}
 	}
 
-	private boolean handleSpecialKey(KeyInput input) {
+	private boolean handleSpecialKey(KeyEvent input) {
 		if (input.key() == GLFW.GLFW_KEY_ESCAPE) {
-			Element focused = getFocused();
+			GuiEventListener focused = getFocused();
 			if (focused == null) {
 				// TODO: Warn about unsaved changes.
-				close();
+				onClose();
 				return true;
 			}
 			if (focused instanceof CommandEditor editor) {
@@ -154,13 +151,13 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			setFocused(null);
 			return true;
 		} else if (input.key() == GLFW.GLFW_KEY_ENTER || input.key() == GLFW.GLFW_KEY_KP_ENTER) {
-			Element focused = getFocused();
+			GuiEventListener focused = getFocused();
 			if (focused == null) {
 				save();
-				close();
+				onClose();
 				return true;
 			}
-			if (input.hasCtrl() && focused instanceof CommandEditor editor) {
+			if (input.hasControlDown() && focused instanceof CommandEditor editor) {
 				if (editor.isSuggestorActive()) {
 					editor.setSuggestorActive(false);
 					return true;
@@ -171,14 +168,14 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 				return true;
 			}
 			return false;
-		} else if (input.key() == GLFW.GLFW_KEY_UP && input.hasCtrl() || input.key() == GLFW.GLFW_KEY_TAB && input.hasCtrl() && input.hasShift()) {
+		} else if (input.key() == GLFW.GLFW_KEY_UP && input.hasControlDown() || input.key() == GLFW.GLFW_KEY_TAB && input.hasControlDown() && input.hasShiftDown()) {
 			changeFocus(false);
 			return true;
-		} else if (input.key() == GLFW.GLFW_KEY_DOWN && input.hasCtrl() || input.key() == GLFW.GLFW_KEY_TAB && input.hasCtrl() && !input.hasShift()) {
+		} else if (input.key() == GLFW.GLFW_KEY_DOWN && input.hasControlDown() || input.key() == GLFW.GLFW_KEY_TAB && input.hasControlDown() && !input.hasShiftDown()) {
 			changeFocus(true);
 			return true;
-		} else if (input.key() == GLFW.GLFW_KEY_S && input.hasCtrl()) {
-			saveButton.playDownSound(MinecraftClient.getInstance().getSoundManager());
+		} else if (input.key() == GLFW.GLFW_KEY_S && input.hasControlDown()) {
+			saveButton.playDownSound(Minecraft.getInstance().getSoundManager());
 			save();
 			return true;
 		} else {
@@ -189,7 +186,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	// This must be overridden because the superclass' implementation
 	// short-circuits on success, which breaks text field focus.
 	@Override
-	public boolean mouseClicked(Click click, boolean doubled) {
+	public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
 		if (click.x() > width - 4 && click.button() == 0) {
 			int virtualHeight = maxScrollOffset + height;
 			int scrollbarHeight = Math.round((float)height / virtualHeight * height);
@@ -208,8 +205,8 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			return true;
 		}
 
-		Element focusedChild = null;
-		for (Element child : children()) {
+		GuiEventListener focusedChild = null;
+		for (GuiEventListener child : children()) {
 			if (child.mouseClicked(click, doubled) && focusedChild == null) {
 				focusedChild = child;
 			}
@@ -222,7 +219,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	}
 
 	@Override
-	public boolean mouseReleased(Click click) {
+	public boolean mouseReleased(MouseButtonEvent click) {
 		if (click.button() == 0 && draggingScrollbar) {
 			draggingScrollbar = false;
 			return true;
@@ -232,7 +229,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	}
 
 	@Override
-	public boolean mouseDragged(Click click, double offsetX, double offsetY) {
+	public boolean mouseDragged(MouseButtonEvent click, double offsetX, double offsetY) {
 		if (click.button() == 0 && draggingScrollbar) {
 			int virtualHeight = maxScrollOffset + height;
 			int scrollbarHeight = Math.round((float)height / virtualHeight * height);
@@ -265,7 +262,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 		// Don't force the scroll offset to suddenly "jump" back to an in-bounds
 		// value; instead, just prevent it from going further astray.
 		int effectiveMaxScrollOffset = Math.max(scrollOffset, maxScrollOffset);
-		scrollOffset = MathHelper.clamp(offset, 0, effectiveMaxScrollOffset);
+		scrollOffset = Mth.clamp(offset, 0, effectiveMaxScrollOffset);
 		repositionEditors();
 	}
 
@@ -287,19 +284,19 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	 * @param widgets The list of widgets to add.
 	 * @return The X coordinate at which the next widget would have been placed.
 	 */
-	private int addToolbarWidgets(List<ClickableWidget> widgets) {
+	private int addToolbarWidgets(List<AbstractWidget> widgets) {
 		int x = 8;
-		for (ClickableWidget widget : widgets) {
+		for (AbstractWidget widget : widgets) {
 			widget.setX(x);
 			widget.setY(height - 28);
 			x += widget.getWidth() + 4;
-			addDrawableChild(widget);
+			addRenderableWidget(widget);
 		}
 		return x;
 	}
 
 	private void changeFocus(boolean lookForwards) {
-		Element element = getFocused();
+		GuiEventListener element = getFocused();
 		if (element == null) {
 			CommandEditor editor = editors.get(0);
 			setFocusedEditor(editor);
@@ -332,16 +329,16 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 		repositionEditors();
 		int top = editor.getY() + scrollOffset;
 		int bottom = top + editor.getHeight();
-		setScrollOffset(MathHelper.clamp(getScrollOffset(), bottom - height + 36, top - 8));
+		setScrollOffset(Mth.clamp(getScrollOffset(), bottom - height + 36, top - 8));
 	}
 
 	@Override
-	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		// Avoid this.renderBackground because it's a no-op (see below).
-		super.renderBackground(context, mouseX, mouseY, delta);
+		super.extractBackground(context, mouseX, mouseY, delta);
 
 		for (CommandEditor editor : editors) {
-			editor.render(context, mouseX, mouseY, delta);
+			editor.extractRenderState(context, mouseX, mouseY, delta);
 		}
 		for (CommandEditor editor : editors) {
 			// This is done in a separate loop to ensure it's rendered on top.
@@ -355,18 +352,18 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			context.fill(width - 3, scrollbarPosition + 1, width - 1, scrollbarPosition + scrollbarHeight - 1, 0x3FFFFFFF);
 		}
 
-		super.render(context, mouseX, mouseY, delta);
+		super.extractRenderState(context, mouseX, mouseY, delta);
 		if (statusText != null) {
             int x = statusTextX + 5;
             int y = height - 22;
-            int statusTextWidth = textRenderer.getWidth(statusText);
+            int statusTextWidth = font.width(statusText);
             context.fill(x - 2, y - 2, x + statusTextWidth + 2, y + 9 + 2, 0x7F000000);
-            context.drawTextWithShadow(textRenderer, statusText, statusTextX + 5, height - 22, 0xFFFFFFFF);
+            context.text(font, statusText, statusTextX + 5, height - 22, 0xFFFFFFFF);
 		}
 	}
 
 	@Override
-	public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+	public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		// No-op. This is a hack to prevent the background from being drawn a
 		// second time from super.render.
 	}

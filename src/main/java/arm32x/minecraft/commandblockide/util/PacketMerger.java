@@ -1,21 +1,21 @@
 package arm32x.minecraft.commandblockide.util;
 
 import java.util.Optional;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.network.PacketByteBuf;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.FriendlyByteBuf;
 
 /**
- * Merges the {@link PacketByteBuf}s created by a {@link PacketSplitter} back
+ * Merges the {@link FriendlyByteBuf}s created by a {@link PacketSplitter} back
  * into one {@code PacketByteBuf}.
  */
 public final class PacketMerger {
-	private PacketByteBuf destination = PacketByteBufs.create();
+	private FriendlyByteBuf destination = createBuffer();
 	private int chunksRemaining = -1;
 
 	public PacketMerger() { }
 
 	/**
-	 * Appends the provided {@link PacketByteBuf} to the result and returns the
+	 * Appends the provided {@link FriendlyByteBuf} to the result and returns the
 	 * result if it is complete. The {@code PacketMerger} will return to its
 	 * original state once the merged packet is complete.
 	 * @param buf The {@code PacketByteBuf} to append.
@@ -27,7 +27,7 @@ public final class PacketMerger {
 	 * @throws IllegalStateException if all chunks have already been merged and
 	 * 	       the {@code PacketByteBuf} has been returned.
 	 */
-	public Optional<PacketByteBuf> append(PacketByteBuf buf) throws InvalidSplitPacketException {
+	public Optional<FriendlyByteBuf> append(FriendlyByteBuf buf) throws InvalidSplitPacketException {
 		if (chunksRemaining == -1) {
 			int header = buf.readInt();
 			if (header != PacketSplitter.HEADER_MAGIC) {
@@ -41,13 +41,17 @@ public final class PacketMerger {
 		}
 		destination.writeBytes(buf);
 		if (--chunksRemaining == 0) {
-			PacketByteBuf merged = destination;
-			destination = PacketByteBufs.create();
+			FriendlyByteBuf merged = destination;
+			destination = createBuffer();
 			chunksRemaining = -1;
 			return Optional.of(merged);
 		} else {
 			return Optional.empty();
 		}
+	}
+
+	private static FriendlyByteBuf createBuffer() {
+		return new FriendlyByteBuf(Unpooled.buffer());
 	}
 
 	public static class InvalidSplitPacketException extends Exception {

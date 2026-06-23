@@ -6,32 +6,32 @@ import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.CommandBlockBlockEntity;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.CommandBlockEntity;
 
 public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEditor> {
 	private final Map<BlockPos, CommandEditor> positionIndex = new HashMap<>();
 
-	private final CommandBlockBlockEntity startingBlockEntity;
+	private final CommandBlockEntity startingBlockEntity;
 	private int startingIndex = -1;
 
-	public CommandBlockIDEScreen(CommandBlockBlockEntity blockEntity) {
+	public CommandBlockIDEScreen(CommandBlockEntity blockEntity) {
 		super();
 		startingBlockEntity = blockEntity;
 	}
 
 	@Override
 	protected void firstInit() {
-		assert client != null;
-		CommandChainTracer tracer = new CommandChainTracer(client.world);
+		assert minecraft != null;
+		CommandChainTracer tracer = new CommandChainTracer(minecraft.level);
 
-		Iterator<BlockPos> iterator = tracer.traceBackwards(startingBlockEntity.getPos()).iterator();
-		BlockPos chainStart = startingBlockEntity.getPos();
+		Iterator<BlockPos> iterator = tracer.traceBackwards(startingBlockEntity.getBlockPos()).iterator();
+		BlockPos chainStart = startingBlockEntity.getBlockPos();
 		while (iterator.hasNext()) {
 			chainStart = iterator.next();
 		}
@@ -41,32 +41,32 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 			addEditor(getBlockEntityAt(position));
 		}
 
-		BlockPos pos = startingBlockEntity.getPos();
-		statusText = Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())
-			.formatted(Formatting.GRAY);
+		BlockPos pos = startingBlockEntity.getBlockPos();
+		statusText = Component.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ())
+			.withStyle(ChatFormatting.GRAY);
 
 		super.firstInit();
 	}
 
-	private void addEditor(CommandBlockBlockEntity blockEntity) {
+	private void addEditor(CommandBlockEntity blockEntity) {
 		int index = editors.size();
-		CommandBlockEditor editor = new CommandBlockEditor(this, textRenderer, 8, 20 * index + 8, width - 16, 16, blockEntity, index);
+		CommandBlockEditor editor = new CommandBlockEditor(this, font, 8, 20 * index + 8, width - 16, 16, blockEntity, index);
 		addEditor(editor);
-		positionIndex.put(blockEntity.getPos(), editor);
+		positionIndex.put(blockEntity.getBlockPos(), editor);
 		if (blockEntity.equals(startingBlockEntity)) {
 			startingIndex = index;
 			setFocusedEditor(editor);
 		} else {
-			assert client != null && client.player != null;
-			editor.requestUpdate(client.player);
+			assert minecraft != null && minecraft.player != null;
+			editor.requestUpdate(minecraft.player);
 		}
 	}
 
-	private CommandBlockBlockEntity getBlockEntityAt(BlockPos position) {
-		assert client != null && client.world != null;
-		BlockEntity blockEntity = client.world.getBlockEntity(position);
-		if (blockEntity instanceof CommandBlockBlockEntity) {
-			return (CommandBlockBlockEntity)blockEntity;
+	private CommandBlockEntity getBlockEntityAt(BlockPos position) {
+		assert minecraft != null && minecraft.level != null;
+		BlockEntity blockEntity = minecraft.level.getBlockEntity(position);
+		if (blockEntity instanceof CommandBlockEntity) {
+			return (CommandBlockEntity)blockEntity;
 		} else {
 			throw new RuntimeException("No command block at position.");
 		}
@@ -84,18 +84,18 @@ public final class CommandBlockIDEScreen extends CommandIDEScreen<CommandBlockEd
 
 	@Override
 	public void save() {
-		assert client != null;
-		ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
+		assert minecraft != null;
+		ClientPacketListener networkHandler = minecraft.getConnection();
 		assert networkHandler != null;
 		editors.forEach(editor -> editor.save(networkHandler));
 		super.save();
 	}
 
 	@Override
-	public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+	public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
 		for (CommandEditor editor : editors) {
 			editor.lineNumberHighlighted = editor.index == startingIndex;
 		}
-		super.render(context, mouseX, mouseY, delta);
+		super.extractRenderState(context, mouseX, mouseY, delta);
 	}
 }
