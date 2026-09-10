@@ -23,13 +23,13 @@ public final class CommandBlockIDEClient implements ClientModInitializer {
 		PayloadTypeRegistry.clientboundPlay().register(Packets.EDIT_FUNCTION, EditFunctionPayload.CODEC);
 		ClientPlayNetworking.registerGlobalReceiver(Packets.EDIT_FUNCTION, (payload, context) -> {
 			Minecraft client = context.client();
-			client.execute(() -> client.setScreen(new CommandFunctionIDEScreen(payload.id(), payload.lineCount())));
+			client.execute(() ->client.gui.setScreen(new CommandFunctionIDEScreen(payload.id(), payload.lineCount())));
 		});
 		PayloadTypeRegistry.clientboundPlay().register(Packets.UPDATE_FUNCTION_COMMAND, UpdateFunctionCommandPayload.CODEC);
 		ClientPlayNetworking.registerGlobalReceiver(Packets.UPDATE_FUNCTION_COMMAND, (payload, context) -> {
 			Minecraft client = context.client();
 			client.execute(() -> {
-				if (client.screen instanceof CommandFunctionIDEScreen ide) {
+				if (client.gui.screen() instanceof CommandFunctionIDEScreen ide) {
 					ide.update(payload.index(), payload.line());
 				}
 			});
@@ -42,7 +42,7 @@ public final class CommandBlockIDEClient implements ClientModInitializer {
 		} else {
 			LOGGER.error("Error screen shown:", ex);
 		}
-		Minecraft.getInstance().setScreen(new ErrorScreen(
+		Minecraft.getInstance().gui.setScreen(new ErrorScreen(
 			Component.translatable(currentAction != null ? "commandBlockIDE.errorWithContext" : "commandBlockIDE.error", currentAction),
 			Component.literal(ex.toString())
 		));

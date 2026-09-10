@@ -1,8 +1,8 @@
 package arm32x.minecraft.commandblockide.util;
 
-import net.minecraft.util.FormattedCharSink;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.FormattedCharSink;
 
 public final class OrderedTexts {
     public static FormattedCharSequence skip(int count, FormattedCharSequence text) {

@@ -5,17 +5,17 @@ import arm32x.minecraft.commandblockide.client.gui.screen.CommandBlockIDEScreen;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
-import net.minecraft.world.level.storage.TagValueInput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.util.ProblemReporter;
-import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.CommandBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueInput;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,8 +92,8 @@ public final class DataCommandUpdateRequester {
             blockEntity.loadWithComponents(TagValueInput.create(errorReporter, client.level.registryAccess(), tag));
         }
 //		blockEntity.setNeedsUpdatePacket(false);
-		if (client.screen instanceof CommandBlockIDEScreen) {
-			((CommandBlockIDEScreen)client.screen).update(position);
+		if (client.gui.screen() instanceof CommandBlockIDEScreen) {
+			((CommandBlockIDEScreen)client.gui.screen()).update(position);
 		}
 		blocksToUpdate.remove(position);
 

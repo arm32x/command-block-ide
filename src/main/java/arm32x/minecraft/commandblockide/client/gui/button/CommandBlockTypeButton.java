@@ -1,15 +1,15 @@
 package arm32x.minecraft.commandblockide.client.gui.button;
 
 import arm32x.minecraft.commandblockide.client.Dirtyable;
-import arm32x.minecraft.commandblockide.mixin.client.GuiGraphicsAccessor;
-import net.minecraft.world.level.block.entity.CommandBlockEntity;
-import net.minecraft.client.renderer.RenderPipelines;
+import arm32x.minecraft.commandblockide.mixin.client.DrawContextAccessor;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.input.InputWithModifiers;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.entity.CommandBlockEntity;
 
 public final class CommandBlockTypeButton extends IconButton implements Dirtyable {
 	private CommandBlockEntity.Mode type = CommandBlockEntity.Mode.REDSTONE;
@@ -89,7 +89,7 @@ public final class CommandBlockTypeButton extends IconButton implements Dirtyabl
         // parameter, which we need, so we have to use the private version.
 		int x1 = getX(), x2 = x1 + 16, y1 = getY(), y2 = y1 + 16;
 		float u1 = 0.0f, u2 = 1.0f, v1 = 0.0f, v2 = 0.25f;
-		((GuiGraphicsAccessor)context).invokeInnerBlit(RenderPipelines.GUI_TEXTURED, texture, x1, x2, y1, y2, u2, u1, v2, v1, color);
+		((DrawContextAccessor)context).invokeInnerBlit(RenderPipelines.GUI_TEXTURED, texture, x1, x2, y1, y2, u2, u1, v2, v1, color);
 	}
 
 	@Override

@@ -3,8 +3,8 @@ package arm32x.minecraft.commandblockide.client.gui.button;
 import arm32x.minecraft.commandblockide.client.Dirtyable;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.input.InputWithModifiers;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 
 public final class CommandBlockTrackOutputButton extends IconButton implements Dirtyable {
