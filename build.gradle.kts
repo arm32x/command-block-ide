@@ -26,6 +26,7 @@ dependencies {
     include(libs.msgpack.core)
 
     testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.jqwik)
     testImplementation(libs.assertj.core)
 }
