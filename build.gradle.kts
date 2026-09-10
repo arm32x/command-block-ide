@@ -1,6 +1,9 @@
+@file:Suppress("LocalVariableName")
+
 plugins {
-    alias(libs.plugins.android.git.version)
-    alias(libs.plugins.fabric.loom)
+    id("com.gradleup.shadow") version "9.2.2"
+    id("com.gladed.androidgitversion")
+    id("net.fabricmc.fabric-loom")
     `java-library`
 }
 
@@ -12,35 +15,45 @@ androidGitVersion {
 group = "arm32x.minecraft"
 version = androidGitVersion.name()
 
+configurations.implementation.get().extendsFrom(configurations["shadow"])
+
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    minecraft(libs.minecraft)
+    val minecraft_version: String by project
+    minecraft("com.mojang:minecraft:$minecraft_version")
 
-    implementation(libs.fabric.loader)
-    implementation(libs.fabric.api)
+    val loader_version: String by project
+    implementation("net.fabricmc:fabric-loader:$loader_version")
 
-    implementation(libs.msgpack.core)
-    include(libs.msgpack.core)
+    val fabric_api_version: String by project
+    implementation("net.fabricmc.fabric-api:fabric-api:$fabric_api_version")
 
-    testRuntimeOnly(libs.junit.jupiter.engine)
-    testRuntimeOnly(libs.junit.platform.launcher)
-    testImplementation(libs.jqwik)
-    testImplementation(libs.assertj.core)
+    val msgpack_java_version: String by project
+    shadow("org.msgpack:msgpack-core:$msgpack_java_version")
+
+    val junit_version: String by project
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit_version")
+
+    val jqwik_version: String by project
+    testImplementation("net.jqwik:jqwik:$jqwik_version")
+
+    val assertj_version: String by project
+    testImplementation("org.assertj:assertj-core:$assertj_version")
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(libs.versions.java.get().toInt()))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
     withSourcesJar()
 }
 
 tasks.withType<JavaCompile>().configureEach {
+    options.release.set(25)
     options.encoding = "UTF-8"
-    options.release.set(libs.versions.java.get().toInt())
 }
 
 loom {
@@ -61,11 +74,13 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 }
 
 tasks.jar {
-    from("LICENSE") {
-        rename { "${it}_${project.name}" }
-    }
+    from("LICENSE")
+}
+
+tasks.shadowJar {
+    configurations = listOf(project.configurations.shadow.get())
 }
 
 tasks.test {
-    useJUnitPlatform()
+    failOnNoDiscoveredTests = false
 }

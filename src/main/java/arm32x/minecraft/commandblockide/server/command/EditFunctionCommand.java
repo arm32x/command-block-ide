@@ -14,19 +14,20 @@ import com.mojang.datafixers.util.Either;
 import java.util.List;
 import java.util.Optional;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.item.FunctionArgument;
-import static net.minecraft.commands.arguments.item.FunctionArgument.functions;
+import net.minecraft.commands.functions.CommandFunction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.ServerFunctionManager;
+import net.minecraft.server.commands.FunctionCommand;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.permissions.Permission;
 import net.minecraft.server.permissions.PermissionLevel;
+
+import static net.minecraft.commands.arguments.item.FunctionArgument.functions;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
-import net.minecraft.server.commands.FunctionCommand;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.functions.CommandFunction;
-import net.minecraft.server.ServerFunctionManager;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.network.chat.Component;
 
 public final class EditFunctionCommand {
 	/**

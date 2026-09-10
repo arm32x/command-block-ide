@@ -7,39 +7,15 @@ import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
 import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.EditBox;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.Unique;
-
-import java.lang.reflect.Field;
 
 @Mixin(CommandSuggestions.SuggestionsList.class)
 public abstract class SuggestionWindowMixin {
-    @Unique private CommandSuggestions ide$commandSuggestions;
-
-    @Unique
-    private CommandSuggestions ide$getCommandSuggestions() {
-        if (ide$commandSuggestions != null) {
-            return ide$commandSuggestions;
-        }
-
-        for (Field field : getClass().getDeclaredFields()) {
-            if (field.getType() == CommandSuggestions.class && !field.getName().startsWith("ide$")) {
-                try {
-                    field.setAccessible(true);
-                    CommandSuggestions commandSuggestions = (CommandSuggestions)field.get(this);
-                    if (commandSuggestions != null) {
-                        return ide$commandSuggestions = commandSuggestions;
-                    }
-                } catch (IllegalAccessException e) {
-                    throw new IllegalStateException("Unable to read CommandSuggestions owner from SuggestionsList", e);
-                }
-            }
-        }
-
-        throw new IllegalStateException("Unable to find CommandSuggestions owner field on SuggestionsList");
-    }
+    @Shadow(aliases = { "field_21615" }) private @Final CommandSuggestions this$0;
 
     @Redirect(
         method = "useSuggestion()V",
@@ -50,7 +26,7 @@ public abstract class SuggestionWindowMixin {
         )
     )
     private String applySuggestion(Suggestion instance, String input) {
-        StringMapping mapping = ((ChatInputSuggestorExtension)ide$getCommandSuggestions()).ide$getMapping();
+        StringMapping mapping = ((ChatInputSuggestorExtension)this$0).ide$getMapping();
         int start = StringMapping.mapIndexOrAfter(mapping, false, instance.getRange().getStart());
         int end = StringMapping.mapIndexOrAfter(mapping, false, instance.getRange().getEnd());
 
@@ -77,7 +53,7 @@ public abstract class SuggestionWindowMixin {
         )
     )
     private int getMappedStart(StringRange instance) {
-        StringMapping mapping = ((ChatInputSuggestorExtension)ide$getCommandSuggestions()).ide$getMapping();
+        StringMapping mapping = ((ChatInputSuggestorExtension)this$0).ide$getMapping();
         return StringMapping.mapIndexOrAfter(mapping, false, instance.getStart());
     }
 

@@ -8,17 +8,16 @@ import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import arm32x.minecraft.commandblockide.client.update.DataCommandUpdateRequester;
 import java.util.Objects;
 import java.util.stream.Stream;
-import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.protocol.game.ServerboundSetCommandBlockPacket;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundSetCommandBlockPacket;
 import net.minecraft.world.level.BaseCommandBlock;
+import net.minecraft.world.level.block.entity.CommandBlockEntity;
 
 public final class CommandBlockEditor extends CommandEditor {
 	private final CommandBlockEntity blockEntity;
@@ -31,33 +30,81 @@ public final class CommandBlockEditor extends CommandEditor {
 
 	private boolean commandFieldDirty = false;
 
-	public CommandBlockEditor(Screen screen, Font textRenderer, int x, int y, int width, int height, CommandBlockEntity blockEntity, int index) {
-		super(screen, textRenderer, x, y, width, height, 40, 20, index);
+	public CommandBlockEditor(
+			Screen screen,
+			Font textRenderer,
+			int x,
+			int y,
+			int width,
+			int height,
+			CommandBlockEntity blockEntity,
+			int index
+	) {
+		super(
+				screen,
+				textRenderer,
+				x,
+				y,
+				width,
+				height,
+				40,
+				20,
+				index
+		);
+
 		this.blockEntity = blockEntity;
 
 		commandField.setMaxLength(32500);
 
 		lastOutputField = new EditBox(
-			textRenderer,
-			commandField.getX(), commandField.getY(),
-			commandField.getWidth(), commandField.getHeight(),
-			Component.translatable("advMode.previousOutput")
-				.append(Component.translatable("commandBlockIDE.narrator.editorIndex", index + 1))
+				textRenderer,
+				commandField.getX(),
+				commandField.getY(),
+				commandField.getWidth(),
+				commandField.getHeight(),
+				Component.translatable("advMode.previousOutput")
+						.append(
+								Component.translatable(
+										"commandBlockIDE.narrator.editorIndex",
+										index + 1
+								)
+						)
 		);
+
 		lastOutputField.setEditable(false);
 		lastOutputField.setMaxLength(32500);
-		lastOutputField.setValue(Component.translatable("commandBlockIDE.unloaded").getString());
+		lastOutputField.setValue(
+				Component.translatable(
+						"commandBlockIDE.unloaded"
+				).getString()
+		);
 		lastOutputField.visible = false;
 
-		typeButton = addDrawableChild(new CommandBlockTypeButton(x + 20, y));
+		typeButton = addDrawableChild(
+				new CommandBlockTypeButton(x + 20, y)
+		);
+
 		typeButton.setBlockType(blockEntity.getMode());
 		typeButton.active = false;
 
-		autoButton = addDrawableChild(new CommandBlockAutoButton(x + 40, y));
-		autoButton.setAuto(typeButton.getBlockType() == CommandBlockEntity.Mode.SEQUENCE);
+		autoButton = addDrawableChild(
+				new CommandBlockAutoButton(x + 40, y)
+		);
+
+		autoButton.setAuto(
+				typeButton.getBlockType()
+						== CommandBlockEntity.Mode.SEQUENCE
+		);
+
 		autoButton.active = false;
 
-		trackOutputButton = addDrawableChild(new CommandBlockTrackOutputButton(x + width - 16, y));
+		trackOutputButton = addDrawableChild(
+				new CommandBlockTrackOutputButton(
+						x + width - 16,
+						y
+				)
+		);
+
 		trackOutputButton.setTrackingOutput(true);
 		trackOutputButton.active = false;
 	}
@@ -65,55 +112,91 @@ public final class CommandBlockEditor extends CommandEditor {
 	public void save(ClientPacketListener networkHandler) {
 		if (isLoaded() && isDirty()) {
 			BaseCommandBlock executor = blockEntity.getCommandBlock();
-			networkHandler.send(new ServerboundSetCommandBlockPacket(
-				blockEntity.getBlockPos(),
-				getSingleLineCommand(),
-				typeButton.getBlockType(),
-				trackOutputButton.isTrackingOutput(),
-				typeButton.isConditional(),
-				autoButton.isAuto()
-			));
-			executor.setTrackOutput(trackOutputButton.isTrackingOutput());
+
+			networkHandler.send(
+					new ServerboundSetCommandBlockPacket(
+							blockEntity.getBlockPos(),
+							getSingleLineCommand(),
+							typeButton.getBlockType(),
+							trackOutputButton.isTrackingOutput(),
+							typeButton.isConditional(),
+							autoButton.isAuto()
+					)
+			);
+
+			executor.setTrackOutput(
+					trackOutputButton.isTrackingOutput()
+			);
+
 			if (!trackOutputButton.isTrackingOutput()) {
 				executor.setLastOutput(null);
 			}
+
 			saveMultilineCommand();
 		}
 	}
 
 	private void saveMultilineCommand() {
 		Minecraft client = Minecraft.getInstance();
-		String world = client.isLocalServer()
-			? Objects.requireNonNull(client.getSingleplayerServer()).getWorldData().getLevelName()
-			: Objects.requireNonNull(client.getCurrentServer()).name;
 
-		MultilineCommandStorage.getInstance().add(commandField.getValue(), getSingleLineCommand(), client.isLocalServer(), world, blockEntity.getBlockPos());
+		String world = client.isLocalServer()
+				? Objects.requireNonNull(
+				client.getSingleplayerServer()
+		).getWorldData().getLevelName()
+				: Objects.requireNonNull(
+				client.getCurrentServer()
+		).name;
+
+		MultilineCommandStorage.getInstance().add(
+				commandField.getValue(),
+				getSingleLineCommand(),
+				client.isLocalServer(),
+				world,
+				blockEntity.getBlockPos()
+		);
 	}
 
 	public void update() {
 		BaseCommandBlock executor = blockEntity.getCommandBlock();
 		Minecraft client = Minecraft.getInstance();
-		commandField.setValue(MultilineCommandStorage.getInstance().getRobust(
-			executor.getCommand(),
-			processor,
-			client.isLocalServer(),
-			client.isLocalServer()
-				? Objects.requireNonNull(client.getSingleplayerServer()).getWorldData().getLevelName()
-				: Objects.requireNonNull(client.getCurrentServer()).name,
-				blockEntity.getBlockPos()
-		));
+
+		commandField.setValue(
+				MultilineCommandStorage.getInstance().getRobust(
+						executor.getCommand(),
+						processor,
+						client.isLocalServer(),
+						client.isLocalServer()
+								? Objects.requireNonNull(
+								client.getSingleplayerServer()
+						).getWorldData().getLevelName()
+								: Objects.requireNonNull(
+								client.getCurrentServer()
+						).name,
+						blockEntity.getBlockPos()
+				)
+		);
+
 		typeButton.setBlockType(blockEntity.getMode());
 		typeButton.setConditional(blockEntity.isConditional());
 		autoButton.setAuto(blockEntity.isAutomatic());
-		trackOutputButton.setTrackingOutput(executor.isTrackOutput());
+		trackOutputButton.setTrackingOutput(
+				executor.isTrackOutput()
+		);
 
 		String lastOutput = executor.getLastOutput().getString();
+
 		if (lastOutput.isEmpty()) {
-			lastOutput = Component.translatable("commandBlockIDE.lastOutput.none").getString();
+			lastOutput = Component.translatable(
+					"commandBlockIDE.lastOutput.none"
+			).getString();
 		}
+
 		lastOutputField.setValue(lastOutput);
 
-		suggestor.setAllowSuggestions(commandField.canConsumeInput());
+		suggestor.setAllowSuggestions(
+				commandField.canConsumeInput()
+		);
+
 		suggestor.updateCommandInfo();
 
 		commandFieldDirty = false;
@@ -121,33 +204,27 @@ public final class CommandBlockEditor extends CommandEditor {
 	}
 
 	public void requestUpdate(LocalPlayer player) {
-		DataCommandUpdateRequester.getInstance().requestUpdate(player, blockEntity);
+		DataCommandUpdateRequester.getInstance()
+				.requestUpdate(player, blockEntity);
 	}
 
 	@Override
 	public void commandChanged(String newCommand) {
-		if (!newCommand.equals(blockEntity.getCommandBlock().getCommand())) {
+		if (
+				!newCommand.equals(
+						blockEntity.getCommandBlock().getCommand()
+				)
+		) {
 			commandFieldDirty = true;
 		}
-		super.commandChanged(newCommand);
-	}
 
-	@Override
-	protected void extractCommandField(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-		if (trackOutputButton.isMouseOver(mouseX, mouseY)) {
-			commandField.visible = false;
-			lastOutputField.visible = true;
-			lastOutputField.extractRenderState(context, mouseX, mouseY, delta);
-		} else {
-			commandField.visible = true;
-			lastOutputField.visible = false;
-			commandField.extractRenderState(context, mouseX, mouseY, delta);
-		}
+		super.commandChanged(newCommand);
 	}
 
 	@Override
 	public void setLoaded(boolean loaded) {
 		super.setLoaded(loaded);
+
 		typeButton.active = loaded;
 		autoButton.active = loaded;
 		trackOutputButton.active = loaded;
@@ -156,7 +233,11 @@ public final class CommandBlockEditor extends CommandEditor {
 	@Override
 	public boolean isDirty() {
 		return commandFieldDirty
-			|| Stream.<Dirtyable>of(typeButton, autoButton, trackOutputButton).anyMatch(Dirtyable::isDirty);
+				|| Stream.<Dirtyable>of(
+				typeButton,
+				autoButton,
+				trackOutputButton
+		).anyMatch(Dirtyable::isDirty);
 	}
 
 	@Override
@@ -176,6 +257,8 @@ public final class CommandBlockEditor extends CommandEditor {
 
 		lastOutputField.setWidth(commandField.getWidth());
 
-		trackOutputButton.setX(getX() + width - 16);
+		trackOutputButton.setX(
+				getX() + width - 16
+		);
 	}
 }

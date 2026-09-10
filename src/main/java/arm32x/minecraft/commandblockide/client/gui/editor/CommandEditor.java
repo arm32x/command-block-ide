@@ -6,7 +6,7 @@ import arm32x.minecraft.commandblockide.client.gui.MultilineTextFieldWidget;
 import arm32x.minecraft.commandblockide.client.processor.CommandProcessor;
 import arm32x.minecraft.commandblockide.client.processor.MultilineCommandProcessor;
 import arm32x.minecraft.commandblockide.client.processor.StringMapping;
-import arm32x.minecraft.commandblockide.mixin.client.CommandSuggestionsAccessor;
+import arm32x.minecraft.commandblockide.mixin.client.ChatInputSuggestorAccessor;
 import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggestorExtension;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.context.ParsedArgument;
@@ -18,22 +18,22 @@ import java.util.function.IntConsumer;
 import java.util.stream.Stream;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.CommandSuggestions;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.multiplayer.ClientSuggestionProvider;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.network.chat.Style;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -62,7 +62,17 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     protected @Nullable IntConsumer heightChangedListener = null;
 
     @SuppressWarnings("ConstantConditions")
-    public CommandEditor(Screen screen, Font textRenderer, int x, int y, int width, int height, int leftPadding, int rightPadding, int index) {
+    public CommandEditor(
+            Screen screen,
+            Font textRenderer,
+            int x,
+            int y,
+            int width,
+            int height,
+            int leftPadding,
+            int rightPadding,
+            int index
+    ) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -74,8 +84,10 @@ public abstract class CommandEditor extends Container implements Dirtyable {
 
         commandField = addSelectableChild(new MultilineTextFieldWidget(
                 textRenderer,
-                x + leftPadding + 20, y,
-                width - leftPadding - rightPadding - 20, height,
+                x + leftPadding + 20,
+                y,
+                width - leftPadding - rightPadding - 20,
+                height,
                 Component.translatable("advMode.command")
                         .append(Component.translatable("commandBlockIDE.narrator.editorIndex", index + 1))
         ) {
@@ -84,22 +96,40 @@ public abstract class CommandEditor extends Container implements Dirtyable {
                 return super.createNarrationMessage().append(suggestor.getNarrationMessage());
             }
         });
+
         commandField.setEditable(false);
         commandField.setMaxLength(Integer.MAX_VALUE);
 
-        suggestor = new CommandSuggestions(Minecraft.getInstance(), screen, commandField, textRenderer, true, true, 0, 16, false, Integer.MIN_VALUE);
+        suggestor = new CommandSuggestions(
+                Minecraft.getInstance(),
+                screen,
+                commandField,
+                textRenderer,
+                true,
+                true,
+                0,
+                16,
+                false,
+                Integer.MIN_VALUE
+        );
+
         ((ChatInputSuggestorExtension) suggestor).ide$setCommandProcessor(processor);
+
         suggestor.updateCommandInfo();
 
         commandField.setResponder(this::commandChanged);
         commandField.setCursorChangeListener(suggestor::updateCommandInfo);
+
         commandField.setSyntaxHighlighter((text) -> {
-            var parse = ((CommandSuggestionsAccessor) suggestor).getCurrentParse();
+            var parse = ((ChatInputSuggestorAccessor) suggestor).getCurrentParse();
+
             if (parse != null) {
-                return highlight(parse, text, processor.processCommand(text).getB());
+                return highlight(
+                        parse,
+                        text,
+                        processor.processCommand(text).getSecond()
+                );
             } else {
-                // The command hasn't been parsed yet, so we show it without
-                // highlighting. I haven't ever seen this in game, though.
                 return MultilineTextFieldWidget.SyntaxHighlighter.NONE.highlight(text);
             }
         });
@@ -117,8 +147,6 @@ public abstract class CommandEditor extends Container implements Dirtyable {
         } else if (isSuggestorActive() && suggestor.keyPressed(input)) {
             return true;
         } else if (commandField.keyPressed(input)) {
-            // Movement commands such as arrow keys should hide the suggestion
-            // window since it's likely the user will want to move up or down.
             setSuggestorActive(false);
             return true;
         } else {
@@ -130,28 +158,32 @@ public abstract class CommandEditor extends Container implements Dirtyable {
         if (
                 input.key() == GLFW.GLFW_KEY_TAB
                         && !isSuggestorActive()
-                        && !commandField.isBeforeFirstNonWhitespaceCharacterInLine(commandField.getCursorPosition())
+                        && !commandField.isBeforeFirstNonWhitespaceCharacterInLine(
+                        commandField.getCursorPosition()
+                )
         ) {
             setSuggestorActive(true);
             suggestor.updateCommandInfo();
-            // Immediately trigger completion without using Mixin by
-            // simulating a key press. The scancode and modifiers arguments
-            // are never used.
-            return suggestor.keyPressed(new KeyEvent(GLFW.GLFW_KEY_TAB, -1, 0));
-        } else if (input.key() == GLFW.GLFW_KEY_SPACE && input.hasControlDown()) {
+
+            return suggestor.keyPressed(
+                    new KeyEvent(GLFW.GLFW_KEY_TAB, -1, 0)
+            );
+
+        } else if (
+                input.key() == GLFW.GLFW_KEY_SPACE
+                        && input.hasControlDown()
+        ) {
             setSuggestorActive(true);
             suggestor.showSuggestions(true);
             return true;
         }
-        // The Escape key is handled in CommandIDEScreen, not here.
+
         return false;
     }
 
     @Override
     public boolean charTyped(CharacterEvent input) {
         if (super.charTyped(input)) {
-            // The if statement ensures that only valid characters will trigger
-            // the suggestions box.
             setSuggestorActive(true);
             suggestor.updateCommandInfo();
             return true;
@@ -162,16 +194,29 @@ public abstract class CommandEditor extends Container implements Dirtyable {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
-        boolean result = suggestor.mouseClicked(click)
-                || super.mouseClicked(click, doubled);
+        boolean result =
+                suggestor.mouseClicked(click)
+                        || super.mouseClicked(click, doubled);
+
         suggestor.setAllowSuggestions(false);
+
         return result;
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    public boolean mouseScrolled(
+            double mouseX,
+            double mouseY,
+            double horizontalAmount,
+            double verticalAmount
+    ) {
         return suggestor.mouseScrolled(verticalAmount)
-                || super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+                || super.mouseScrolled(
+                mouseX,
+                mouseY,
+                horizontalAmount,
+                verticalAmount
+        );
     }
 
     @Override
@@ -182,36 +227,81 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-        extractLineNumber(context);
+    public void extractRenderState(
+            GuiGraphicsExtractor context,
+            int mouseX,
+            int mouseY,
+            float delta
+    ) {
+        renderLineNumber(context);
+
         if (isLoaded()) {
-            extractCommandField(context, mouseX, mouseY, delta);
+            commandField.visible = true;
+            commandField.extractRenderState(
+                    context,
+                    mouseX,
+                    mouseY,
+                    delta
+            );
         } else {
-            context.text(textRenderer, Component.translatable("commandBlockIDE.unloaded"), commandField.getX(), y + 5, 0x7FFFFFFF);
+            context.text(
+                    textRenderer,
+                    Component.translatable("commandBlockIDE.unloaded"),
+                    commandField.getX(),
+                    y + 5,
+                    0x7FFFFFFF,
+                    false
+            );
         }
+
+        // Render buttons contained by this editor.
         super.extractRenderState(context, mouseX, mouseY, delta);
     }
 
-    protected void extractLineNumber(GuiGraphicsExtractor context) {
+    protected void renderLineNumber(GuiGraphicsExtractor context) {
         String lineNumber = String.valueOf(index + 1);
-        // Manually draw shadow because the existing functions don’t let you set the color.
-        context.text(textRenderer, lineNumber, x + 17 - textRenderer.width(lineNumber), y + 5, 0x3F000000);
-        context.text(textRenderer, lineNumber, x + 16 - textRenderer.width(lineNumber), y + 4, lineNumberHighlighted ? 0xFFFFFFFF : 0x7FFFFFFF);
+
+        // Shadow
+        context.text(
+                textRenderer,
+                lineNumber,
+                x + 17 - textRenderer.width(lineNumber),
+                y + 5,
+                0x3F000000,
+                false
+        );
+
+        // Actual number
+        context.text(
+                textRenderer,
+                lineNumber,
+                x + 16 - textRenderer.width(lineNumber),
+                y + 4,
+                lineNumberHighlighted
+                        ? 0xFFFFFFFF
+                        : 0x7FFFFFFF,
+                false
+        );
     }
 
-    protected void extractCommandField(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-        commandField.visible = true;
-        commandField.extractRenderState(context, mouseX, mouseY, delta);
-    }
-
-    public void extractSuggestions(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+    public void renderSuggestions(
+            GuiGraphicsExtractor context,
+            int mouseX,
+            int mouseY
+    ) {
         if (commandField.canConsumeInput()) {
-            suggestor.extractRenderState(context, mouseX, mouseY);
+            suggestor.extractRenderState(
+                    context,
+                    mouseX,
+                    mouseY
+            );
         }
     }
 
     public String getSingleLineCommand() {
-        return processor.processCommand(commandField.getValue()).getA();
+        return processor
+                .processCommand(commandField.getValue())
+                .getFirst();
     }
 
     public boolean isLoaded() {
@@ -237,7 +327,6 @@ public abstract class CommandEditor extends Container implements Dirtyable {
 
         commandField.setY(y);
         suggestor.updateCommandInfo();
-
     }
 
     public int getWidth() {
@@ -247,7 +336,9 @@ public abstract class CommandEditor extends Container implements Dirtyable {
     public void setWidth(int width) {
         this.width = width;
 
-        commandField.setWidth(width - leftPadding - rightPadding - 20);
+        commandField.setWidth(
+                width - leftPadding - rightPadding - 20
+        );
 
         suggestor.updateCommandInfo();
     }
@@ -258,10 +349,10 @@ public abstract class CommandEditor extends Container implements Dirtyable {
 
     public void setHeight(int height) {
         boolean changed = height != this.height;
+
         this.height = height;
 
         commandField.setHeight(height);
-
         suggestor.updateCommandInfo();
 
         if (changed) {
@@ -284,18 +375,28 @@ public abstract class CommandEditor extends Container implements Dirtyable {
         }
     }
 
-    public void setHeightChangedListener(@Nullable IntConsumer listener) {
-        heightChangedListener = listener;
+    public void setHeightChangedListener(
+            @Nullable IntConsumer listener
+    ) {
+        this.heightChangedListener = listener;
     }
 
     @Override
     public void updateNarration(NarrationElementOutput builder) {
-        builder.add(NarratedElementType.TITLE, Component.translatable("narration.edit_box", commandField.getValue()));
+        builder.add(
+                NarratedElementType.TITLE,
+                Component.translatable(
+                        "narration.edit_box",
+                        commandField.getValue()
+                )
+        );
     }
 
-    protected static List<FormattedCharSequence> highlight(ParseResults<ClientSuggestionProvider> parse, String text, StringMapping mapping) {
-        // The ranges of text in the single-line command containing each
-        // argument that should be highlighted.
+    protected static List<FormattedCharSequence> highlight(
+            ParseResults<SharedSuggestionProvider> parse,
+            String text,
+            StringMapping mapping
+    ) {
         List<StringRange> ranges = parse
                 .getContext()
                 .getLastChild()
@@ -305,57 +406,102 @@ public abstract class CommandEditor extends Container implements Dirtyable {
                 .map(ParsedArgument::getRange)
                 .toList();
 
-        // This is the index that the command parser stopped at. Everything at
-        // or after this index is a parse error.
-        int mappedParseStopIndex = mapping.mapIndexOrAfter(parse.getReader().getCursor());
+        int mappedParseStopIndex =
+                mapping.mapIndexOrAfter(parse.getReader().getCursor());
 
-        List<FormattedCharSequence> highlightedLines = new ArrayList<>();
+        List<FormattedCharSequence> highlightedLines =
+                new ArrayList<>();
 
         int startIndex = 0;
+
         while (startIndex <= text.length()) {
-            // Find the end of the current line (exclusive)
             int endIndex = text.indexOf('\n', startIndex);
+
             if (endIndex == -1) {
                 endIndex = text.length();
             }
 
             int start = startIndex;
             int end = endIndex;
+
             highlightedLines.add(visitor -> {
                 charLoop:
                 for (int index = start; index < end; index++) {
                     int codePoint = text.codePointAt(index);
-                    // It's possible for codePointAt to return a low surrogate
-                    // if we ask for the second byte of a surrogate pair.
-                    if (codePoint < Character.MAX_VALUE && Character.isSurrogate((char) codePoint)) {
+
+                    if (
+                            codePoint < Character.MAX_VALUE
+                                    && Character.isSurrogate((char) codePoint)
+                    ) {
                         continue;
                     }
 
-                    OptionalInt maybeMappedIndex = mapping.inverted().mapIndex(index);
+                    OptionalInt maybeMappedIndex =
+                            mapping.inverted().mapIndex(index);
+
                     if (maybeMappedIndex.isEmpty()) {
-                        if (!visitor.accept(index, COMMENT_STYLE, codePoint)) {
+                        if (
+                                !visitor.accept(
+                                        index,
+                                        COMMENT_STYLE,
+                                        codePoint
+                                )
+                        ) {
                             return false;
                         }
+
                         continue;
                     }
+
                     int mappedIndex = maybeMappedIndex.getAsInt();
 
-                    for (int rangeIndex = 0; rangeIndex < ranges.size(); rangeIndex++) {
+                    for (
+                            int rangeIndex = 0;
+                            rangeIndex < ranges.size();
+                            rangeIndex++
+                    ) {
                         var range = ranges.get(rangeIndex);
-                        if (range.getStart() <= mappedIndex && mappedIndex < range.getEnd()) {
-                            Style style = ARGUMENT_STYLES.get(rangeIndex % ARGUMENT_STYLES.size());
-                            if (!visitor.accept(index, style, codePoint)) {
+
+                        if (
+                                range.getStart() <= mappedIndex
+                                        && mappedIndex < range.getEnd()
+                        ) {
+                            Style style =
+                                    ARGUMENT_STYLES.get(
+                                            rangeIndex
+                                                    % ARGUMENT_STYLES.size()
+                                    );
+
+                            if (
+                                    !visitor.accept(
+                                            index,
+                                            style,
+                                            codePoint
+                                    )
+                            ) {
                                 return false;
                             }
+
                             continue charLoop;
                         }
                     }
 
-                    Style style = index >= mappedParseStopIndex ? ERROR_STYLE : INFO_STYLE;
-                    if (!visitor.accept(index, style, codePoint)) {
+                    Style style =
+                            index >= mappedParseStopIndex
+                                    ? ERROR_STYLE
+                                    : INFO_STYLE;
+
+                    if (
+                            !visitor.accept(
+                                    index,
+                                    style,
+                                    codePoint
+                            )
+                    ) {
                         return false;
                     }
                 }
+
                 return true;
             });
 
@@ -373,7 +519,12 @@ public abstract class CommandEditor extends Container implements Dirtyable {
             ChatFormatting.GOLD
     ).map(Style.EMPTY::withColor).toList();
 
-    private static final Style INFO_STYLE = Style.EMPTY.withColor(ChatFormatting.GRAY);
-    private static final Style ERROR_STYLE = Style.EMPTY.withColor(ChatFormatting.RED);
-    private static final Style COMMENT_STYLE = Style.EMPTY.withColor(ChatFormatting.DARK_GRAY);
+    private static final Style INFO_STYLE =
+            Style.EMPTY.withColor(ChatFormatting.GRAY);
+
+    private static final Style ERROR_STYLE =
+            Style.EMPTY.withColor(ChatFormatting.RED);
+
+    private static final Style COMMENT_STYLE =
+            Style.EMPTY.withColor(ChatFormatting.DARK_GRAY);
 }

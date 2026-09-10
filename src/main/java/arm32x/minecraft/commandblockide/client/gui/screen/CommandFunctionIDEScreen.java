@@ -6,10 +6,11 @@ import arm32x.minecraft.commandblockide.payloads.ApplyFunctionPayload;
 import arm32x.minecraft.commandblockide.util.PacketSplitter;
 import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.FriendlyByteBufs;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
 import net.minecraft.resources.Identifier;
 
 public final class CommandFunctionIDEScreen extends CommandIDEScreen<CommandFunctionEditor> {
@@ -47,7 +48,7 @@ public final class CommandFunctionIDEScreen extends CommandIDEScreen<CommandFunc
 
 	@Override
 	public void save() {
-		FriendlyByteBuf buf = FriendlyByteBufs.create();
+		FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 		PacketSplitter.writeHeader(buf);
 		buf.writeIdentifier(functionId);
 		buf.writeVarInt(editors.size());

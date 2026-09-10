@@ -2,9 +2,8 @@ package arm32x.minecraft.commandblockide.util;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
-import io.netty.buffer.ByteBuf;
 import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 /**

@@ -1,7 +1,7 @@
 package arm32x.minecraft.commandblockide.server.function;
 
-import arm32x.minecraft.commandblockide.mixin.server.PathPackResourcesAccessor;
-import arm32x.minecraft.commandblockide.mixin.server.ServerFunctionLibraryAccessor;
+import arm32x.minecraft.commandblockide.mixin.server.DirectoryResourcePackAccessor;
+import arm32x.minecraft.commandblockide.mixin.server.FunctionLoaderAccessor;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.DataResult;
 import java.io.IOException;
@@ -9,13 +9,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
-import net.minecraft.server.packs.PathPackResources;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.FilePackResources;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.packs.FilePackResources;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.PathPackResources;
 import net.minecraft.util.FileUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,7 +36,7 @@ public final class FunctionIO {
 
         // Convert the function ID ('some_datapack:some_function') to a resource
         // path ('some_datapack:functions/some_function.mcfunction').
-        var resourceFinder = ServerFunctionLibraryAccessor.getResourceFinder();
+        var resourceFinder = FunctionLoaderAccessor.getResourceFinder();
         var functionResourcePath = resourceFinder.idToFile(functionId);
 
         // Figure out which resource pack the function is in.
@@ -87,7 +87,7 @@ public final class FunctionIO {
 
         // Convert the function ID ('some_datapack:some_function') to a resource
         // path ('some_datapack:functions/some_function.mcfunction').
-        var resourceFinder = ServerFunctionLibraryAccessor.getResourceFinder();
+        var resourceFinder = FunctionLoaderAccessor.getResourceFinder();
         var functionResourcePath = resourceFinder.idToFile(functionId);
 
         // Figure out which resource pack the function is in.
@@ -147,7 +147,7 @@ public final class FunctionIO {
      */
     @SuppressWarnings("SameParameterValue")
     private static DataResult<Path> getFilesystemPathOfResource(PathPackResources pack, PackType resourceType, Identifier resourcePath) {
-        Path root = ((PathPackResourcesAccessor)pack).getRoot();
+        Path root = ((DirectoryResourcePackAccessor)pack).getRoot();
         Path namespaceDir = root.resolve(resourceType.getDirectory()).resolve(resourcePath.getNamespace());
 
         return FileUtil.decomposePath(resourcePath.getPath())

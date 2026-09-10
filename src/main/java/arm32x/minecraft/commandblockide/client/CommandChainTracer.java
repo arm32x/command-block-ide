@@ -2,12 +2,12 @@ package arm32x.minecraft.commandblockide.client;
 
 import java.util.*;
 import java.util.stream.Stream;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CommandBlock;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CommandBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
 public final class CommandChainTracer {
 	private final ClientLevel world;

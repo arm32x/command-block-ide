@@ -14,8 +14,8 @@ import java.util.function.Supplier;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.Identifier;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessagePacker;
@@ -83,7 +83,7 @@ public final class MultilineCommandStorage implements Serializable {
 			return multiline.get();
 		} else {
 			multiline = fallbackSource.get();
-			if (multiline.isPresent() && processor.processCommand(multiline.get()).getA().equals(singleLine)) {
+			if (multiline.isPresent() && processor.processCommand(multiline.get()).getFirst().equals(singleLine)) {
 				return multiline.get();
 			}
 		}
