@@ -8,6 +8,7 @@ import arm32x.minecraft.commandblockide.client.processor.MultilineCommandProcess
 import arm32x.minecraft.commandblockide.client.processor.StringMapping;
 import arm32x.minecraft.commandblockide.mixin.client.CommandSuggestionsAccessor;
 import arm32x.minecraft.commandblockide.mixinextensions.client.ChatInputSuggestorExtension;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.context.ParsedArgument;
 import com.mojang.brigadier.context.StringRange;
@@ -35,7 +36,6 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public abstract class CommandEditor extends Container implements Dirtyable {
@@ -128,7 +128,7 @@ public abstract class CommandEditor extends Container implements Dirtyable {
 
     private boolean handleSpecialKey(KeyEvent input) {
         if (
-                input.key() == GLFW.GLFW_KEY_TAB
+                input.key() == InputConstants.KEY_TAB
                         && !isSuggestorActive()
                         && !commandField.isBeforeFirstNonWhitespaceCharacterInLine(commandField.getCursorPosition())
         ) {
@@ -137,8 +137,8 @@ public abstract class CommandEditor extends Container implements Dirtyable {
             // Immediately trigger completion without using Mixin by
             // simulating a key press. The scancode and modifiers arguments
             // are never used.
-            return suggestor.keyPressed(new KeyEvent(GLFW.GLFW_KEY_TAB, -1, 0));
-        } else if (input.key() == GLFW.GLFW_KEY_SPACE && input.hasControlDown()) {
+            return suggestor.keyPressed(new KeyEvent(InputConstants.KEY_TAB, -1, 0));
+        } else if (input.key() == InputConstants.KEY_SPACE && input.hasControlDown()) {
             setSuggestorActive(true);
             suggestor.showSuggestions(true);
             return true;

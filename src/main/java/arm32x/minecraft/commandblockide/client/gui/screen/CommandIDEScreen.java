@@ -7,6 +7,8 @@ import arm32x.minecraft.commandblockide.client.gui.editor.CommandEditor;
 import arm32x.minecraft.commandblockide.client.storage.MultilineCommandStorage;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -22,7 +24,6 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen implements Dirtyable {
@@ -132,7 +133,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 	}
 
 	private boolean handleSpecialKey(KeyEvent input) {
-		if (input.key() == GLFW.GLFW_KEY_ESCAPE) {
+		if (input.key() == InputConstants.KEY_ESCAPE) {
 			GuiEventListener focused = getFocused();
 			if (focused == null) {
 				// TODO: Warn about unsaved changes.
@@ -149,7 +150,7 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 			}
 			setFocused(null);
 			return true;
-		} else if (input.key() == GLFW.GLFW_KEY_ENTER || input.key() == GLFW.GLFW_KEY_KP_ENTER) {
+		} else if (input.key() == InputConstants.KEY_RETURN || input.key() == InputConstants.KEY_NUMPADENTER) {
 			GuiEventListener focused = getFocused();
 			if (focused == null) {
 				save();
@@ -167,13 +168,13 @@ public abstract class CommandIDEScreen<E extends CommandEditor> extends Screen i
 				return true;
 			}
 			return false;
-		} else if (input.key() == GLFW.GLFW_KEY_UP && input.hasControlDown() || input.key() == GLFW.GLFW_KEY_TAB && input.hasControlDown() && input.hasShiftDown()) {
+		} else if (input.key() == InputConstants.KEY_UP && input.hasControlDown() || input.key() == InputConstants.KEY_TAB && input.hasControlDown() && input.hasShiftDown()) {
 			changeFocus(false);
 			return true;
-		} else if (input.key() == GLFW.GLFW_KEY_DOWN && input.hasControlDown() || input.key() == GLFW.GLFW_KEY_TAB && input.hasControlDown() && !input.hasShiftDown()) {
+		} else if (input.key() == InputConstants.KEY_DOWN && input.hasControlDown() || input.key() == InputConstants.KEY_TAB && input.hasControlDown() && !input.hasShiftDown()) {
 			changeFocus(true);
 			return true;
-		} else if (input.key() == GLFW.GLFW_KEY_S && input.hasControlDown()) {
+		} else if (input.key() == InputConstants.KEY_S && input.hasControlDown()) {
 			saveButton.playDownSound(Minecraft.getInstance().getSoundManager());
 			save();
 			return true;

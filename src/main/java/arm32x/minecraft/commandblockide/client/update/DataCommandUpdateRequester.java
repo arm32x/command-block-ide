@@ -92,8 +92,8 @@ public final class DataCommandUpdateRequester {
             blockEntity.loadWithComponents(TagValueInput.create(errorReporter, client.level.registryAccess(), tag));
         }
 //		blockEntity.setNeedsUpdatePacket(false);
-		if (client.screen instanceof CommandBlockIDEScreen) {
-			((CommandBlockIDEScreen)client.screen).update(position);
+		if (client.gui.screen() instanceof CommandBlockIDEScreen) {
+			((CommandBlockIDEScreen)client.gui.screen()).update(position);
 		}
 		blocksToUpdate.remove(position);
 

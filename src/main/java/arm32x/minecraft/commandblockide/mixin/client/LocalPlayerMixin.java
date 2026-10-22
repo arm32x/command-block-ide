@@ -22,8 +22,8 @@ public class LocalPlayerMixin {
 	@Inject(method = "openCommandBlock(Lnet/minecraft/world/level/block/entity/CommandBlockEntity;)V", at = @At("HEAD"), cancellable = true)
 	public void openCommandBlockScreen(CommandBlockEntity commandBlock, CallbackInfo ci) {
         if (!minecraft.hasAltDown()) {
-            if (!(minecraft.screen instanceof CommandIDEScreen)) {
-                minecraft.setScreen(new CommandBlockIDEScreen(commandBlock));
+            if (!(minecraft.gui.screen() instanceof CommandIDEScreen)) {
+                minecraft.setScreenAndShow(new CommandBlockIDEScreen(commandBlock));
             }
             ci.cancel();
         }

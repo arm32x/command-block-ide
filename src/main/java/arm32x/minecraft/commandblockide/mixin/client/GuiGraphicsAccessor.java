@@ -1,11 +1,9 @@
 package arm32x.minecraft.commandblockide.mixin.client;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import java.util.function.Function;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;

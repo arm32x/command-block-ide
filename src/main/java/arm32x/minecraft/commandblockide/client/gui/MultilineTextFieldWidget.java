@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+
+import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.Font;
@@ -28,7 +30,6 @@ import net.minecraft.util.Mth;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public class MultilineTextFieldWidget extends EditBox {
@@ -184,7 +185,7 @@ public class MultilineTextFieldWidget extends EditBox {
 
 	@Override
 	public boolean keyPressed(KeyEvent input) {
-		if (input.key() == GLFW.GLFW_KEY_TAB) {
+		if (input.key() == InputConstants.KEY_TAB) {
             if (editBox.hasSelection()) {
                 logger.warn("Indenting selected lines is not yet supported");
             } else {

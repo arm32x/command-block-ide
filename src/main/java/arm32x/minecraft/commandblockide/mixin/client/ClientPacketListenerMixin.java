@@ -33,7 +33,7 @@ public abstract class ClientPacketListenerMixin extends ClientCommonPacketListen
 		}
 
 		BlockEntity blockEntity = minecraft.level.getBlockEntity(packet.getPos());
-		if (blockEntity instanceof CommandBlockEntity && minecraft.screen instanceof CommandBlockIDEScreen commandBlockIDEScreen) {
+		if (blockEntity instanceof CommandBlockEntity && minecraft.gui.screen() instanceof CommandBlockIDEScreen commandBlockIDEScreen) {
 			commandBlockIDEScreen.update(blockEntity.getBlockPos());
 		}
 	}
